@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Store, UserPlus } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,10 +18,14 @@ const Navigation = () => {
     { name: "Shop", path: "/shop" },
     { name: "CRM", path: "/crm" },
     { name: "Profile", path: "/profile" },
-    { name: "Vendors", path: "/vendors" },
     { name: "Classes", path: "/classes" },
     { name: "Streaming", path: "/streaming" },
     { name: "Contact", path: "/contact" },
+  ];
+
+  const vendorSubmenu = [
+    { name: "All Vendors", path: "/vendors", icon: <Store className="h-4 w-4 mr-2" /> },
+    { name: "Become a Vendor", path: "/vendors/new", icon: <UserPlus className="h-4 w-4 mr-2" /> },
   ];
 
   return (
@@ -37,6 +49,27 @@ const Navigation = () => {
                 {item.name}
               </Link>
             ))}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Vendors</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="w-48 p-2">
+                      {vendorSubmenu.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.path}
+                          className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent"
+                        >
+                          {item.icon}
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
 
           {/* Mobile Menu Button */}
@@ -62,6 +95,18 @@ const Navigation = () => {
                 className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsOpen(false)}
               >
+                {item.name}
+              </Link>
+            ))}
+            {/* Mobile Vendor Submenu */}
+            {vendorSubmenu.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="flex items-center px-3 py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                {item.icon}
                 {item.name}
               </Link>
             ))}
