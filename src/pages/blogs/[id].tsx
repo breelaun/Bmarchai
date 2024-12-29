@@ -1,13 +1,10 @@
-import { ArrowLeft, Share2, MessageSquare } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { useParams } from "react-router-dom";
+import BlogPostHeader from "@/components/blogs/BlogPostHeader";
+import RelatedPosts from "@/components/blogs/RelatedPosts";
 
 const BlogPost = () => {
   const { id } = useParams();
 
-  // Sample blog post data (will be replaced with real data later)
   const post = {
     id: Number(id),
     title: "Getting Started with Online Business",
@@ -49,69 +46,18 @@ const BlogPost = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <Link to="/blogs" className="flex items-center text-primary mb-6 hover:text-primary/80">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Blogs
-      </Link>
-
       <article className="prose prose-lg max-w-none">
         <img
           src={post.imageUrl}
           alt={post.title}
           className="w-full h-[400px] object-cover rounded-lg mb-8"
         />
-
-        <div className="flex justify-between items-center mb-6">
-          <div className="space-y-2">
-            <Badge variant="secondary">{post.category}</Badge>
-            <div className="text-sm text-muted-foreground">
-              {post.date} · By {post.author}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button variant="outline" size="sm">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Comment
-            </Button>
-          </div>
-        </div>
-
-        <h1 className="text-4xl font-bold mb-6">{post.title}</h1>
-
-        <div className="flex gap-2 mb-6">
-          {post.tags.map((tag) => (
-            <Badge key={tag} variant="outline">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-
+        
+        <BlogPostHeader post={post} onShare={handleShare} />
+        
         <div className="leading-relaxed mb-12">{post.content}</div>
-
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Related Posts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {post.relatedPosts.map((relatedPost) => (
-              <Link key={relatedPost.id} to={`/blogs/${relatedPost.id}`}>
-                <Card className="hover:shadow-lg transition-shadow">
-                  <img
-                    src={relatedPost.imageUrl}
-                    alt={relatedPost.title}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                  />
-                  <div className="p-4">
-                    <h3 className="font-bold mb-2">{relatedPost.title}</h3>
-                    <p className="text-muted-foreground text-sm">{relatedPost.excerpt}</p>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
+        
+        <RelatedPosts posts={post.relatedPosts} />
       </article>
     </div>
   );
