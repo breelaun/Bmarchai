@@ -3,7 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BlogPostHeader from "@/components/blogs/BlogPostHeader";
 import RelatedPosts from "@/components/blogs/RelatedPosts";
+import TagList from "@/components/blogs/TagList";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { FilePlus } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const BlogPost = () => {
   const { category, slug } = useParams();
@@ -73,6 +77,15 @@ const BlogPost = () => {
 
   return (
     <div className="container mx-auto py-8">
+      <div className="flex justify-end mb-6">
+        <Link to="/blogs/new">
+          <Button>
+            <FilePlus className="h-4 w-4 mr-2" />
+            Create Blog
+          </Button>
+        </Link>
+      </div>
+      
       <article className="prose prose-lg max-w-none">
         {post.image_url && (
           <img
@@ -85,6 +98,8 @@ const BlogPost = () => {
         <BlogPostHeader post={post} onShare={handleShare} />
         
         <div className="leading-relaxed mb-12">{post.content}</div>
+        
+        <TagList tags={post.tags || []} className="mb-8" />
         
         {relatedPosts && <RelatedPosts posts={relatedPosts} />}
       </article>

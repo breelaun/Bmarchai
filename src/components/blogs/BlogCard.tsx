@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import TagList from "./TagList";
 
 interface BlogCardProps {
   blog: {
@@ -26,7 +27,11 @@ const BlogCard = ({ blog }: BlogCardProps) => {
       />
       <CardHeader>
         <div className="flex justify-between items-center mb-2">
-          <Badge variant="secondary">{blog.category}</Badge>
+          <Link to={`/blogs/category/${blog.category.toLowerCase()}`}>
+            <Badge variant="secondary" className="hover:bg-secondary/80">
+              {blog.category}
+            </Badge>
+          </Link>
           <span className="text-sm text-muted-foreground">
             {new Date(blog.created_at).toLocaleDateString()}
           </span>
@@ -36,13 +41,7 @@ const BlogCard = ({ blog }: BlogCardProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {blog.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
+          <TagList tags={blog.tags || []} />
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">By {blog.author}</span>
             <Link
