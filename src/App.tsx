@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
+import Vendors from "./pages/Vendors";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
           <main className="flex-grow pt-16">
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/vendors" element={<Vendors />} />
             </Routes>
           </main>
           <Footer />
