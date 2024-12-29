@@ -3,10 +3,11 @@ import BlogPostHeader from "@/components/blogs/BlogPostHeader";
 import RelatedPosts from "@/components/blogs/RelatedPosts";
 
 const BlogPost = () => {
-  const { id } = useParams();
+  const { category, slug } = useParams();
 
+  // Sample data - replace with Supabase fetch based on category and slug
   const post = {
-    id: Number(id),
+    id: 1,
     title: "Getting Started with Online Business",
     content: `
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -15,9 +16,10 @@ const BlogPost = () => {
     `,
     author: "John Doe",
     date: "2024-03-15",
-    category: "Business",
+    category: category || "Business",
     imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
     tags: ["business", "startup", "entrepreneurship"],
+    slug: slug,
     relatedPosts: [
       {
         id: 2,

@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Vendors from "./pages/Vendors";
 import VendorProfile from "./pages/vendors/[id]";
 import BlogsPage from "./pages/blogs";
+import BlogCategory from "./pages/blogs/category/[category]";
 import BlogPost from "./pages/blogs/[id]";
 
 const queryClient = new QueryClient();
@@ -28,7 +29,8 @@ const App = () => (
               <Route path="/vendors/new" element={<VendorProfile />} />
               <Route path="/vendors/:id" element={<VendorProfile />} />
               <Route path="/blogs" element={<BlogsPage />} />
-              <Route path="/blogs/:id" element={<BlogPost />} />
+              <Route path="/blogs/category/:category" element={<BlogCategory />} />
+              <Route path="/blogs/:category/:slug" element={<BlogPost />} />
             </Routes>
           </main>
           <Footer />

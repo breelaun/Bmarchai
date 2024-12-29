@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import BlogHeader from "@/components/blogs/BlogHeader";
 import BlogCard from "@/components/blogs/BlogCard";
 import CategoryFilter from "@/components/blogs/CategoryFilter";
 import BlogPagination from "@/components/blogs/BlogPagination";
 
-const BlogsPage = () => {
+const BlogCategory = () => {
+  const { category } = useParams();
   const [searchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1");
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,11 +46,40 @@ const BlogsPage = () => {
       tags: ["success", "case-study", "retail"],
       imageUrl: "https://images.unsplash.com/photo-1472851294608-062f824d29cc",
     },
-  ].filter(blog =>
-    blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    blog.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    blog.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    blog.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    {
+      id: 4,
+      title: "The Future of Technology",
+      excerpt: "Exploring the latest trends in technology and innovation.",
+      author: "Alice Brown",
+      date: "2024-03-12",
+      category: "Technology",
+      tags: ["tech", "innovation", "future"],
+      imageUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9",
+    },
+    {
+      id: 5,
+      title: "Designing for User Experience",
+      excerpt: "Best practices for creating user-friendly designs.",
+      author: "Chris Green",
+      date: "2024-03-11",
+      category: "Design",
+      tags: ["design", "ux", "user-experience"],
+      imageUrl: "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0",
+    },
+    {
+      id: 6,
+      title: "Marketing in the Digital Age",
+      excerpt: "How to effectively market your business online.",
+      author: "Emma White",
+      date: "2024-03-10",
+      category: "Marketing",
+      tags: ["marketing", "digital", "strategy"],
+      imageUrl: "https://images.unsplash.com/photo-1512002021952-1c1c1c1c1c1c",
+    },
+  ].filter(blog => 
+    blog.category.toLowerCase() === category?.toLowerCase() &&
+    (blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     blog.excerpt.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const totalPages = Math.ceil(sampleBlogs.length / itemsPerPage);
@@ -61,7 +91,7 @@ const BlogsPage = () => {
   return (
     <div className="container mx-auto py-8">
       <BlogHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <CategoryFilter categories={categories} />
+      <CategoryFilter categories={categories} selectedCategory={category} />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {paginatedBlogs.map((blog) => (
           <BlogCard key={blog.id} blog={blog} />
@@ -70,10 +100,10 @@ const BlogsPage = () => {
       <BlogPagination
         currentPage={currentPage}
         totalPages={totalPages}
-        baseUrl="/blogs"
+        baseUrl={`/blogs/category/${category}`}
       />
     </div>
   );
 };
 
-export default BlogsPage;
+export default BlogCategory;
