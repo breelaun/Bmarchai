@@ -7,6 +7,7 @@ import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
 import Vendors from "./pages/Vendors";
+import VendorProfile from "./pages/vendors/[id]";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/vendors" element={<Vendors />} />
+              <Route path="/vendors/:id" element={<VendorProfile />} />
             </Routes>
           </main>
           <Footer />
