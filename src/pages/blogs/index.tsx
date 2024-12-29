@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BlogHeader from "@/components/blogs/BlogHeader";
@@ -7,6 +7,8 @@ import BlogCard from "@/components/blogs/BlogCard";
 import CategoryFilter from "@/components/blogs/CategoryFilter";
 import BlogPagination from "@/components/blogs/BlogPagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { FilePlus } from "lucide-react";
 
 const BlogsPage = () => {
   const [searchParams] = useSearchParams();
@@ -21,7 +23,7 @@ const BlogsPage = () => {
         .from("blogs")
         .select('category');
       
-      // Get unique categories
+      // Get unique categories using Set
       const uniqueCategories = [...new Set(data?.map(item => item.category))];
       return uniqueCategories || [];
     },
@@ -91,7 +93,15 @@ const BlogsPage = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <BlogHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <div className="flex justify-between items-center mb-8">
+        <BlogHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <Link to="/blogs/new">
+          <Button>
+            <FilePlus className="h-4 w-4 mr-2" />
+            Create Blog
+          </Button>
+        </Link>
+      </div>
       {categories && <CategoryFilter categories={categories} />}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {blogs?.map((blog) => (
