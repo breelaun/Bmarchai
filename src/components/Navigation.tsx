@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, UserPlus } from "lucide-react";
+import { Menu, X, Store, User } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
@@ -25,7 +24,7 @@ const Navigation = () => {
 
   const vendorSubmenu = [
     { name: "All Vendors", path: "/vendors", icon: <Store className="h-4 w-4 mr-2" /> },
-    { name: "Become a Vendor", path: "/vendors/new", icon: <UserPlus className="h-4 w-4 mr-2" /> },
+    { name: "Vendor Profile", path: "/vendors/profile", icon: <User className="h-4 w-4 mr-2" /> },
   ];
 
   return (
