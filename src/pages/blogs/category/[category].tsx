@@ -20,9 +20,11 @@ const BlogCategory = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("blogs")
-        .select("category")
-        .distinct();
-      return data?.map(item => item.category) || [];
+        .select('category');
+      
+      // Get unique categories
+      const uniqueCategories = [...new Set(data?.map(item => item.category))];
+      return uniqueCategories || [];
     },
   });
 

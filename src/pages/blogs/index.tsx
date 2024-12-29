@@ -19,10 +19,11 @@ const BlogsPage = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("blogs")
-        .select("category")
-        .eq('category', 'category')
-        .groupBy('category');
-      return data?.map(item => item.category) || [];
+        .select('category');
+      
+      // Get unique categories
+      const uniqueCategories = [...new Set(data?.map(item => item.category))];
+      return uniqueCategories || [];
     },
   });
 
