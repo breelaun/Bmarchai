@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Vendors = () => {
+  const navigate = useNavigate();
+  
   const mockVendors = [
     {
       id: 1,
@@ -31,6 +34,10 @@ const Vendors = () => {
     },
   ];
 
+  const handleBecomeVendor = () => {
+    navigate('/vendors/new');
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col gap-8">
@@ -52,7 +59,7 @@ const Vendors = () => {
             />
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           </div>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleBecomeVendor}>
             Become a Vendor
           </Button>
         </div>
@@ -73,8 +80,20 @@ const Vendors = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button variant="outline" size="sm">View Profile</Button>
-                <Button variant="default" size="sm">Visit Store</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate(`/vendors/${vendor.id}`)}
+                >
+                  View Profile
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={() => navigate(`/vendors/${vendor.id}/store`)}
+                >
+                  Visit Store
+                </Button>
               </CardFooter>
             </Card>
           ))}
