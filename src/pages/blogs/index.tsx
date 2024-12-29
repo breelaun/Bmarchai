@@ -20,7 +20,8 @@ const BlogsPage = () => {
       const { data } = await supabase
         .from("blogs")
         .select("category")
-        .distinct();
+        .eq('category', 'category')
+        .groupBy('category');
       return data?.map(item => item.category) || [];
     },
   });

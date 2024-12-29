@@ -7,7 +7,7 @@ interface BlogPostHeaderProps {
   post: {
     title: string;
     category: string;
-    date: string;
+    created_at: string;
     author: string;
     tags: string[];
   };
@@ -26,7 +26,7 @@ const BlogPostHeader = ({ post, onShare }: BlogPostHeaderProps) => {
         <div className="space-y-2">
           <Badge variant="secondary">{post.category}</Badge>
           <div className="text-sm text-muted-foreground">
-            {post.date} · By {post.author}
+            {new Date(post.created_at).toLocaleDateString()} · By {post.author}
           </div>
         </div>
         <div className="flex gap-2">

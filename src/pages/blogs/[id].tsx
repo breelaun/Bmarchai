@@ -29,7 +29,7 @@ const BlogPost = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("blogs")
-        .select("*")
+        .select("id, title, excerpt, image_url, category, slug")
         .eq("category", category)
         .neq("slug", slug)
         .limit(2);
