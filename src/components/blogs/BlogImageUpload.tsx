@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@supabase/auth-helpers-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Image as ImageIcon } from "lucide-react";
@@ -11,8 +12,18 @@ interface BlogImageUploadProps {
 const BlogImageUpload = ({ onImageUpload }: BlogImageUploadProps) => {
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const auth = useAuth();
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!auth?.user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to upload images",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
 
