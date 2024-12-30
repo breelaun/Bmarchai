@@ -7,10 +7,11 @@ import type { ProfileData } from "./types";
 interface ProfileFormProps {
   initialProfile: ProfileData;
   userId: string;
+  onSuccess?: () => void;
 }
 
-const ProfileForm = ({ initialProfile, userId }: ProfileFormProps) => {
-  const { profile, setProfile, handleUpdateProfile } = useProfileUpdate(userId, initialProfile);
+const ProfileForm = ({ initialProfile, userId, onSuccess }: ProfileFormProps) => {
+  const { profile, setProfile, handleUpdateProfile } = useProfileUpdate(userId, initialProfile, onSuccess);
 
   return (
     <form onSubmit={handleUpdateProfile} className="space-y-6">
