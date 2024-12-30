@@ -5,21 +5,33 @@ import { Card } from "@/components/ui/card";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Play, Upload, Edit } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ProfileHeaderProps {
   username: string;
   fullName: string;
   avatarUrl: string | null;
+  defaultBannerUrl?: string;
 }
 
-const ProfileHeader = ({ username, fullName, avatarUrl }: ProfileHeaderProps) => {
+const ProfileHeader = ({ username, fullName, avatarUrl, defaultBannerUrl }: ProfileHeaderProps) => {
   const session = useSession();
+  const { toast } = useToast();
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !session?.user.id) return;
+
+    if (file.size > 5000000) {
+      toast({
+        title: "Error",
+        description: "Image size must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsUploading(true);
     try {
@@ -37,28 +49,42 @@ const ProfileHeader = ({ username, fullName, avatarUrl }: ProfileHeaderProps) =>
         .getPublicUrl(filePath);
 
       setBannerUrl(publicUrl);
-    } catch (error) {
-      console.error('Error uploading banner:', error);
+      
+      // Update the profile with the new banner URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ default_banner_url: publicUrl })
+        .eq('id', session.user.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Success",
+        description: "Banner updated successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsUploading(false);
     }
   };
 
+  const displayBannerUrl = bannerUrl || defaultBannerUrl || '/lovable-uploads/3736fb63-bd29-4e8a-833f-6a29178e4460.png';
+
   return (
     <div className="relative w-full">
       {/* Banner Section */}
       <div className="relative w-full h-[400px] overflow-hidden">
-        {bannerUrl ? (
-          <img 
-            src={bannerUrl} 
-            alt="Profile banner"
-            className="w-full h-full object-cover"
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/90 to-primary/5">
+          <div 
+            className="absolute inset-0 bg-cover bg-center opacity-50 transition-opacity duration-300"
+            style={{ backgroundImage: `url(${displayBannerUrl})` }}
           />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-background via-background/90 to-primary/5">
-            <div className="absolute inset-0 bg-[url('/lovable-uploads/af4b09d3-de75-4b0b-bd1b-da5ce77a3cbb.png')] opacity-20 bg-cover bg-center" />
-          </div>
-        )}
+        </div>
         
         <div className="absolute inset-0 flex items-center justify-center">
           <Button 
@@ -72,14 +98,19 @@ const ProfileHeader = ({ username, fullName, avatarUrl }: ProfileHeaderProps) =>
         </div>
         
         <label className="absolute bottom-4 right-4 flex gap-2">
-          <Button variant="secondary" className="relative overflow-hidden backdrop-blur-sm">
+          <Button 
+            variant="secondary" 
+            className="relative overflow-hidden backdrop-blur-sm hover:bg-primary/10"
+            disabled={isUploading}
+          >
             <Upload className="w-4 h-4 mr-2" />
             {isUploading ? "Uploading..." : "Upload Banner"}
             <input
               type="file"
               className="absolute inset-0 opacity-0 cursor-pointer"
-              accept="image/*,video/*"
+              accept="image/*"
               onChange={handleBannerUpload}
+              disabled={isUploading}
             />
           </Button>
         </label>

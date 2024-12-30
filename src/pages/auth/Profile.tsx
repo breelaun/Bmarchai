@@ -56,6 +56,7 @@ const Profile = () => {
             username={profile.username || ""}
             fullName={profile.full_name || ""}
             avatarUrl={profile.avatar_url}
+            defaultBannerUrl={profile.default_banner_url}
           />
           
           <div className="container max-w-4xl mx-auto py-8 px-4">

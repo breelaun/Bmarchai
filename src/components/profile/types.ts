@@ -5,6 +5,7 @@ export interface ProfileData {
   is_vendor: boolean;
   date_of_birth: string;
   country?: string;
-  gender?: string | null;  // Changed from 'Male' | 'Female' | null to match database
+  gender?: string | null;
   phone_number?: string;
+  default_banner_url?: string;
 }
