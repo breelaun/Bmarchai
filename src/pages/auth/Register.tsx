@@ -16,6 +16,8 @@ const Register = () => {
 
   useEffect(() => {
     if (session) {
+      console.log("Session detected, redirecting...");
+      toast.success("Registration successful!");
       if (isVendor) {
         navigate("/vendors/new");
       } else {
@@ -28,7 +30,10 @@ const Register = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session); // Debug log
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_UP') {
+        console.log('User signed up:', session?.user?.id);
+        toast.success("Account created successfully!");
+      } else if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user?.id);
         if (isVendor) {
           navigate("/vendors/new");
