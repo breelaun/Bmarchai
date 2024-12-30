@@ -35,7 +35,7 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   }
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 bg-[#18181b] p-8">
       {/* Categories Header */}
       <div className="flex items-center gap-8 mb-8">
         <h2 className="text-2xl font-bold">Categories</h2>
