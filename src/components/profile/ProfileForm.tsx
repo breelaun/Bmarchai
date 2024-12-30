@@ -63,21 +63,14 @@ const ProfileForm = ({ initialProfile, userId }: ProfileFormProps) => {
 
       if (profileError) throw profileError;
 
-      if (profile.is_vendor) {
-        const { error: vendorError } = await supabase
-          .from("vendor_profiles")
-          .upsert({
-            id: userId,
-          });
-
-        if (vendorError) throw vendorError;
-        navigate("/vendors/new");
-      }
-
       toast({
         title: "Success",
         description: "Profile updated successfully",
       });
+
+      // Redirect to profile page after successful update
+      navigate("/profile");
+      
     } catch (error: any) {
       toast({
         title: "Error",
