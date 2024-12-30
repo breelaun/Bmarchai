@@ -137,6 +137,90 @@ export type Database = {
           },
         ]
       }
+      vendor_profiles: {
+        Row: {
+          business_description: string | null
+          business_name: string | null
+          contact_email: string | null
+          created_at: string
+          customizations: Json | null
+          id: string
+          social_links: Json | null
+          template_id: number | null
+          updated_at: string
+        }
+        Insert: {
+          business_description?: string | null
+          business_name?: string | null
+          contact_email?: string | null
+          created_at?: string
+          customizations?: Json | null
+          id: string
+          social_links?: Json | null
+          template_id?: number | null
+          updated_at?: string
+        }
+        Update: {
+          business_description?: string | null
+          business_name?: string | null
+          contact_email?: string | null
+          created_at?: string
+          customizations?: Json | null
+          id?: string
+          social_links?: Json | null
+          template_id?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_profiles_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          is_active: boolean | null
+          layout_config: Json
+          name: string
+          style_config: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          is_active?: boolean | null
+          layout_config?: Json
+          name: string
+          style_config?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          is_active?: boolean | null
+          layout_config?: Json
+          name?: string
+          style_config?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
