@@ -24,6 +24,24 @@ const Register = () => {
     }
   }, [session, navigate, isVendor]);
 
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session?.user?.id);
+        if (isVendor) {
+          navigate("/vendors/new");
+        } else {
+          navigate("/");
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, isVendor]);
+
   return (
     <div className="container max-w-md mx-auto py-8">
       <Card>
