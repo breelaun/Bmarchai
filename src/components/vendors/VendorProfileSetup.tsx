@@ -1,167 +1,62 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
 import TemplateSelection from "./setup/TemplateSelection";
 import DisplayStyleSelection from "./setup/DisplayStyleSelection";
 import BentoOptions from "./setup/BentoOptions";
 import AdditionalSettings from "./setup/AdditionalSettings";
 import Confirmation from "./setup/Confirmation";
 import TemplatePreviewPane from "./setup/TemplatePreviewPane";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-
-type SetupStep = "template" | "display" | "bento" | "additional" | "confirmation";
-
-interface TemplateStyleConfig {
-  colors: {
-    primary: string;
-    secondary: string;
-  };
-  font: string;
-}
-
-// Type guard to validate the style config structure
-function isTemplateStyleConfig(obj: unknown): obj is TemplateStyleConfig {
-  if (typeof obj !== 'object' || obj === null) return false;
-  
-  const candidate = obj as any;
-  return (
-    candidate.colors &&
-    typeof candidate.colors.primary === 'string' &&
-    typeof candidate.colors.secondary === 'string' &&
-    typeof candidate.font === 'string'
-  );
-}
+import { useVendorSetup } from "./hooks/useVendorSetup";
+import { useTemplateData } from "./hooks/useTemplateData";
 
 const VendorProfileSetup = () => {
-  const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<SetupStep>("template");
-  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
-  const [selectedDisplay, setSelectedDisplay] = useState("");
-  const [selectedBento, setSelectedBento] = useState("");
-  const [socialLinks, setSocialLinks] = useState({ facebook: "", instagram: "", twitter: "" });
-  const [aboutMe, setAboutMe] = useState("");
-  const [enableReviews, setEnableReviews] = useState(true);
-  const [enableFeatured, setEnableFeatured] = useState(true);
+  const {
+    currentStep,
+    state,
+    setters,
+    navigation,
+  } = useVendorSetup();
 
-  const { data: templateData } = useQuery({
-    queryKey: ["vendorTemplate", selectedTemplate],
-    queryFn: async () => {
-      if (!selectedTemplate) return null;
-      const { data, error } = await supabase
-        .from("vendor_templates")
-        .select("*")
-        .eq("id", selectedTemplate)
-        .single();
-      
-      if (error) throw error;
-      
-      // Validate the style_config
-      if (!isTemplateStyleConfig(data.style_config)) {
-        throw new Error("Invalid template style configuration");
-      }
-      
-      return {
-        ...data,
-        style_config: data.style_config as TemplateStyleConfig,
-      };
-    },
-    enabled: !!selectedTemplate,
-  });
-
-  const handleNext = () => {
-    if (currentStep === "template" && !selectedTemplate) {
-      toast.error("Please select a template to continue");
-      return;
-    }
-
-    const steps: SetupStep[] = ["template", "display", "bento", "additional", "confirmation"];
-    const currentIndex = steps.indexOf(currentStep);
-    if (currentIndex < steps.length - 1) {
-      setCurrentStep(steps[currentIndex + 1]);
-    }
-  };
-
-  const handleBack = () => {
-    const steps: SetupStep[] = ["template", "display", "bento", "additional", "confirmation"];
-    const currentIndex = steps.indexOf(currentStep);
-    if (currentIndex > 0) {
-      setCurrentStep(steps[currentIndex - 1]);
-    }
-  };
-
-  const handleLaunch = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error("Please sign in to create a vendor profile");
-        return;
-      }
-
-      const { error: profileError } = await supabase
-        .from("vendor_profiles")
-        .insert({
-          id: user.id,
-          template_id: selectedTemplate,
-          customizations: {
-            display_style: selectedDisplay,
-            bento_style: selectedBento,
-          },
-          business_description: aboutMe,
-          social_links: socialLinks,
-        });
-
-      if (profileError) throw profileError;
-
-      toast.success("Your vendor profile has been created successfully!");
-      navigate(`/vendors/${user.id}`);
-    } catch (error) {
-      console.error("Error creating vendor profile:", error);
-      toast.error("Failed to create vendor profile. Please try again.");
-    }
-  };
+  const { data: templateData } = useTemplateData(state.selectedTemplate);
 
   const renderStep = () => {
     switch (currentStep) {
       case "template":
         return (
           <TemplateSelection
-            selectedTemplate={selectedTemplate}
-            setSelectedTemplate={setSelectedTemplate}
+            selectedTemplate={state.selectedTemplate}
+            setSelectedTemplate={setters.setSelectedTemplate}
           />
         );
       case "display":
         return (
           <DisplayStyleSelection
-            selectedDisplay={selectedDisplay}
-            setSelectedDisplay={setSelectedDisplay}
+            selectedDisplay={state.selectedDisplay}
+            setSelectedDisplay={setters.setSelectedDisplay}
           />
         );
       case "bento":
         return (
           <BentoOptions
-            selectedBento={selectedBento}
-            setSelectedBento={setSelectedBento}
+            selectedBento={state.selectedBento}
+            setSelectedBento={setters.setSelectedBento}
           />
         );
       case "additional":
         return (
           <AdditionalSettings
-            socialLinks={socialLinks}
-            setSocialLinks={setSocialLinks}
-            aboutMe={aboutMe}
-            setAboutMe={setAboutMe}
-            enableReviews={enableReviews}
-            setEnableReviews={setEnableReviews}
-            enableFeatured={enableFeatured}
-            setEnableFeatured={setEnableFeatured}
+            socialLinks={state.socialLinks}
+            setSocialLinks={setters.setSocialLinks}
+            aboutMe={state.aboutMe}
+            setAboutMe={setters.setAboutMe}
+            enableReviews={state.enableReviews}
+            setEnableReviews={setters.setEnableReviews}
+            enableFeatured={state.enableFeatured}
+            setEnableFeatured={setters.setEnableFeatured}
           />
         );
       case "confirmation":
-        return <Confirmation onLaunch={handleLaunch} />;
+        return <Confirmation onLaunch={navigation.handleLaunch} />;
     }
   };
 
@@ -177,12 +72,12 @@ const VendorProfileSetup = () => {
               {renderStep()}
               <div className="flex justify-between mt-6">
                 {currentStep !== "template" && (
-                  <Button variant="outline" onClick={handleBack}>
+                  <Button variant="outline" onClick={navigation.handleBack}>
                     Back
                   </Button>
                 )}
                 {currentStep !== "confirmation" && (
-                  <Button onClick={handleNext} className="ml-auto">
+                  <Button onClick={navigation.handleNext} className="ml-auto">
                     Next
                   </Button>
                 )}
@@ -195,8 +90,8 @@ const VendorProfileSetup = () => {
           <div className="sticky top-20">
             <TemplatePreviewPane
               templateStyle={templateData.style_config}
-              displayStyle={selectedDisplay}
-              bentoStyle={selectedBento}
+              displayStyle={state.selectedDisplay}
+              bentoStyle={state.selectedBento}
             />
           </div>
         )}
