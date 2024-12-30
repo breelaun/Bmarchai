@@ -4,6 +4,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import ProfileHeader from "@/components/profile/ProfileHeader";
+import ProfileBlogSection from "@/components/profile/ProfileBlogSection";
 import LogoutButton from "@/components/profile/LogoutButton";
 import type { ProfileData } from "@/components/profile/types";
 
@@ -53,10 +54,12 @@ const Profile = () => {
         <>
           <ProfileHeader profile={profile} />
           
-          <div className="container max-w-4xl mx-auto py-8 px-4">
-            <div className="flex justify-end">
+          <div className="container max-w-7xl mx-auto py-8 px-4">
+            <div className="flex justify-end mb-8">
               <LogoutButton />
             </div>
+            
+            <ProfileBlogSection userId={profile.id} />
           </div>
         </>
       )}
