@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 
 const Register = () => {
   const session = useSession();
@@ -28,6 +29,12 @@ const Register = () => {
     data: {
       is_vendor: isVendor,
     },
+  };
+
+  // Add custom email validation
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
   return (
@@ -73,6 +80,12 @@ const Register = () => {
             showLinks={true}
             redirectTo={window.location.origin}
             additionalData={handleSignUp.data}
+            onSuccess={() => {
+              toast.success("Registration successful!");
+            }}
+            onError={(error) => {
+              toast.error(error.message || "Registration failed");
+            }}
           />
         </CardContent>
       </Card>
