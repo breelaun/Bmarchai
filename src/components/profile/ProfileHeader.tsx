@@ -50,7 +50,6 @@ const ProfileHeader = ({ username, fullName, avatarUrl, defaultBannerUrl }: Prof
 
       setBannerUrl(publicUrl);
       
-      // Update the profile with the new banner URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ default_banner_url: publicUrl })
