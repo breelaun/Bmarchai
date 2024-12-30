@@ -46,7 +46,24 @@ const Profile = () => {
         return;
       }
 
-      setProfile(data);
+      // Validate and transform the gender value
+      const validatedGender = data.gender === 'Male' || data.gender === 'Female' 
+        ? data.gender as 'Male' | 'Female'
+        : null;
+
+      // Create a properly typed profile object
+      const typedProfile: ProfileData = {
+        username: data.username || '',
+        full_name: data.full_name || '',
+        avatar_url: data.avatar_url,
+        is_vendor: data.is_vendor || false,
+        date_of_birth: data.date_of_birth || '',
+        country: data.country || undefined,
+        gender: validatedGender,
+        phone_number: data.phone_number || undefined,
+      };
+
+      setProfile(typedProfile);
       setLoading(false);
     };
 
