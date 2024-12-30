@@ -53,7 +53,7 @@ export function useVendorSetup() {
           bento_style: selectedBento,
         },
         business_description: aboutMe,
-        social_links: socialLinks as Record<string, string>,
+        social_links: socialLinks, // Now TypeScript knows this is safe
       };
 
       const { error: profileError } = await supabase
