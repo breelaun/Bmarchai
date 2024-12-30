@@ -2,17 +2,20 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 const displayStyles = [
-  { id: "default", name: "Default Display", description: "Template-based product grid or list" },
-  { id: "thumbnail", name: "Thumbnail & Price", description: "Images and prices side by side" },
-  { id: "list", name: "Name & Price Only", description: "Simple list format" },
+  { id: "minimal", name: "Minimal", description: "Clean, simple product display" },
+  { id: "detailed", name: "Detailed", description: "Comprehensive product information" },
+  { id: "compact", name: "Compact", description: "Space-efficient product display" },
 ];
 
 interface DisplayStyleSelectionProps {
   selectedDisplay: string;
-  setSelectedDisplay: (value: string) => void;
+  setSelectedDisplay: (style: string) => void;
 }
 
-const DisplayStyleSelection = ({ selectedDisplay, setSelectedDisplay }: DisplayStyleSelectionProps) => (
+const DisplayStyleSelection = ({
+  selectedDisplay,
+  setSelectedDisplay,
+}: DisplayStyleSelectionProps) => (
   <div className="space-y-6">
     <h2 className="text-2xl font-heading font-semibold">Choose Display Style</h2>
     <RadioGroup value={selectedDisplay} onValueChange={setSelectedDisplay}>

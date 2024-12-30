@@ -7,8 +7,10 @@ import DisplayStyleSelection from "./setup/DisplayStyleSelection";
 import BentoOptions from "./setup/BentoOptions";
 import AdditionalSettings from "./setup/AdditionalSettings";
 import Confirmation from "./setup/Confirmation";
+import TemplatePreviewPane from "./setup/TemplatePreviewPane";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 type SetupStep = "template" | "display" | "bento" | "additional" | "confirmation";
 
@@ -22,6 +24,22 @@ const VendorProfileSetup = () => {
   const [aboutMe, setAboutMe] = useState("");
   const [enableReviews, setEnableReviews] = useState(true);
   const [enableFeatured, setEnableFeatured] = useState(true);
+
+  const { data: templateData } = useQuery({
+    queryKey: ["vendorTemplate", selectedTemplate],
+    queryFn: async () => {
+      if (!selectedTemplate) return null;
+      const { data, error } = await supabase
+        .from("vendor_templates")
+        .select("*")
+        .eq("id", selectedTemplate)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTemplate,
+  });
 
   const handleNext = () => {
     if (currentStep === "template" && !selectedTemplate) {
@@ -118,28 +136,42 @@ const VendorProfileSetup = () => {
   };
 
   return (
-    <Card className="max-w-3xl mx-auto">
-      <CardHeader>
-        <CardTitle>Vendor Profile Setup</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          {renderStep()}
-          <div className="flex justify-between mt-6">
-            {currentStep !== "template" && (
-              <Button variant="outline" onClick={handleBack}>
-                Back
-              </Button>
-            )}
-            {currentStep !== "confirmation" && (
-              <Button onClick={handleNext} className="ml-auto">
-                Next
-              </Button>
-            )}
+    <div className="max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Vendor Profile Setup</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {renderStep()}
+              <div className="flex justify-between mt-6">
+                {currentStep !== "template" && (
+                  <Button variant="outline" onClick={handleBack}>
+                    Back
+                  </Button>
+                )}
+                {currentStep !== "confirmation" && (
+                  <Button onClick={handleNext} className="ml-auto">
+                    Next
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {templateData && (
+          <div className="sticky top-20">
+            <TemplatePreviewPane
+              templateStyle={templateData.style_config}
+              displayStyle={selectedDisplay}
+              bentoStyle={selectedBento}
+            />
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 };
 
