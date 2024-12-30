@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, User } from "lucide-react";
+import { Menu, X, Store, User, LogIn } from "lucide-react";
+import { useSession } from "@supabase/auth-helpers-react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,12 +12,12 @@ import {
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const session = useSession();
 
   const menuItems = [
     { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
     { name: "CRM", path: "/crm" },
-    { name: "Profile", path: "/profile" },
     { name: "Blogs", path: "/blogs" },
     { name: "Streaming", path: "/streaming" },
     { name: "Contact", path: "/contact" },
@@ -26,6 +27,15 @@ const Navigation = () => {
     { name: "All Vendors", path: "/vendors", icon: <Store className="h-4 w-4 mr-2" /> },
     { name: "Vendor Profile", path: "/vendors/profile", icon: <User className="h-4 w-4 mr-2" /> },
   ];
+
+  const authItems = session
+    ? [
+        { name: "Profile", path: "/profile", icon: <User className="h-4 w-4" /> },
+      ]
+    : [
+        { name: "Login", path: "/login", icon: <LogIn className="h-4 w-4" /> },
+        { name: "Register", path: "/register", icon: <User className="h-4 w-4" /> },
+      ];
 
   return (
     <nav className="fixed top-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 border-b border-border">
@@ -69,6 +79,16 @@ const Navigation = () => {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
+            {authItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+              >
+                {item.icon}
+                {item.name}
+              </Link>
+            ))}
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,12 +117,22 @@ const Navigation = () => {
                 {item.name}
               </Link>
             ))}
-            {/* Mobile Vendor Submenu */}
             {vendorSubmenu.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
                 className="flex items-center px-3 py-2 text-foreground hover:text-primary transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                {item.icon}
+                {item.name}
+              </Link>
+            ))}
+            {authItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="flex items-center gap-2 px-3 py-2 text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 {item.icon}
