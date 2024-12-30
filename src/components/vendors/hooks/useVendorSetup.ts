@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { SetupStep, VendorSetupState, SocialLinks } from "../types/vendor-setup";
+import { SetupStep, VendorSetupState, SocialLinks, VendorProfileInsert } from "../types/vendor-setup";
 
 export function useVendorSetup() {
   const navigate = useNavigate();
@@ -45,18 +45,20 @@ export function useVendorSetup() {
         return;
       }
 
+      const profileData: VendorProfileInsert = {
+        id: user.id,
+        template_id: selectedTemplate,
+        customizations: {
+          display_style: selectedDisplay,
+          bento_style: selectedBento,
+        },
+        business_description: aboutMe,
+        social_links: socialLinks as Record<string, string>,
+      };
+
       const { error: profileError } = await supabase
         .from("vendor_profiles")
-        .insert({
-          id: user.id,
-          template_id: selectedTemplate,
-          customizations: {
-            display_style: selectedDisplay,
-            bento_style: selectedBento,
-          },
-          business_description: aboutMe,
-          social_links: socialLinks,
-        });
+        .insert(profileData);
 
       if (profileError) throw profileError;
 
