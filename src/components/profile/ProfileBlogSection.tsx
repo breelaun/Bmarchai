@@ -36,7 +36,7 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
 
   return (
     <div className="w-full bg-[#18181b]">
-      <div className="max-w-7xl mx-auto p-8">
+      <div className="max-w-[calc(100vw-32px)] mx-auto p-8">
         {/* Categories Header */}
         <div className="flex items-center gap-8 mb-8">
           <h2 className="text-2xl font-bold">Categories</h2>
