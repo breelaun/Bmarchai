@@ -4,18 +4,9 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import ProfileForm from "@/components/profile/ProfileForm";
+import ProfileHeader from "@/components/profile/ProfileHeader";
 import LogoutButton from "@/components/profile/LogoutButton";
-
-interface ProfileData {
-  username: string;
-  full_name: string;
-  avatar_url: string | null;
-  is_vendor: boolean;
-  date_of_birth: string;
-  country?: string;
-  gender?: 'Male' | 'Female' | null;
-  phone_number?: string;
-}
+import type { ProfileData } from "@/components/profile/types";
 
 const Profile = () => {
   const session = useSession();
@@ -46,24 +37,7 @@ const Profile = () => {
         return;
       }
 
-      // Validate and transform the gender value
-      const validatedGender = data.gender === 'Male' || data.gender === 'Female' 
-        ? data.gender as 'Male' | 'Female'
-        : null;
-
-      // Create a properly typed profile object
-      const typedProfile: ProfileData = {
-        username: data.username || '',
-        full_name: data.full_name || '',
-        avatar_url: data.avatar_url,
-        is_vendor: data.is_vendor || false,
-        date_of_birth: data.date_of_birth || '',
-        country: data.country || undefined,
-        gender: validatedGender,
-        phone_number: data.phone_number || undefined,
-      };
-
-      setProfile(typedProfile);
+      setProfile(data);
       setLoading(false);
     };
 
@@ -75,17 +49,26 @@ const Profile = () => {
   }
 
   return (
-    <div className="container max-w-2xl mx-auto py-8">
-      <div className="bg-card rounded-lg shadow-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Profile Settings</h1>
-          <LogoutButton />
-        </div>
-
-        {profile && session?.user?.id && (
-          <ProfileForm initialProfile={profile} userId={session.user.id} />
-        )}
-      </div>
+    <div className="min-h-screen bg-background">
+      {profile && (
+        <>
+          <ProfileHeader
+            username={profile.username || ""}
+            fullName={profile.full_name || ""}
+            avatarUrl={profile.avatar_url}
+          />
+          
+          <div className="container max-w-4xl mx-auto py-8 px-4">
+            <div className="flex justify-end mb-6">
+              <LogoutButton />
+            </div>
+            
+            <div className="bg-card rounded-lg shadow-lg p-6">
+              <ProfileForm initialProfile={profile} userId={session.user.id} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

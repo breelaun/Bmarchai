@@ -13,6 +13,17 @@ export const initializeStorage = async () => {
       console.error('Error creating bucket:', error);
     }
   }
+
+  if (!buckets?.find(bucket => bucket.name === 'profiles')) {
+    const { data, error } = await supabase.storage.createBucket('profiles', {
+      public: true,
+      fileSizeLimit: 5000000, // 5MB
+    });
+    
+    if (error) {
+      console.error('Error creating bucket:', error);
+    }
+  }
 };
 
 // Initialize storage when the app starts
