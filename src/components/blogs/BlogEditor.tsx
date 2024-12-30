@@ -62,6 +62,7 @@ const BlogEditor = () => {
         is_private: values.is_private,
         image_url: values.image_url,
         author: session.user.email || "Anonymous",
+        slug: values.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), // Add a default slug
       };
 
       const { error } = await supabase.from("blogs").insert(blogData);
