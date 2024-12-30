@@ -22,6 +22,19 @@ interface TemplateStyleConfig {
   font: string;
 }
 
+// Type guard to validate the style config structure
+function isTemplateStyleConfig(obj: unknown): obj is TemplateStyleConfig {
+  if (typeof obj !== 'object' || obj === null) return false;
+  
+  const candidate = obj as any;
+  return (
+    candidate.colors &&
+    typeof candidate.colors.primary === 'string' &&
+    typeof candidate.colors.secondary === 'string' &&
+    typeof candidate.font === 'string'
+  );
+}
+
 const VendorProfileSetup = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<SetupStep>("template");
@@ -45,11 +58,14 @@ const VendorProfileSetup = () => {
       
       if (error) throw error;
       
-      // Ensure the style_config matches our expected type
-      const styleConfig = data.style_config as TemplateStyleConfig;
+      // Validate the style_config
+      if (!isTemplateStyleConfig(data.style_config)) {
+        throw new Error("Invalid template style configuration");
+      }
+      
       return {
         ...data,
-        style_config: styleConfig,
+        style_config: data.style_config as TemplateStyleConfig,
       };
     },
     enabled: !!selectedTemplate,
