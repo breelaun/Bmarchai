@@ -21,10 +21,22 @@ const Register = () => {
         <h1 className="text-2xl font-bold mb-6 text-center">Create an Account</h1>
         <Auth
           supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
+          appearance={{ 
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: 'rgb(var(--color-primary))',
+                  brandAccent: 'rgb(var(--color-primary))',
+                }
+              }
+            }
+          }}
           theme="light"
           providers={[]}
           view="sign_up"
+          showLinks={true}
+          magicLink={true}
         />
       </div>
     </div>
