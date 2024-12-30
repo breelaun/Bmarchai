@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useSession, AuthChangeEvent } from "@supabase/auth-helpers-react";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,15 +26,12 @@ const Register = () => {
     }
   }, [session, navigate, isVendor]);
 
-  // Listen for auth state changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       console.log('Auth state changed:', event, session); // Debug log
-      if (event === 'SIGNED_UP') {
-        console.log('User signed up:', session?.user?.id);
+      if (event === 'SIGNED_UP' || event === 'SIGNED_IN') {
+        console.log('User signed up/in:', session?.user?.id);
         toast.success("Account created successfully!");
-      } else if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user?.id);
         if (isVendor) {
           navigate("/vendors/new");
         } else {
