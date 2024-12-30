@@ -7,11 +7,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
 
-interface Template {
-  id: number;
-  name: string;
-  description: string;
+type VendorTemplate = Database['public']['Tables']['vendor_templates']['Row'] & {
   style_config: {
     colors: {
       primary: string;
@@ -23,10 +21,10 @@ interface Template {
     layout: string;
     sections: string[];
   };
-}
+};
 
 interface TemplatePreviewProps {
-  template: Template;
+  template: VendorTemplate;
   onClose: () => void;
 }
 

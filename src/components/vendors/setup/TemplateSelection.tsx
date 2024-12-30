@@ -8,11 +8,9 @@ import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import TemplatePreview from "./TemplatePreview";
+import { Database } from "@/integrations/supabase/types";
 
-interface Template {
-  id: number;
-  name: string;
-  description: string;
+type VendorTemplate = Database['public']['Tables']['vendor_templates']['Row'] & {
   style_config: {
     colors: {
       primary: string;
@@ -24,7 +22,7 @@ interface Template {
     layout: string;
     sections: string[];
   };
-}
+};
 
 interface TemplateSelectionProps {
   selectedTemplate: number | null;
@@ -32,7 +30,7 @@ interface TemplateSelectionProps {
 }
 
 const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSelectionProps) => {
-  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<VendorTemplate | null>(null);
 
   const { data: templates, isLoading } = useQuery({
     queryKey: ["vendorTemplates"],
@@ -43,7 +41,7 @@ const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSe
         .order("id");
       
       if (error) throw error;
-      return data as Template[];
+      return data as VendorTemplate[];
     },
   });
 

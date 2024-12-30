@@ -2,7 +2,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createClient } from "@supabase/supabase-js";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
@@ -19,40 +18,44 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/auth/Profile";
 import { supabase } from "./integrations/supabase/client";
+import { useState } from "react";
 
-const queryClient = new QueryClient();
+const App = () => {
+  // Create a new QueryClient instance for each app instance
+  const [queryClient] = useState(() => new QueryClient());
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <SessionContextProvider supabaseClient={supabase}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <div className="min-h-screen flex flex-col bg-background text-foreground">
-            <Navigation />
-            <main className="flex-grow pt-16">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/vendors" element={<Vendors />} />
-                <Route path="/vendors/new" element={<VendorProfile />} />
-                <Route path="/vendors/:id" element={<VendorProfile />} />
-                <Route path="/blogs" element={<BlogsPage />} />
-                <Route path="/blogs/new" element={<CreateBlog />} />
-                <Route path="/blogs/category/:category" element={<BlogCategory />} />
-                <Route path="/blogs/tags/:tag" element={<BlogTag />} />
-                <Route path="/blogs/:category/:slug" element={<BlogPost />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/profile" element={<Profile />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </BrowserRouter>
-      </TooltipProvider>
-    </SessionContextProvider>
-  </QueryClientProvider>
-);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabase}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <div className="min-h-screen flex flex-col bg-background text-foreground">
+              <Navigation />
+              <main className="flex-grow pt-16">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/vendors" element={<Vendors />} />
+                  <Route path="/vendors/new" element={<VendorProfile />} />
+                  <Route path="/vendors/:id" element={<VendorProfile />} />
+                  <Route path="/blogs" element={<BlogsPage />} />
+                  <Route path="/blogs/new" element={<CreateBlog />} />
+                  <Route path="/blogs/category/:category" element={<BlogCategory />} />
+                  <Route path="/blogs/tags/:tag" element={<BlogTag />} />
+                  <Route path="/blogs/:category/:slug" element={<BlogPost />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </BrowserRouter>
+        </TooltipProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
