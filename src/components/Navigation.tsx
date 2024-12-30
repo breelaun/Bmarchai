@@ -4,13 +4,9 @@ import { Menu, X, Store, User, LogIn, LogOut } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+import NavigationLinks from "./navigation/NavigationLinks";
+import NavigationMenuItems from "./navigation/NavigationMenuItems";
+import MobileMenu from "./navigation/MobileMenu";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -78,53 +74,11 @@ const Navigation = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex md:items-center md:space-x-8">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Vendors</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="w-48 p-2">
-                      {vendorSubmenu.map((item) => (
-                        <Link
-                          key={item.name}
-                          to={item.path}
-                          className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent"
-                        >
-                          {item.icon}
-                          {item.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Profile</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="w-48 p-2">
-                      {profileSubmenu.map((item) => (
-                        <button
-                          key={item.name}
-                          onClick={item.onClick}
-                          className="flex items-center w-full px-3 py-2 text-sm rounded-md hover:bg-accent text-left"
-                        >
-                          {item.icon}
-                          {item.name}
-                        </button>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+            <NavigationLinks links={menuItems} />
+            <NavigationMenuItems
+              vendorSubmenu={vendorSubmenu}
+              profileSubmenu={profileSubmenu}
+            />
           </div>
 
           {/* Mobile Menu Button */}
@@ -140,46 +94,13 @@ const Navigation = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-background border-b border-border">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
-            {vendorSubmenu.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="flex items-center px-3 py-2 text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.icon}
-                {item.name}
-              </Link>
-            ))}
-            {profileSubmenu.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => {
-                  item.onClick();
-                  setIsOpen(false);
-                }}
-                className="flex items-center w-full px-3 py-2 text-foreground hover:text-primary transition-colors"
-              >
-                {item.icon}
-                {item.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <MobileMenu
+        isOpen={isOpen}
+        menuItems={menuItems}
+        vendorSubmenu={vendorSubmenu}
+        profileSubmenu={profileSubmenu}
+        onClose={() => setIsOpen(false)}
+      />
     </nav>
   );
 };
