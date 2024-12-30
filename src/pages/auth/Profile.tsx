@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import ProfileForm from "@/components/profile/ProfileForm";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import LogoutButton from "@/components/profile/LogoutButton";
 import type { ProfileData } from "@/components/profile/types";
@@ -55,12 +54,8 @@ const Profile = () => {
           <ProfileHeader profile={profile} />
           
           <div className="container max-w-4xl mx-auto py-8 px-4">
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-end">
               <LogoutButton />
-            </div>
-            
-            <div className="bg-card rounded-lg shadow-lg p-6">
-              <ProfileForm initialProfile={profile} userId={session.user.id} />
             </div>
           </div>
         </>
