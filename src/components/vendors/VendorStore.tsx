@@ -19,10 +19,13 @@ interface Product {
 }
 
 const VendorStore = ({ vendorId }: VendorStoreProps) => {
+  // Only proceed with the query if vendorId is a valid UUID
+  const isValidUUID = vendorId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vendorId);
+
   const { data: products, isLoading } = useQuery({
     queryKey: ["vendorProducts", vendorId],
     queryFn: async () => {
-      if (!vendorId) return [];
+      if (!isValidUUID) return [];
       const { data, error } = await supabase
         .from("products")
         .select("*")
@@ -32,7 +35,7 @@ const VendorStore = ({ vendorId }: VendorStoreProps) => {
       if (error) throw error;
       return data as Product[];
     },
-    enabled: !!vendorId,
+    enabled: !!isValidUUID,
   });
 
   const formatPrice = (price: number) => {
@@ -42,7 +45,7 @@ const VendorStore = ({ vendorId }: VendorStoreProps) => {
     }).format(price);
   };
 
-  if (!vendorId) {
+  if (!isValidUUID) {
     return (
       <Card>
         <CardHeader>
