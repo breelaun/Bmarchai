@@ -1,4 +1,3 @@
-import { useForm } from "react-hook-form";
 import { BlogFormData } from "@/types/blog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,27 +13,15 @@ import BlogMetadata from "./BlogMetadata";
 import BlogScheduler from "./BlogScheduler";
 import BlogImageUpload from "./BlogImageUpload";
 import { Button } from "@/components/ui/button";
+import { UseFormReturn } from "react-hook-form";
 
 interface BlogEditorFormProps {
+  form: UseFormReturn<BlogFormData>;
   onSave: (status: "draft" | "published" | "scheduled") => void;
   isSubmitting: boolean;
 }
 
-const BlogEditorForm = ({ onSave, isSubmitting }: BlogEditorFormProps) => {
-  const form = useForm<BlogFormData>({
-    defaultValues: {
-      title: "",
-      content: "",
-      excerpt: "",
-      category: "",
-      tags: "",
-      status: "draft",
-      language: "en",
-      font_family: "sans",
-      is_private: false,
-    },
-  });
-
+const BlogEditorForm = ({ form, onSave, isSubmitting }: BlogEditorFormProps) => {
   return (
     <Form {...form}>
       <form className="space-y-8">

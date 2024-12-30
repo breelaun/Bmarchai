@@ -1,19 +1,19 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@supabase/auth-helpers-react";
+import { useSession } from "@supabase/auth-helpers-react";
 import BlogEditor from "@/components/blogs/BlogEditor";
 
 const CreateBlog = () => {
-  const auth = useAuth();
+  const session = useSession();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!auth?.user?.id) {
+    if (!session?.user?.id) {
       navigate("/login");
     }
-  }, [auth?.user, navigate]);
+  }, [session?.user, navigate]);
 
-  if (!auth?.user?.id) {
+  if (!session?.user?.id) {
     return null;
   }
 
