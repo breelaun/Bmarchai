@@ -37,6 +37,7 @@ const Register = () => {
           view="sign_up"
           showLinks={true}
           magicLink={true}
+          redirectTo={window.location.origin}
         />
       </div>
     </div>

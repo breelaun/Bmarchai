@@ -34,9 +34,10 @@ const Login = () => {
           }}
           theme="light"
           providers={[]}
-          view="magic_link"
+          view="sign_in"
           showLinks={true}
           magicLink={true}
+          redirectTo={window.location.origin}
         />
       </div>
     </div>
