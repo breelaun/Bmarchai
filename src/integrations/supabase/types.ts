@@ -128,28 +128,40 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country: string | null
           created_at: string
+          date_of_birth: string
           full_name: string | null
+          gender: string | null
           id: string
           is_vendor: boolean | null
+          phone_number: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
+          date_of_birth?: string
           full_name?: string | null
+          gender?: string | null
           id: string
           is_vendor?: boolean | null
+          phone_number?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
+          date_of_birth?: string
           full_name?: string | null
+          gender?: string | null
           id?: string
           is_vendor?: boolean | null
+          phone_number?: string | null
           updated_at?: string
           username?: string | null
         }
