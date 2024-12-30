@@ -102,6 +102,41 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_usage: {
+        Row: {
+          action: string
+          created_at: string
+          id: number
+          metadata: Json | null
+          tool_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: number
+          metadata?: Json | null
+          tool_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: number
+          metadata?: Json | null
+          tool_name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
