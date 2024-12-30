@@ -28,7 +28,7 @@ const Register = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
       console.log('Auth state changed:', event); // Debug log
-      if (event === 'SIGNED_UP' || event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN') {
         toast.success("Account created successfully!");
         if (isVendor) {
           navigate("/vendors/new");
