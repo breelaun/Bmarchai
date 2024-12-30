@@ -27,6 +27,7 @@ const Register = () => {
   // Listen for auth state changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session); // Debug log
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user?.id);
         if (isVendor) {
@@ -86,10 +87,7 @@ const Register = () => {
             providers={[]}
             view="sign_up"
             showLinks={true}
-            redirectTo={window.location.origin}
-            additionalData={{
-              is_vendor: isVendor
-            }}
+            redirectTo="https://6f714e32-18dd-46c3-aa52-8aaead7bb41d.lovableproject.com"
           />
         </CardContent>
       </Card>
