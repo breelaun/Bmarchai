@@ -56,7 +56,7 @@ const Profile = () => {
     if (!profile || !session?.user?.id) return;
 
     try {
-      const { error } = await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
         .update({
           username: profile.username,
@@ -65,7 +65,21 @@ const Profile = () => {
         })
         .eq("id", session.user.id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // If user becomes a vendor, create vendor profile
+      if (profile.is_vendor) {
+        const { error: vendorError } = await supabase
+          .from("vendor_profiles")
+          .upsert({
+            id: session.user.id,
+          });
+
+        if (vendorError) throw vendorError;
+
+        // Redirect to vendor setup if they just became a vendor
+        navigate("/vendors/new");
+      }
 
       toast({
         title: "Success",
