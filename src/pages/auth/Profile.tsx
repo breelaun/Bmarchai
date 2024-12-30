@@ -52,12 +52,7 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       {profile && (
         <>
-          <ProfileHeader
-            username={profile.username || ""}
-            fullName={profile.full_name || ""}
-            avatarUrl={profile.avatar_url}
-            defaultBannerUrl={profile.default_banner_url}
-          />
+          <ProfileHeader profile={profile} />
           
           <div className="container max-w-4xl mx-auto py-8 px-4">
             <div className="flex justify-end mb-6">
