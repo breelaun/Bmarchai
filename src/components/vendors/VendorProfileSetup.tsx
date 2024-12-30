@@ -14,6 +14,14 @@ import { useQuery } from "@tanstack/react-query";
 
 type SetupStep = "template" | "display" | "bento" | "additional" | "confirmation";
 
+interface TemplateStyleConfig {
+  colors: {
+    primary: string;
+    secondary: string;
+  };
+  font: string;
+}
+
 const VendorProfileSetup = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<SetupStep>("template");
@@ -36,7 +44,13 @@ const VendorProfileSetup = () => {
         .single();
       
       if (error) throw error;
-      return data;
+      
+      // Ensure the style_config matches our expected type
+      const styleConfig = data.style_config as TemplateStyleConfig;
+      return {
+        ...data,
+        style_config: styleConfig,
+      };
     },
     enabled: !!selectedTemplate,
   });
