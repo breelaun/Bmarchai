@@ -32,7 +32,10 @@ const Register = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="vendor-mode" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <Label 
+              htmlFor="vendor-mode" 
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
               Register as a Vendor
             </Label>
             <Switch
@@ -66,10 +69,6 @@ const Register = () => {
             view="sign_up"
             showLinks={true}
             redirectTo={window.location.origin}
-            onError={(error) => {
-              toast.error(error.message);
-              console.error("Auth error:", error);
-            }}
             additionalData={{
               is_vendor: isVendor
             }}
