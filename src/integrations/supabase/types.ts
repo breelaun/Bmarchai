@@ -16,12 +16,19 @@ export type Database = {
           content: string
           created_at: string
           excerpt: string
+          font_family: string | null
           id: number
           image_url: string | null
+          is_private: boolean | null
+          language: string | null
+          reading_time: number | null
+          scheduled_for: string | null
           slug: string
+          status: string
           tags: string[] | null
           title: string
           updated_at: string
+          view_count: number | null
         }
         Insert: {
           author: string
@@ -29,12 +36,19 @@ export type Database = {
           content: string
           created_at?: string
           excerpt: string
+          font_family?: string | null
           id?: number
           image_url?: string | null
+          is_private?: boolean | null
+          language?: string | null
+          reading_time?: number | null
+          scheduled_for?: string | null
           slug: string
+          status?: string
           tags?: string[] | null
           title: string
           updated_at?: string
+          view_count?: number | null
         }
         Update: {
           author?: string
@@ -42,12 +56,19 @@ export type Database = {
           content?: string
           created_at?: string
           excerpt?: string
+          font_family?: string | null
           id?: number
           image_url?: string | null
+          is_private?: boolean | null
+          language?: string | null
+          reading_time?: number | null
+          scheduled_for?: string | null
           slug?: string
+          status?: string
           tags?: string[] | null
           title?: string
           updated_at?: string
+          view_count?: number | null
         }
         Relationships: []
       }

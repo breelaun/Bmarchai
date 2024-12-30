@@ -12,6 +12,7 @@ import BlogsPage from "./pages/blogs";
 import BlogCategory from "./pages/blogs/category/[category]";
 import BlogTag from "./pages/blogs/tags/[tag]";
 import BlogPost from "./pages/blogs/[id]";
+import CreateBlog from "./pages/blogs/new";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/vendors/new" element={<VendorProfile />} />
               <Route path="/vendors/:id" element={<VendorProfile />} />
               <Route path="/blogs" element={<BlogsPage />} />
+              <Route path="/blogs/new" element={<CreateBlog />} />
               <Route path="/blogs/category/:category" element={<BlogCategory />} />
               <Route path="/blogs/tags/:tag" element={<BlogTag />} />
               <Route path="/blogs/:category/:slug" element={<BlogPost />} />
