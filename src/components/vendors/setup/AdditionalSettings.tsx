@@ -1,16 +1,12 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-
-interface SocialLinks {
-  facebook: string;
-  instagram: string;
-  twitter: string;
-}
+import { Dispatch, SetStateAction } from "react";
+import { SocialLinks } from "../types/vendor-setup";
 
 interface AdditionalSettingsProps {
   socialLinks: SocialLinks;
-  setSocialLinks: (links: SocialLinks) => void;
+  setSocialLinks: Dispatch<SetStateAction<SocialLinks>>;
   aboutMe: string;
   setAboutMe: (value: string) => void;
   enableReviews: boolean;
@@ -38,17 +34,17 @@ const AdditionalSettings = ({
           <Input
             placeholder="Facebook URL"
             value={socialLinks.facebook}
-            onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
+            onChange={(e) => setSocialLinks(prev => ({ ...prev, facebook: e.target.value }))}
           />
           <Input
             placeholder="Instagram URL"
             value={socialLinks.instagram}
-            onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+            onChange={(e) => setSocialLinks(prev => ({ ...prev, instagram: e.target.value }))}
           />
           <Input
             placeholder="Twitter URL"
             value={socialLinks.twitter}
-            onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
+            onChange={(e) => setSocialLinks(prev => ({ ...prev, twitter: e.target.value }))}
           />
         </div>
       </div>
