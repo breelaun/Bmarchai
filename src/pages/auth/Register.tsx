@@ -16,7 +16,6 @@ const Register = () => {
 
   useEffect(() => {
     if (session) {
-      // If user is registered as a vendor, redirect them to vendor setup
       if (isVendor) {
         navigate("/vendors/new");
       } else {
@@ -67,10 +66,12 @@ const Register = () => {
             view="sign_up"
             showLinks={true}
             redirectTo={window.location.origin}
+            onError={(error) => {
+              toast.error(error.message);
+              console.error("Auth error:", error);
+            }}
             additionalData={{
-              data: {
-                is_vendor: isVendor,
-              }
+              is_vendor: isVendor
             }}
           />
         </CardContent>
