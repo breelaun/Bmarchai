@@ -18,12 +18,11 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/auth/Profile";
 import { supabase } from "./integrations/supabase/client";
-import { useState } from "react";
+
+// Create a new QueryClient instance
+const queryClient = new QueryClient();
 
 const App = () => {
-  // Create a new QueryClient instance for each app instance
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
     <QueryClientProvider client={queryClient}>
       <SessionContextProvider supabaseClient={supabase}>
