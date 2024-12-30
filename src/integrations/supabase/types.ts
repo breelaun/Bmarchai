@@ -132,11 +132,14 @@ export type Database = {
           created_at: string
           date_of_birth: string
           default_banner_url: string | null
+          email_notifications: boolean | null
           full_name: string | null
           gender: string | null
           id: string
           is_vendor: boolean | null
           phone_number: string | null
+          sms_notifications: boolean | null
+          two_factor_enabled: boolean | null
           updated_at: string
           username: string | null
         }
@@ -146,11 +149,14 @@ export type Database = {
           created_at?: string
           date_of_birth?: string
           default_banner_url?: string | null
+          email_notifications?: boolean | null
           full_name?: string | null
           gender?: string | null
           id: string
           is_vendor?: boolean | null
           phone_number?: string | null
+          sms_notifications?: boolean | null
+          two_factor_enabled?: boolean | null
           updated_at?: string
           username?: string | null
         }
@@ -160,11 +166,14 @@ export type Database = {
           created_at?: string
           date_of_birth?: string
           default_banner_url?: string | null
+          email_notifications?: boolean | null
           full_name?: string | null
           gender?: string | null
           id?: string
           is_vendor?: boolean | null
           phone_number?: string | null
+          sms_notifications?: boolean | null
+          two_factor_enabled?: boolean | null
           updated_at?: string
           username?: string | null
         }
