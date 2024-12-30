@@ -71,7 +71,7 @@ const ProfileFormFields = ({ profile, setProfile }: ProfileFormFieldsProps) => {
         <Select
           value={profile.gender || ""}
           onValueChange={(value) =>
-            setProfile({ ...profile, gender: value as 'Male' | 'Female' | null })
+            setProfile({ ...profile, gender: value })
           }
         >
           <SelectTrigger>
@@ -80,6 +80,8 @@ const ProfileFormFields = ({ profile, setProfile }: ProfileFormFieldsProps) => {
           <SelectContent>
             <SelectItem value="Male">Male</SelectItem>
             <SelectItem value="Female">Female</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+            <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
           </SelectContent>
         </Select>
       </div>
