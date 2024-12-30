@@ -25,18 +25,6 @@ const Register = () => {
     }
   }, [session, navigate, isVendor]);
 
-  const handleSignUp = {
-    data: {
-      is_vendor: isVendor,
-    },
-  };
-
-  // Add custom email validation
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   return (
     <div className="container max-w-md mx-auto py-8">
       <Card>
@@ -79,12 +67,10 @@ const Register = () => {
             view="sign_up"
             showLinks={true}
             redirectTo={window.location.origin}
-            additionalData={handleSignUp.data}
-            onSuccess={() => {
-              toast.success("Registration successful!");
-            }}
-            onError={(error) => {
-              toast.error(error.message || "Registration failed");
+            additionalData={{
+              data: {
+                is_vendor: isVendor,
+              }
             }}
           />
         </CardContent>
