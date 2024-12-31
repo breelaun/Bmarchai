@@ -14,6 +14,13 @@ interface Product {
   image_url: string | null;
   category: string | null;
   inventory_count: number | null;
+  vendor_profiles: {
+    business_name: string | null;
+    profiles: {
+      username: string | null;
+      is_vendor: boolean;
+    }
+  }
 }
 
 const Shop = () => {
@@ -25,7 +32,16 @@ const Shop = () => {
       console.log("Fetching products...");
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select(`
+          *,
+          vendor_profiles (
+            business_name,
+            profiles (
+              username,
+              is_vendor
+            )
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -125,12 +141,20 @@ const Shop = () => {
               <p className="text-muted-foreground text-sm mb-2 line-clamp-2">
                 {product.description}
               </p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-2">
                 <span className="font-semibold">
                   {formatPrice(product.price)}
                 </span>
                 {product.inventory_count === 0 && (
                   <span className="text-sm text-destructive">Out of stock</span>
+                )}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Sold by: {product.vendor_profiles?.business_name || product.vendor_profiles?.profiles?.username || "Unknown Vendor"}
+                {product.vendor_profiles?.profiles?.is_vendor && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                    Verified Vendor
+                  </span>
                 )}
               </div>
             </CardContent>
