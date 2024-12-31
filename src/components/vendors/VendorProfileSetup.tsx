@@ -1,131 +1,94 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Play } from "lucide-react";
 import TemplateSelection from "./setup/TemplateSelection";
 import DisplayStyleSelection from "./setup/DisplayStyleSelection";
 import BentoOptions from "./setup/BentoOptions";
 import AdditionalSettings from "./setup/AdditionalSettings";
 import Confirmation from "./setup/Confirmation";
 import TemplatePreviewPane from "./setup/TemplatePreviewPane";
-import { useVendorSetup } from "./hooks/useVendorSetup";
 import { useTemplateData } from "./hooks/useTemplateData";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { SocialLinks } from "./types/vendor-setup";
 
 const VendorProfileSetup = () => {
-  const navigate = useNavigate();
-  const {
-    currentStep,
-    state,
-    setters,
-    navigation,
-  } = useVendorSetup();
+  const [setupStarted, setSetupStarted] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
+  const [displayStyle, setDisplayStyle] = useState("minimal");
+  const [bentoStyle, setBentoStyle] = useState("grid");
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>({
+    facebook: "",
+    instagram: "",
+    twitter: "",
+  });
+  const [aboutMe, setAboutMe] = useState("");
+  const [enableReviews, setEnableReviews] = useState(true);
+  const [enableFeatured, setEnableFeatured] = useState(true);
 
-  const { data: templateData } = useTemplateData(state.selectedTemplate);
+  const { data: templateData } = useTemplateData(selectedTemplate);
 
-  // Check if user is authorized to access this page
-  useEffect(() => {
-    const checkVendorStatus = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error("Please sign in to set up your vendor profile");
-        navigate("/login");
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_vendor')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile?.is_vendor) {
-        toast.error("You need to be registered as a vendor to access this page");
-        navigate("/");
-      }
-    };
-
-    checkVendorStatus();
-  }, [navigate]);
-
-  const renderStep = () => {
-    switch (currentStep) {
-      case "template":
-        return (
-          <TemplateSelection
-            selectedTemplate={state.selectedTemplate}
-            setSelectedTemplate={setters.setSelectedTemplate}
-          />
-        );
-      case "display":
-        return (
-          <DisplayStyleSelection
-            selectedDisplay={state.selectedDisplay}
-            setSelectedDisplay={setters.setSelectedDisplay}
-          />
-        );
-      case "bento":
-        return (
-          <BentoOptions
-            selectedBento={state.selectedBento}
-            setSelectedBento={setters.setSelectedBento}
-          />
-        );
-      case "additional":
-        return (
-          <AdditionalSettings
-            socialLinks={state.socialLinks}
-            setSocialLinks={setters.setSocialLinks}
-            aboutMe={state.aboutMe}
-            setAboutMe={setters.setAboutMe}
-            enableReviews={state.enableReviews}
-            setEnableReviews={setters.setEnableReviews}
-            enableFeatured={state.enableFeatured}
-            setEnableFeatured={setters.setEnableFeatured}
-          />
-        );
-      case "confirmation":
-        return <Confirmation onLaunch={navigation.handleLaunch} />;
-    }
+  const handleLaunch = () => {
+    // Launch logic will be implemented here
+    console.log("Launching store...");
   };
 
-  return (
-    <div className="max-w-6xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Complete Your Vendor Profile Setup</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {renderStep()}
-              <div className="flex justify-between mt-6">
-                {currentStep !== "template" && (
-                  <Button variant="outline" onClick={navigation.handleBack}>
-                    Back
-                  </Button>
-                )}
-                {currentStep !== "confirmation" && (
-                  <Button onClick={navigation.handleNext} className="ml-auto">
-                    Next
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+  if (!setupStarted) {
+    return (
+      <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[60vh]">
+        <h1 className="text-4xl font-heading font-bold mb-6 text-center">
+          Welcome to Your Vendor Journey
+        </h1>
+        <p className="text-lg text-muted-foreground mb-8 text-center max-w-2xl">
+          Let's set up your vendor profile and customize your store. We'll guide you through each step of the process.
+        </p>
+        <Button 
+          size="lg" 
+          onClick={() => setSetupStarted(true)}
+          className="gap-2"
+        >
+          <Play className="w-4 h-4" />
+          Start Setup Wizard
+        </Button>
+      </div>
+    );
+  }
 
-        {templateData && (
-          <div className="sticky top-20">
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-8">
+          <TemplateSelection
+            selectedTemplate={selectedTemplate}
+            setSelectedTemplate={setSelectedTemplate}
+          />
+          <DisplayStyleSelection
+            selectedDisplay={displayStyle}
+            setSelectedDisplay={setDisplayStyle}
+          />
+          <BentoOptions
+            selectedBento={bentoStyle}
+            setSelectedBento={setBentoStyle}
+          />
+          <AdditionalSettings
+            socialLinks={socialLinks}
+            setSocialLinks={setSocialLinks}
+            aboutMe={aboutMe}
+            setAboutMe={setAboutMe}
+            enableReviews={enableReviews}
+            setEnableReviews={setEnableReviews}
+            enableFeatured={enableFeatured}
+            setEnableFeatured={setEnableFeatured}
+          />
+          <Confirmation onLaunch={handleLaunch} />
+        </div>
+        <div className="sticky top-8">
+          {templateData && (
             <TemplatePreviewPane
               templateStyle={templateData.style_config}
-              displayStyle={state.selectedDisplay}
-              bentoStyle={state.selectedBento}
+              displayStyle={displayStyle}
+              bentoStyle={bentoStyle}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
