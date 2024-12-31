@@ -21,7 +21,6 @@ interface YouTubeSearchResponse {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -35,9 +34,13 @@ serve(async (req) => {
       throw new Error('YouTube API key not configured')
     }
 
+    // Construct a more specific search query
+    const searchQuery = `${category} sports game match competition live`;
+    console.log('Using search query:', searchQuery);
+
     // First, search for live streams
     const liveSearchResponse = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&q=${encodeURIComponent(category + ' live')}&key=${YOUTUBE_API_KEY}&maxResults=10`
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&q=${encodeURIComponent(searchQuery)}&key=${YOUTUBE_API_KEY}&maxResults=10&relevanceLanguage=en`
     )
 
     if (!liveSearchResponse.ok) {
@@ -52,8 +55,9 @@ serve(async (req) => {
     // If no live streams found, search for recent videos
     if (liveSearchData.items.length === 0) {
       console.log('No live streams found, fetching recent videos')
+      const recentSearchQuery = `${category} sports highlights game match competition`;
       const recentVideosResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(category)}&key=${YOUTUBE_API_KEY}&maxResults=10&order=date`
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(recentSearchQuery)}&key=${YOUTUBE_API_KEY}&maxResults=10&order=date&relevanceLanguage=en`
       )
 
       if (!recentVideosResponse.ok) {
@@ -72,7 +76,7 @@ serve(async (req) => {
         thumbnail: item.snippet.thumbnails.medium.url,
         url: `https://www.youtube.com/embed/${item.id.videoId}`,
         isLive: false,
-        viewerCount: 0, // We don't have viewer count for non-live videos
+        viewerCount: 0,
         publishedAt: item.snippet.publishedAt
       }))
 
