@@ -1,31 +1,38 @@
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Store, BadgeCheck } from "lucide-react";
+import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 
 const Vendors = () => {
   const navigate = useNavigate();
-
-  const { data: vendors, isLoading } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('vendor_profiles')
-        .select(`
-          *,
-          profiles:id (
-            username,
-            avatar_url
-          )
-        `);
-
-      if (error) throw error;
-      return data;
-    }
-  });
+  
+  const mockVendors = [
+    {
+      id: 1,
+      name: "Elite Fitness Pro",
+      description: "Professional fitness equipment and personalized training programs",
+      rating: 4.8,
+      productsCount: 45,
+      templateStyle: "Modern Dark",
+    },
+    {
+      id: 2,
+      name: "Sports Nutrition Plus",
+      description: "Premium supplements and nutrition consultation",
+      rating: 4.6,
+      productsCount: 78,
+      templateStyle: "Classic Elegance",
+    },
+    {
+      id: 3,
+      name: "Power Training Hub",
+      description: "Specialized strength training and coaching services",
+      rating: 4.9,
+      productsCount: 32,
+      templateStyle: "Bold & Modern",
+    },
+  ];
 
   const handleBecomeVendor = () => {
     navigate('/vendors/new');
@@ -36,9 +43,9 @@ const Vendors = () => {
       <div className="flex flex-col gap-8">
         {/* Header Section */}
         <div className="flex flex-col gap-4">
-          <h1 className="text-4xl font-heading font-bold text-gradient">Marketplace Vendors</h1>
+          <h1 className="text-4xl font-heading font-bold text-gradient">Featured Vendors</h1>
           <p className="text-muted-foreground">
-            Discover trusted vendors in our marketplace
+            Discover top-rated vendors offering premium fitness products and services
           </p>
         </div>
 
@@ -59,69 +66,37 @@ const Vendors = () => {
 
         {/* Vendors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoading ? (
-            <p>Loading vendors...</p>
-          ) : vendors && vendors.length > 0 ? (
-            vendors.map((vendor) => (
-              <Card key={vendor.id} className="bg-card hover:bg-card/80 transition-colors">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <CardTitle>{vendor.business_name || vendor.profiles?.username}</CardTitle>
-                    <BadgeCheck className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardDescription>Verified Marketplace Vendor</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    {vendor.business_description || "This vendor hasn't added a description yet."}
-                  </p>
-                  {vendor.social_links && Object.keys(vendor.social_links).length > 0 && (
-                    <div className="mt-4 flex gap-2">
-                      {Object.entries(vendor.social_links).map(([platform, url]) => (
-                        <a
-                          key={platform}
-                          href={url as string}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline"
-                        >
-                          {platform}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => navigate(`/vendors/${vendor.id}`)}
-                  >
-                    View Profile
-                  </Button>
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    onClick={() => navigate(`/vendors/${vendor.id}/store`)}
-                  >
-                    <Store className="h-4 w-4 mr-2" />
-                    Visit Store
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8">
-              <p className="text-muted-foreground">No vendors found. Be the first to join our marketplace!</p>
-              <Button 
-                variant="default" 
-                className="mt-4"
-                onClick={handleBecomeVendor}
-              >
-                Become a Vendor
-              </Button>
-            </div>
-          )}
+          {mockVendors.map((vendor) => (
+            <Card key={vendor.id} className="bg-card hover:bg-card/80 transition-colors">
+              <CardHeader>
+                <CardTitle>{vendor.name}</CardTitle>
+                <CardDescription>Template: {vendor.templateStyle}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{vendor.description}</p>
+                <div className="mt-4 flex justify-between text-sm">
+                  <span>⭐ {vendor.rating}</span>
+                  <span>{vendor.productsCount} Products</span>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate(`/vendors/${vendor.id}`)}
+                >
+                  View Profile
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={() => navigate(`/vendors/${vendor.id}/store`)}
+                >
+                  Visit Store
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       </div>
     </div>
