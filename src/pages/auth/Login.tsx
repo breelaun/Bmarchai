@@ -25,19 +25,12 @@ const Login = () => {
         });
         navigate("/");
       }
-      if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
-        toast({
-          variant: "destructive",
-          title: "Invalid Login Credentials",
-          description: "Please check your email and password and try again.",
-        });
-      }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, trackToolUsage, toast]);
+  }, [navigate, trackToolUsage]);
 
   return (
     <div className="container max-w-md mx-auto py-8">
@@ -62,6 +55,13 @@ const Login = () => {
           showLinks={true}
           magicLink={true}
           redirectTo={window.location.origin}
+          onError={(error) => {
+            toast({
+              variant: "destructive",
+              title: "Invalid Login Credentials",
+              description: "Please check your email and password and try again.",
+            });
+          }}
         />
       </div>
     </div>
