@@ -14,15 +14,21 @@ interface Product {
 }
 
 const Shop = () => {
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, error } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
+      console.log("Fetching products...");
       const { data, error } = await supabase
         .from("products")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+      }
+      
+      console.log("Products fetched:", data);
       return data as Product[];
     },
   });
@@ -34,10 +40,18 @@ const Shop = () => {
     }).format(price);
   };
 
+  // Log the current state
+  console.log("Current state:", { isLoading, products, error });
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Shop</h1>
-      {isLoading ? (
+      {error ? (
+        <div className="text-center py-12 text-destructive">
+          <p>Error loading products. Please try again later.</p>
+          <p className="text-sm mt-2">{error.message}</p>
+        </div>
+      ) : isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="animate-pulse">
