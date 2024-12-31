@@ -1,6 +1,7 @@
 export type SetupStep = "template" | "display" | "bento" | "additional" | "confirmation";
 
-export interface SocialLinks {
+// Update SocialLinks to use an index signature
+export interface SocialLinks extends Record<string, string> {
   facebook: string;
   instagram: string;
   twitter: string;
