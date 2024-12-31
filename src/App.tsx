@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import Index from "./pages/Index";
 import Vendors from "./pages/Vendors";
 import VendorProfile from "./pages/vendors/[id]";
+import Startup from "./pages/vendors/Startup";
 import BlogsPage from "./pages/blogs";
 import BlogCategory from "./pages/blogs/category/[category]";
 import BlogTag from "./pages/blogs/tags/[tag]";
@@ -37,6 +38,7 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/vendors" element={<Vendors />} />
+                  <Route path="/vendors/startup" element={<Startup />} />
                   <Route path="/vendors/new" element={<VendorProfile />} />
                   <Route path="/vendors/:id" element={<VendorProfile />} />
                   <Route path="/blogs" element={<BlogsPage />} />
