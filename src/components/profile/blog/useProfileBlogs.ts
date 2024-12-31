@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { BlogData } from "./types";
 
 export const useProfileBlogs = (userId: string, selectedCategory: string | null) => {
   // First, fetch the user's profile to get their username
@@ -45,8 +46,14 @@ export const useProfileBlogs = (userId: string, selectedCategory: string | null)
         throw error;
       }
       
-      console.log("Fetched blogs:", data);
-      return data || [];
+      // Ensure the status is one of the allowed values
+      const typedBlogs: BlogData[] = (data || []).map(blog => ({
+        ...blog,
+        status: blog.status as 'draft' | 'published' | 'scheduled'
+      }));
+      
+      console.log("Fetched blogs:", typedBlogs);
+      return typedBlogs;
     },
     enabled: !!profile?.username,
   });
