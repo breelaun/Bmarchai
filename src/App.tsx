@@ -17,6 +17,7 @@ import CreateBlog from "./pages/blogs/new";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/auth/Profile";
+import StreamingPage from "./pages/streaming";
 import { supabase } from "./integrations/supabase/client";
 
 // Create a new QueryClient instance
@@ -46,6 +47,7 @@ const App = () => {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/streaming" element={<StreamingPage />} />
                 </Routes>
               </main>
               <Footer />
