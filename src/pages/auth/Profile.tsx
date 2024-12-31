@@ -19,19 +19,19 @@ const Profile = () => {
 
   // Fetch user's blogs with debugging
   const { data: blogs, isLoading: blogsLoading, error: blogsError } = useQuery({
-    queryKey: ["profile-blogs", session?.user?.email],
+    queryKey: ["profile-blogs", profile?.username],
     queryFn: async () => {
-      console.log("Fetching blogs for user email:", session?.user?.email);
+      console.log("Fetching blogs for username:", profile?.username);
       
-      if (!session?.user?.email) {
-        console.error("No user email available");
+      if (!profile?.username) {
+        console.error("No username available");
         return [];
       }
 
       const { data, error } = await supabase
         .from("blogs")
         .select("*")
-        .eq("author", session.user.email)
+        .eq("author", profile.username)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -47,7 +47,7 @@ const Profile = () => {
       console.log("Fetched blogs:", data);
       return data as BlogData[];
     },
-    enabled: !!session?.user?.email,
+    enabled: !!profile?.username,
   });
 
   useEffect(() => {
