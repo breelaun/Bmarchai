@@ -5,24 +5,39 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToolTracking } from "@/hooks/use-tool-tracking";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const session = useSession();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { trackToolUsage } = useToolTracking();
 
   useEffect(() => {
-    if (session) {
-      trackToolUsage({
-        tool: "auth",
-        action: "login_success",
-        metadata: {
-          provider: session.user?.app_metadata?.provider || "email",
-        },
-      });
-      navigate("/");
-    }
-  }, [session, navigate, trackToolUsage]);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        trackToolUsage({
+          tool: "auth",
+          action: "login_success",
+          metadata: {
+            provider: session.user?.app_metadata?.provider || "email",
+          },
+        });
+        navigate("/");
+      }
+      if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+        toast({
+          variant: "destructive",
+          title: "Invalid Login Credentials",
+          description: "Please check your email and password and try again.",
+        });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, trackToolUsage, toast]);
 
   return (
     <div className="container max-w-md mx-auto py-8">
