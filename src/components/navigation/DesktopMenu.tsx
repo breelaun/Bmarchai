@@ -1,7 +1,5 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
-import { Store, User } from "lucide-react";
 import { MenuItem, SubMenuItem } from "./types";
 
 interface DesktopMenuProps {
@@ -22,27 +20,6 @@ const DesktopMenu = ({ menuItems, vendorSubmenu, authItems }: DesktopMenuProps) 
           {item.name}
         </Link>
       ))}
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>Vendors</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="w-48 p-2">
-                {vendorSubmenu.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent"
-                  >
-                    {item.icon}
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
       {authItems}
     </div>
   );

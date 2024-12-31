@@ -2,18 +2,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Store, User, LogIn, LogOut } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DesktopMenu from "./navigation/DesktopMenu";
 import MobileMenu from "./navigation/MobileMenu";
-import { MenuItem, SubMenuItem } from "./navigation/types";
+import ProfileMenu from "./navigation/ProfileMenu";
+import VendorMenu from "./navigation/VendorMenu";
+import AuthButtons from "./navigation/AuthButtons";
+import type { MenuItem, SubMenuItem } from "./navigation/types";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,52 +52,9 @@ const Navigation = () => {
 
   const renderAuthItems = () => {
     if (session) {
-      return (
-        <NavigationMenu>
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>Profile</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <div className="w-48 p-2">
-                  {profileSubmenu.map((item) => (
-                    item.onClick ? (
-                      <div
-                        key={item.name}
-                        onClick={item.onClick}
-                        className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent cursor-pointer"
-                      >
-                        {item.icon}
-                        {item.name}
-                      </div>
-                    ) : (
-                      <Link
-                        key={item.name}
-                        to={item.path}
-                        className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent"
-                      >
-                        {item.icon}
-                        {item.name}
-                      </Link>
-                    )
-                  ))}
-                </div>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
-      );
+      return <ProfileMenu profileSubmenu={profileSubmenu} />;
     }
-
-    return authItems.map((item) => (
-      <Link
-        key={item.name}
-        to={item.path}
-        className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
-      >
-        {item.icon}
-        {item.name}
-      </Link>
-    ));
+    return <AuthButtons authItems={authItems} />;
   };
 
   return (
@@ -114,11 +67,19 @@ const Navigation = () => {
             </Link>
           </div>
 
-          <DesktopMenu 
-            menuItems={menuItems}
-            vendorSubmenu={vendorSubmenu}
-            authItems={renderAuthItems()}
-          />
+          <div className="hidden md:flex md:items-center md:space-x-8">
+            {menuItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="text-foreground hover:text-primary transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
+            <VendorMenu vendorSubmenu={vendorSubmenu} />
+            {renderAuthItems()}
+          </div>
 
           {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
