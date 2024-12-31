@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import TemplateSelection from "./setup/TemplateSelection";
 import DisplayStyleSelection from "./setup/DisplayStyleSelection";
 import BentoOptions from "./setup/BentoOptions";
@@ -26,56 +23,8 @@ const VendorProfileSetup = () => {
   const [aboutMe, setAboutMe] = useState("");
   const [enableReviews, setEnableReviews] = useState(true);
   const [enableFeatured, setEnableFeatured] = useState(true);
-  const navigate = useNavigate();
 
   const { data: templateData } = useTemplateData(selectedTemplate);
-
-  const handleStartSetup = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error("Please sign in to become a vendor");
-        navigate("/login");
-        return;
-      }
-
-      // First check if vendor profile already exists
-      const { data: existingProfile } = await supabase
-        .from('vendor_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (existingProfile) {
-        setSetupStarted(true);
-        return;
-      }
-
-      // Update the user's vendor status in profiles
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ is_vendor: true })
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
-
-      // Create vendor profile
-      const { error: vendorError } = await supabase
-        .from('vendor_profiles')
-        .insert({ id: user.id })
-        .select()
-        .single();
-
-      if (vendorError) throw vendorError;
-
-      toast.success("Vendor profile created successfully!");
-      setSetupStarted(true);
-    } catch (error) {
-      console.error('Error becoming vendor:', error);
-      toast.error("Failed to create vendor profile");
-    }
-  };
 
   const handleLaunch = () => {
     // Launch logic will be implemented here
@@ -93,7 +42,7 @@ const VendorProfileSetup = () => {
         </p>
         <Button 
           size="lg" 
-          onClick={handleStartSetup}
+          onClick={() => setSetupStarted(true)}
           className="gap-2"
         >
           <Play className="w-4 h-4" />
