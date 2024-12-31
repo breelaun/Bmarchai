@@ -123,12 +123,15 @@ const StreamFilters = ({ selectedCategory, onCategoryChange }: StreamFiltersProp
               More Categories <ChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuContent 
+            align="start" 
+            className="w-56 bg-background border-border/50"
+          >
             <ScrollArea className="h-[300px]">
               {otherCategories.map((category) => (
                 <DropdownMenuItem
                   key={category.name}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between hover:bg-muted"
                   onClick={() => {
                     onCategoryChange(category.name === "All" ? null : category.name);
                   }}
