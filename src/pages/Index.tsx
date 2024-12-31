@@ -1,7 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
-import ProfileBlogSection from "@/components/profile/ProfileBlogSection";
 
 const Index = () => {
   const session = useSession();
@@ -94,7 +93,14 @@ const Index = () => {
             Latest Blogs
           </h2>
           {session?.user ? (
-            <ProfileBlogSection userId={session.user.id} />
+            <div className="text-center">
+              <Link
+                to="/profile"
+                className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                View Your Posts
+              </Link>
+            </div>
           ) : (
             <div className="text-center">
               <p className="text-muted-foreground mb-4">Sign in to view and manage your blogs</p>
