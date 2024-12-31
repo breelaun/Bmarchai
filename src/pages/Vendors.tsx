@@ -19,6 +19,19 @@ const Vendors = () => {
         return;
       }
 
+      // First check if vendor profile already exists
+      const { data: existingProfile } = await supabase
+        .from('vendor_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (existingProfile) {
+        // If profile exists, just navigate to setup
+        navigate("/vendors/new");
+        return;
+      }
+
       // Update the user's vendor status in profiles
       const { error: profileError } = await supabase
         .from('profiles')
@@ -27,16 +40,14 @@ const Vendors = () => {
 
       if (profileError) throw profileError;
 
-      // Create vendor profile if it doesn't exist
+      // Create vendor profile
       const { error: vendorError } = await supabase
         .from('vendor_profiles')
         .insert({ id: user.id })
         .select()
         .single();
 
-      if (vendorError && !vendorError.message.includes('duplicate')) {
-        throw vendorError;
-      }
+      if (vendorError) throw vendorError;
 
       toast.success("Vendor profile created successfully!");
       navigate("/vendors/new");
