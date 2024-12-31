@@ -8,8 +8,13 @@ import Confirmation from "./setup/Confirmation";
 import TemplatePreviewPane from "./setup/TemplatePreviewPane";
 import { useVendorSetup } from "./hooks/useVendorSetup";
 import { useTemplateData } from "./hooks/useTemplateData";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const VendorProfileSetup = () => {
+  const navigate = useNavigate();
   const {
     currentStep,
     state,
@@ -18,6 +23,32 @@ const VendorProfileSetup = () => {
   } = useVendorSetup();
 
   const { data: templateData } = useTemplateData(state.selectedTemplate);
+
+  // Check if user is authorized to access this page
+  useEffect(() => {
+    const checkVendorStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Please sign in to set up your vendor profile");
+        navigate("/login");
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_vendor')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.is_vendor) {
+        toast.error("You need to be registered as a vendor to access this page");
+        navigate("/");
+      }
+    };
+
+    checkVendorStatus();
+  }, [navigate]);
 
   const renderStep = () => {
     switch (currentStep) {
@@ -65,7 +96,7 @@ const VendorProfileSetup = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Vendor Profile Setup</CardTitle>
+            <CardTitle>Complete Your Vendor Profile Setup</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
