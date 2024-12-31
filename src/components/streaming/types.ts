@@ -6,6 +6,7 @@ export interface Stream {
   url: string;
   isLive: boolean;
   viewerCount: number;
+  publishedAt: string;
 }
 
 export interface Category {

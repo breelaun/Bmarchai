@@ -12,6 +12,7 @@ interface YouTubeSearchResponse {
       title: string
       thumbnails: { medium: { url: string } }
       channelTitle: string
+      publishedAt: string
     }
     liveStreamingDetails?: {
       concurrentViewers: string
@@ -34,32 +35,55 @@ serve(async (req) => {
       throw new Error('YouTube API key not configured')
     }
 
-    // Search for live streams
-    const searchResponse = await fetch(
+    // First, search for live streams
+    const liveSearchResponse = await fetch(
       `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&q=${encodeURIComponent(category + ' live')}&key=${YOUTUBE_API_KEY}&maxResults=10`
     )
 
-    if (!searchResponse.ok) {
-      const error = await searchResponse.text()
+    if (!liveSearchResponse.ok) {
+      const error = await liveSearchResponse.text()
       console.error('YouTube API error:', error)
       throw new Error(`YouTube API error: ${error}`)
     }
 
-    const searchData: YouTubeSearchResponse = await searchResponse.json()
-    console.log('Found streams:', searchData.items.length)
+    const liveSearchData: YouTubeSearchResponse = await liveSearchResponse.json()
+    console.log('Found live streams:', liveSearchData.items.length)
 
-    if (searchData.items.length === 0) {
+    // If no live streams found, search for recent videos
+    if (liveSearchData.items.length === 0) {
+      console.log('No live streams found, fetching recent videos')
+      const recentVideosResponse = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(category)}&key=${YOUTUBE_API_KEY}&maxResults=10&order=date`
+      )
+
+      if (!recentVideosResponse.ok) {
+        const error = await recentVideosResponse.text()
+        console.error('YouTube API error (recent videos):', error)
+        throw new Error(`YouTube API error getting recent videos: ${error}`)
+      }
+
+      const recentVideosData: YouTubeSearchResponse = await recentVideosResponse.json()
+      
+      // Map recent videos to our Stream type
+      const streams = recentVideosData.items.map(item => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        category: category,
+        thumbnail: item.snippet.thumbnails.medium.url,
+        url: `https://www.youtube.com/embed/${item.id.videoId}`,
+        isLive: false,
+        viewerCount: 0, // We don't have viewer count for non-live videos
+        publishedAt: item.snippet.publishedAt
+      }))
+
       return new Response(
-        JSON.stringify({ 
-          streams: [],
-          message: 'No live streams found for this category' 
-        }), 
+        JSON.stringify({ streams }), 
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Get additional details for each video
-    const videoIds = searchData.items.map(item => item.id.videoId).join(',')
+    // Get additional details for live streams
+    const videoIds = liveSearchData.items.map(item => item.id.videoId).join(',')
     const videosResponse = await fetch(
       `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`
     )
@@ -72,8 +96,8 @@ serve(async (req) => {
 
     const videosData = await videosResponse.json()
 
-    // Map the response to our Stream type
-    const streams = searchData.items.map((item, index) => ({
+    // Map live streams
+    const streams = liveSearchData.items.map((item, index) => ({
       id: item.id.videoId,
       title: item.snippet.title,
       category: category,
@@ -81,6 +105,7 @@ serve(async (req) => {
       url: `https://www.youtube.com/embed/${item.id.videoId}`,
       isLive: true,
       viewerCount: parseInt(videosData.items[index]?.liveStreamingDetails?.concurrentViewers || '0'),
+      publishedAt: item.snippet.publishedAt
     }))
 
     return new Response(
