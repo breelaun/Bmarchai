@@ -55,7 +55,16 @@ const Login = () => {
           showLinks={true}
           magicLink={true}
           redirectTo={window.location.origin}
+          localization={{
+            variables: {
+              sign_in: {
+                email_label: 'Email',
+                password_label: 'Password',
+              }
+            }
+          }}
           onError={(error) => {
+            console.error('Auth error:', error);
             toast({
               variant: "destructive",
               title: "Invalid Login Credentials",
