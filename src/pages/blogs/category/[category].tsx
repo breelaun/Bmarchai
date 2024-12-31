@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BlogHeader from "@/components/blogs/BlogHeader";
 import BlogCard from "@/components/blogs/BlogCard";
 import CategoryFilter from "@/components/blogs/CategoryFilter";
-import BlogPagination from "@/components/blogs/BlogPagination";
+import { BlogPagination } from "@/components/blogs/BlogPagination";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const BlogCategory = () => {
