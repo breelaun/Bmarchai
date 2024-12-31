@@ -12,7 +12,7 @@ interface BlogCardProps {
     created_at: string;
     category: string;
     tags: string[];
-    image_url?: string | null;  // Made optional with ?
+    image_url?: string | null;
     slug: string;
   };
 }
