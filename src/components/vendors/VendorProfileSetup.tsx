@@ -60,25 +60,29 @@ const VendorProfileSetup = () => {
             selectedTemplate={selectedTemplate}
             setSelectedTemplate={setSelectedTemplate}
           />
-          <DisplayStyleSelection
-            selectedDisplay={displayStyle}
-            setSelectedDisplay={setDisplayStyle}
-          />
-          <BentoOptions
-            selectedBento={bentoStyle}
-            setSelectedBento={setBentoStyle}
-          />
-          <AdditionalSettings
-            socialLinks={socialLinks}
-            setSocialLinks={setSocialLinks}
-            aboutMe={aboutMe}
-            setAboutMe={setAboutMe}
-            enableReviews={enableReviews}
-            setEnableReviews={setEnableReviews}
-            enableFeatured={enableFeatured}
-            setEnableFeatured={setEnableFeatured}
-          />
-          <Confirmation onLaunch={handleLaunch} />
+          {selectedTemplate && (
+            <>
+              <DisplayStyleSelection
+                selectedDisplay={displayStyle}
+                setSelectedDisplay={setDisplayStyle}
+              />
+              <BentoOptions
+                selectedBento={bentoStyle}
+                setSelectedBento={setBentoStyle}
+              />
+              <AdditionalSettings
+                socialLinks={socialLinks}
+                setSocialLinks={setSocialLinks}
+                aboutMe={aboutMe}
+                setAboutMe={setAboutMe}
+                enableReviews={enableReviews}
+                setEnableReviews={setEnableReviews}
+                enableFeatured={enableFeatured}
+                setEnableFeatured={setEnableFeatured}
+              />
+              <Confirmation onLaunch={handleLaunch} />
+            </>
+          )}
         </div>
         <div className="sticky top-8">
           {templateData && (
