@@ -1,44 +1,50 @@
-import { useState } from "react";
-import { Search, Filter } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import StreamList from "@/components/streaming/StreamList";
 import VideoPlayer from "@/components/streaming/VideoPlayer";
 import StreamFilters from "@/components/streaming/StreamFilters";
 import { Stream } from "@/components/streaming/types";
-
-const mockStreams: Stream[] = [
-  {
-    id: "1",
-    title: "Pro Pickleball Championship Finals",
-    category: "Pickleball",
-    thumbnail: "/placeholder.svg",
-    url: "https://www.youtube.com/embed/live_stream?channel=UC5TPYuXy_SxF1nGRDYBw7WA",
-    isLive: true,
-    viewerCount: 1200,
-  },
-  {
-    id: "2",
-    title: "World Figure Skating Championships 2024",
-    category: "Figure Skating",
-    thumbnail: "/placeholder.svg",
-    url: "https://www.youtube.com/embed/live_stream?channel=UC5TPYuXy_SxF1nGRDYBw7WA",
-    isLive: true,
-    viewerCount: 3500,
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const StreamingPage = () => {
-  const [streams] = useState<Stream[]>(mockStreams);
+  const [streams, setStreams] = useState<Stream[]>([]);
   const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const fetchStreams = async (category: string | null) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-youtube-streams', {
+        body: { category: category || 'Pickleball' },
+      });
+
+      if (error) throw error;
+      setStreams(data.streams);
+    } catch (error) {
+      console.error('Error fetching streams:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch live streams. Please try again later.",
+        variant: "destructive",
+      });
+      setStreams([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStreams(selectedCategory);
+  }, [selectedCategory]);
 
   const filteredStreams = streams.filter((stream) => {
-    const matchesSearch = stream.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stream.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || stream.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesSearch = stream.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
 
   return (
@@ -73,7 +79,9 @@ const StreamingPage = () => {
               <VideoPlayer stream={selectedStream} />
             ) : (
               <div className="aspect-video bg-card rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Select a stream to watch</p>
+                <p className="text-muted-foreground">
+                  {isLoading ? "Loading streams..." : "Select a stream to watch"}
+                </p>
               </div>
             )}
           </div>
