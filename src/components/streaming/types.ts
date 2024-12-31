@@ -7,3 +7,8 @@ export interface Stream {
   isLive: boolean;
   viewerCount: number;
 }
+
+export interface Category {
+  name: string;
+  isFavorite: boolean;
+}
