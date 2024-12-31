@@ -6,7 +6,23 @@ interface StreamFiltersProps {
   onCategoryChange: (category: string | null) => void;
 }
 
-const categories = ["All", "Pickleball", "Figure Skating", "Table Tennis", "Archery"];
+const categories = [
+  "All",
+  "Pickleball",
+  "Figure Skating",
+  "Table Tennis",
+  "Archery",
+  "Ultimate Frisbee",
+  "Rock Climbing",
+  "Badminton",
+  "Fencing",
+  "Cricket",
+  "Rugby",
+  "Volleyball",
+  "Skateboarding",
+  "Surfing",
+  "Rowing"
+];
 
 const StreamFilters = ({ selectedCategory, onCategoryChange }: StreamFiltersProps) => {
   return (
