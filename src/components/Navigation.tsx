@@ -64,14 +64,25 @@ const Navigation = () => {
               <NavigationMenuContent>
                 <div className="w-48 p-2">
                   {profileSubmenu.map((item) => (
-                    <div
-                      key={item.name}
-                      onClick={item.onClick}
-                      className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent cursor-pointer"
-                    >
-                      {item.icon}
-                      {item.name}
-                    </div>
+                    item.onClick ? (
+                      <div
+                        key={item.name}
+                        onClick={item.onClick}
+                        className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent cursor-pointer"
+                      >
+                        {item.icon}
+                        {item.name}
+                      </div>
+                    ) : (
+                      <Link
+                        key={item.name}
+                        to={item.path}
+                        className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent"
+                      >
+                        {item.icon}
+                        {item.name}
+                      </Link>
+                    )
                   ))}
                 </div>
               </NavigationMenuContent>
