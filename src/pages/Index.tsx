@@ -1,7 +1,11 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSession } from "@supabase/auth-helpers-react";
+import ProfileBlogSection from "@/components/profile/ProfileBlogSection";
 
 const Index = () => {
+  const session = useSession();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -83,28 +87,25 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Blog Section */}
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-heading font-bold text-center text-foreground mb-12">
-            What Our Users Say
+            Latest Blogs
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-secondary p-6 rounded-lg">
-                <p className="text-muted-foreground mb-4">
-                  "Bmarchai has transformed how I manage my fitness business. The platform is intuitive and powerful."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-primary rounded-full mr-4"></div>
-                  <div>
-                    <p className="font-semibold text-foreground">John Doe</p>
-                    <p className="text-sm text-muted-foreground">Fitness Coach</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          {session?.user ? (
+            <ProfileBlogSection userId={session.user.id} />
+          ) : (
+            <div className="text-center">
+              <p className="text-muted-foreground mb-4">Sign in to view and manage your blogs</p>
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Sign In
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </div>
