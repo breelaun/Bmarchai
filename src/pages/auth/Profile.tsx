@@ -17,10 +17,12 @@ const Profile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user's blogs
-  const { data: blogs } = useQuery({
+  // Fetch user's blogs with debugging
+  const { data: blogs, isLoading: blogsLoading } = useQuery({
     queryKey: ["profile-blogs", session?.user?.id],
     queryFn: async () => {
+      console.log("Fetching blogs for user:", session?.user?.id);
+      
       const { data, error } = await supabase
         .from("blogs")
         .select("*")
@@ -37,6 +39,7 @@ const Profile = () => {
         return [];
       }
 
+      console.log("Fetched blogs:", data);
       return data as BlogData[];
     },
     enabled: !!session?.user?.id,
@@ -66,6 +69,7 @@ const Profile = () => {
           return;
         }
 
+        console.log("Fetched profile:", data);
         setProfile(data);
       } catch (error) {
         console.error("Error in profile fetch:", error);
@@ -106,11 +110,16 @@ const Profile = () => {
           </Button>
         </div>
 
-        {blogs && blogs.length > 0 ? (
+        {blogsLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : blogs && blogs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogs.map((blog) => (
-              <BlogCard key={blog.id} blog={blog} />
-            ))}
+            {blogs.map((blog) => {
+              console.log("Rendering blog:", blog);
+              return <BlogCard key={blog.id} blog={blog} />;
+            })}
           </div>
         ) : (
           <div className="text-center py-12">
