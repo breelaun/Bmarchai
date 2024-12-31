@@ -13,10 +13,8 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
 
   if (isLoading) {
     return (
-      <div className="p-4">
-        <div className="flex items-center justify-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+      <div className="flex items-center justify-center h-40">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -25,7 +23,7 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   const categories = blogs ? Array.from(new Set(blogs.map((blog) => blog.category))) : [];
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="space-y-8">
       <ProfileBlogFilter
         categories={categories}
         selectedCategory={selectedCategory}

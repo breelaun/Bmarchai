@@ -12,12 +12,12 @@ const ProfileBlogFilter = ({
   onCategorySelect 
 }: ProfileBlogFilterProps) => {
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">My Blogs</h2>
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-6">
+      <h2 className="text-4xl font-bold tracking-tight">Categories</h2>
+      <div className="flex flex-wrap gap-4">
         <Badge
           variant={selectedCategory === null ? "default" : "outline"}
-          className="cursor-pointer"
+          className="cursor-pointer text-lg py-2 px-4"
           onClick={() => onCategorySelect(null)}
         >
           All
@@ -26,7 +26,7 @@ const ProfileBlogFilter = ({
           <Badge
             key={category}
             variant={selectedCategory === category ? "default" : "outline"}
-            className="cursor-pointer"
+            className="cursor-pointer text-lg py-2 px-4"
             onClick={() => onCategorySelect(category)}
           >
             {category}
