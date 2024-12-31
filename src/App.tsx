@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
+import Shop from "./pages/shop";
 import Vendors from "./pages/Vendors";
 import VendorProfile from "./pages/vendors/[id]";
 import BlogsPage from "./pages/blogs";
@@ -36,6 +37,7 @@ const App = () => {
               <main className="flex-grow pt-16">
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/shop" element={<Shop />} />
                   <Route path="/vendors" element={<Vendors />} />
                   <Route path="/vendors/new" element={<VendorProfile />} />
                   <Route path="/vendors/:id" element={<VendorProfile />} />
