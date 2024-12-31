@@ -12,16 +12,31 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const placeholderCategories = Array(5).fill("placeholder");
 
-  console.log("ProfileBlogSection - userId:", userId); // Debug log
-
-  const { data: blogs, isLoading } = useQuery({
-    queryKey: ["profile-blogs", userId, selectedCategory],
+  // First, fetch the user's profile to get their username
+  const { data: profile } = useQuery({
+    queryKey: ["profile", userId],
     queryFn: async () => {
-      console.log("Fetching blogs for user:", userId); // Debug log
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", userId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Then use the username to fetch their blogs
+  const { data: blogs, isLoading } = useQuery({
+    queryKey: ["profile-blogs", profile?.username, selectedCategory],
+    queryFn: async () => {
+      if (!profile?.username) return [];
+      
       let query = supabase
         .from("blogs")
         .select("*")
-        .eq("author", userId)
+        .eq("author", profile.username)
         .order("created_at", { ascending: false });
 
       if (selectedCategory) {
@@ -31,13 +46,13 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
       const { data, error } = await query;
       
       if (error) {
-        console.error("Error fetching blogs:", error); // Debug log
+        console.error("Error fetching blogs:", error);
         throw error;
       }
       
-      console.log("Fetched blogs:", data); // Debug log
       return data || [];
     },
+    enabled: !!profile?.username, // Only run this query when we have the username
   });
 
   // Get unique categories from user's blogs
