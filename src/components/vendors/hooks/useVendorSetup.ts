@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { SetupStep, VendorSetupState, SocialLinks, VendorProfileInsert } from "../types/vendor-setup";
+import { SetupStep, VendorSetupState, SocialLinks, VendorProfileInsert } from "../types/vendor-setup";
 
 export function useVendorSetup() {
   const navigate = useNavigate();
@@ -45,26 +45,27 @@ export function useVendorSetup() {
         return;
       }
 
-      // Update vendor profile with customization settings
-      const { error: updateError } = await supabase
-        .from('vendor_profiles')
-        .update({
-          template_id: selectedTemplate,
-          customizations: {
-            display_style: selectedDisplay,
-            bento_style: selectedBento,
-          },
-          business_description: aboutMe,
-          social_links: socialLinks,
-        })
-        .eq('id', user.id);
+      const profileData: VendorProfileInsert = {
+        id: user.id,
+        template_id: selectedTemplate,
+        customizations: {
+          display_style: selectedDisplay,
+          bento_style: selectedBento,
+        },
+        business_description: aboutMe,
+        social_links: socialLinks, // Now TypeScript knows this is safe
+      };
 
-      if (updateError) throw updateError;
+      const { error: profileError } = await supabase
+        .from("vendor_profiles")
+        .insert(profileData);
+
+      if (profileError) throw profileError;
 
       toast.success("Your vendor profile has been created successfully!");
       navigate(`/vendors/${user.id}`);
     } catch (error) {
-      console.error('Error creating vendor profile:', error);
+      console.error("Error creating vendor profile:", error);
       toast.error("Failed to create vendor profile. Please try again.");
     }
   };
