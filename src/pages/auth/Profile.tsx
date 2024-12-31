@@ -18,22 +18,27 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
 
   // Fetch user's blogs with debugging
-  const { data: blogs, isLoading: blogsLoading } = useQuery({
+  const { data: blogs, isLoading: blogsLoading, error: blogsError } = useQuery({
     queryKey: ["profile-blogs", session?.user?.id],
     queryFn: async () => {
       console.log("Fetching blogs for user:", session?.user?.id);
       
+      if (!session?.user?.id) {
+        console.error("No user ID available");
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("blogs")
         .select("*")
-        .eq("author", session?.user?.id)
+        .eq("author", session.user.id)
         .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching blogs:", error);
         toast({
           title: "Error",
-          description: "Failed to load blogs",
+          description: "Failed to load blogs: " + error.message,
           variant: "destructive",
         });
         return [];
@@ -63,7 +68,7 @@ const Profile = () => {
           console.error("Error fetching profile:", error);
           toast({
             title: "Error",
-            description: "Failed to load profile",
+            description: "Failed to load profile: " + error.message,
             variant: "destructive",
           });
           return;
@@ -110,7 +115,11 @@ const Profile = () => {
           </Button>
         </div>
 
-        {blogsLoading ? (
+        {blogsError ? (
+          <div className="text-center py-12 text-red-500">
+            <p>Error loading blogs. Please try again later.</p>
+          </div>
+        ) : blogsLoading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
