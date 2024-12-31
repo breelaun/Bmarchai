@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, BookOpen, Eye } from "lucide-react";
 import type { BlogData } from "./types";
 
 interface ProfileBlogListProps {
@@ -9,6 +8,8 @@ interface ProfileBlogListProps {
 }
 
 const ProfileBlogList = ({ blogs }: ProfileBlogListProps) => {
+  console.log("ProfileBlogList render:", { blogsLength: blogs.length, blogs });
+
   if (!blogs.length) {
     return (
       <div className="text-center py-8">

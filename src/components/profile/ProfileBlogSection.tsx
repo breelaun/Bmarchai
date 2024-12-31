@@ -11,6 +11,8 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { blogs, isLoading } = useProfileBlogs(userId, selectedCategory);
 
+  console.log("ProfileBlogSection render:", { userId, blogs, isLoading });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">

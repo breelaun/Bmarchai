@@ -27,7 +27,10 @@ export const useProfileBlogs = (userId: string, selectedCategory: string | null)
   const { data: blogs, isLoading: isBlogsLoading } = useQuery({
     queryKey: ["profile-blogs", profile?.username, selectedCategory],
     queryFn: async () => {
-      if (!profile?.username) return [];
+      if (!profile?.username) {
+        console.log("No username found, skipping blog fetch");
+        return [];
+      }
       console.log("Fetching blogs for username:", profile.username);
       
       let query = supabase
