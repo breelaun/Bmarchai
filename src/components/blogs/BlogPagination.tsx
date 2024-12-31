@@ -13,7 +13,7 @@ interface BlogPaginationProps {
   baseUrl: string;
 }
 
-const BlogPagination = ({ currentPage, totalPages, baseUrl }: BlogPaginationProps) => {
+export const BlogPagination = ({ currentPage, totalPages, baseUrl }: BlogPaginationProps) => {
   return (
     <Pagination className="mt-8">
       <PaginationContent>
@@ -43,5 +43,3 @@ const BlogPagination = ({ currentPage, totalPages, baseUrl }: BlogPaginationProp
     </Pagination>
   );
 };
-
-export default BlogPagination;
