@@ -16,7 +16,7 @@ const Vendors = () => {
         .from('vendor_profiles')
         .select(`
           *,
-          profiles:id (
+          profiles:vendor_profiles_id_fkey (
             username,
             avatar_url
           )
