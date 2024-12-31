@@ -3,10 +3,49 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Vendors = () => {
   const navigate = useNavigate();
   
+  const handleBecomeVendor = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Please sign in to become a vendor");
+        navigate("/login");
+        return;
+      }
+
+      // Update the user's vendor status in profiles
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ is_vendor: true })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Create vendor profile if it doesn't exist
+      const { error: vendorError } = await supabase
+        .from('vendor_profiles')
+        .insert({ id: user.id })
+        .select()
+        .single();
+
+      if (vendorError && !vendorError.message.includes('duplicate')) {
+        throw vendorError;
+      }
+
+      toast.success("Vendor profile created successfully!");
+      navigate("/vendors/new");
+    } catch (error) {
+      console.error('Error becoming vendor:', error);
+      toast.error("Failed to create vendor profile");
+    }
+  };
+
   const mockVendors = [
     {
       id: 1,
@@ -33,10 +72,6 @@ const Vendors = () => {
       templateStyle: "Bold & Modern",
     },
   ];
-
-  const handleBecomeVendor = () => {
-    navigate('/vendors/new');
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
