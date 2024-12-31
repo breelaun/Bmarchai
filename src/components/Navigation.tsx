@@ -11,13 +11,16 @@ import {
 } from "@/components/ui/navigation-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import DesktopMenu from "./navigation/DesktopMenu";
+import MobileMenu from "./navigation/MobileMenu";
+import { MenuItem, SubMenuItem } from "./navigation/types";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const session = useSession();
   const navigate = useNavigate();
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
     { name: "CRM", path: "/crm" },
@@ -26,7 +29,7 @@ const Navigation = () => {
     { name: "Contact", path: "/contact" },
   ];
 
-  const vendorSubmenu = [
+  const vendorSubmenu: SubMenuItem[] = [
     { name: "All Vendors", path: "/vendors", icon: <Store className="h-4 w-4 mr-2" /> },
     { name: "Vendor Profile", path: "/vendors/profile", icon: <User className="h-4 w-4 mr-2" /> },
   ];
@@ -36,7 +39,7 @@ const Navigation = () => {
     navigate("/login");
   };
 
-  const profileSubmenu = [
+  const profileSubmenu: SubMenuItem[] = [
     { name: "Profile", path: "/profile", icon: <User className="h-4 w-4 mr-2" /> },
     { 
       name: "Logout", 
@@ -46,9 +49,15 @@ const Navigation = () => {
     },
   ];
 
-  const authItems = session
-    ? [
-        <NavigationMenu key="profile-menu">
+  const authItems: SubMenuItem[] = [
+    { name: "Login", path: "/login", icon: <LogIn className="h-4 w-4" /> },
+    { name: "Register", path: "/register", icon: <User className="h-4 w-4" /> },
+  ];
+
+  const renderAuthItems = () => {
+    if (session) {
+      return (
+        <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuTrigger>Profile</NavigationMenuTrigger>
@@ -69,11 +78,20 @@ const Navigation = () => {
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-      ]
-    : [
-        { name: "Login", path: "/login", icon: <LogIn className="h-4 w-4" /> },
-        { name: "Register", path: "/register", icon: <User className="h-4 w-4" /> },
-      ];
+      );
+    }
+
+    return authItems.map((item) => (
+      <Link
+        key={item.name}
+        to={item.path}
+        className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+      >
+        {item.icon}
+        {item.name}
+      </Link>
+    ));
+  };
 
   return (
     <nav className="fixed top-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 border-b border-border">
@@ -85,53 +103,11 @@ const Navigation = () => {
             </Link>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex md:items-center md:space-x-8">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Vendors</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="w-48 p-2">
-                      {vendorSubmenu.map((item) => (
-                        <Link
-                          key={item.name}
-                          to={item.path}
-                          className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent"
-                        >
-                          {item.icon}
-                          {item.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
-            {session ? (
-              authItems
-            ) : (
-              authItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
-                >
-                  {item.icon}
-                  {item.name}
-                </Link>
-              ))
-            )}
-          </div>
+          <DesktopMenu 
+            menuItems={menuItems}
+            vendorSubmenu={vendorSubmenu}
+            authItems={renderAuthItems()}
+          />
 
           {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
@@ -145,61 +121,15 @@ const Navigation = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-background border-b border-border">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
-            {vendorSubmenu.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="flex items-center px-3 py-2 text-foreground hover:text-primary transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.icon}
-                {item.name}
-              </Link>
-            ))}
-            {session ? (
-              profileSubmenu.map((item) => (
-                <div
-                  key={item.name}
-                  onClick={() => {
-                    setIsOpen(false);
-                    item.onClick?.();
-                  }}
-                  className="flex items-center px-3 py-2 text-foreground hover:text-primary transition-colors cursor-pointer"
-                >
-                  {item.icon}
-                  {item.name}
-                </div>
-              ))
-            ) : (
-              authItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className="flex items-center gap-2 px-3 py-2 text-foreground hover:text-primary transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.icon}
-                  {item.name}
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+      <MobileMenu 
+        isOpen={isOpen}
+        menuItems={menuItems}
+        vendorSubmenu={vendorSubmenu}
+        profileSubmenu={profileSubmenu}
+        authItems={authItems}
+        onClose={() => setIsOpen(false)}
+        session={!!session}
+      />
     </nav>
   );
 };
