@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface ProfileBannerProps {
@@ -71,23 +71,11 @@ const ProfileBanner = ({ defaultBannerUrl }: ProfileBannerProps) => {
 
   return (
     <div className="relative w-full h-[400px] overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background/90 to-primary/5">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-50 transition-opacity duration-300"
-          style={{ backgroundImage: `url(${displayBannerUrl})` }}
-        />
-      </div>
-      
-      <div className="absolute inset-0 flex items-center justify-center">
-        <Button 
-          variant="outline" 
-          size="lg"
-          className="bg-background/20 backdrop-blur-sm border-primary/20 hover:bg-background/30"
-        >
-          <Play className="w-6 h-6 text-primary mr-2" />
-          Play Intro Video
-        </Button>
-      </div>
+      <img 
+        src={displayBannerUrl}
+        alt="Profile Banner"
+        className="w-full h-full object-cover"
+      />
       
       <label className="absolute bottom-4 right-4 flex gap-2">
         <Button 
