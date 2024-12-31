@@ -12,7 +12,7 @@ const ProfileBlogFilter = ({
   onCategorySelect 
 }: ProfileBlogFilterProps) => {
   return (
-    <div className="mb-6">
+    <div>
       <h2 className="text-2xl font-bold mb-4">My Blogs</h2>
       <div className="flex flex-wrap gap-2">
         <Badge
