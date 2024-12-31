@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import ProfileHeader from "@/components/profile/ProfileHeader";
+import ProfileBlogSection from "@/components/profile/ProfileBlogSection";
 import type { ProfileData } from "@/components/profile/types";
 
 const Profile = () => {
@@ -76,6 +77,9 @@ const Profile = () => {
             Create A Blog
           </Button>
         </div>
+
+        {/* Add the ProfileBlogSection component */}
+        <ProfileBlogSection userId={profile.id} />
       </div>
     </div>
   );
