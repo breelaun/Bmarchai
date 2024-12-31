@@ -1,15 +1,6 @@
 export type SetupStep = "template" | "display" | "bento" | "additional" | "confirmation";
 
-export interface TemplateStyleConfig {
-  colors: {
-    primary: string;
-    secondary: string;
-  };
-  font: string;
-}
-
-// Update SocialLinks to use an index signature
-export interface SocialLinks extends Record<string, string> {
+export interface SocialLinks {
   facebook: string;
   instagram: string;
   twitter: string;
@@ -25,7 +16,14 @@ export interface VendorSetupState {
   enableFeatured: boolean;
 }
 
-// Helper type for database operations
+export interface TemplateStyleConfig {
+  colors: {
+    primary: string;
+    secondary: string;
+  };
+  font: string;
+}
+
 export interface VendorProfileInsert {
   id: string;
   template_id: number | null;
