@@ -12,9 +12,12 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const placeholderCategories = Array(5).fill("placeholder");
 
+  console.log("ProfileBlogSection - userId:", userId); // Debug log
+
   const { data: blogs, isLoading } = useQuery({
     queryKey: ["profile-blogs", userId, selectedCategory],
     queryFn: async () => {
+      console.log("Fetching blogs for user:", userId); // Debug log
       let query = supabase
         .from("blogs")
         .select("*")
@@ -25,7 +28,14 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
         query = query.eq("category", selectedCategory);
       }
 
-      const { data } = await query;
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error("Error fetching blogs:", error); // Debug log
+        throw error;
+      }
+      
+      console.log("Fetched blogs:", data); // Debug log
       return data || [];
     },
   });
@@ -42,7 +52,7 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   ].slice(0, 5);
 
   if (isLoading) {
-    return <div>Loading blogs...</div>;
+    return <div className="text-center py-8">Loading blogs...</div>;
   }
 
   return (
