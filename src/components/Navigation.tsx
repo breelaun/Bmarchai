@@ -28,6 +28,7 @@ const Navigation = () => {
   const vendorSubmenu: SubMenuItem[] = [
     { name: "All Vendors", path: "/vendors", icon: <Store className="h-4 w-4 mr-2" /> },
     { name: "Vendor Profile", path: "/vendors/profile", icon: <User className="h-4 w-4 mr-2" /> },
+    { name: "Startup", path: "/vendors/startup", icon: <Store className="h-4 w-4 mr-2" /> },
   ];
 
   const handleLogout = async () => {
