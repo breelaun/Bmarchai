@@ -63,7 +63,7 @@ const Login = () => {
               }
             }
           }}
-          onErrorHandler={(error) => {
+          onError={(error) => {
             console.error('Auth error:', error);
             toast({
               variant: "destructive",
