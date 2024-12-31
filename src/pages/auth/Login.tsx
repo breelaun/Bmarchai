@@ -6,6 +6,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToolTracking } from "@/hooks/use-tool-tracking";
 import { useToast } from "@/hooks/use-toast";
+import { AuthError } from "@supabase/supabase-js"; // Import AuthError type
 
 const Login = () => {
   const session = useSession();
@@ -63,7 +64,7 @@ const Login = () => {
               }
             }
           }}
-          onError={(error) => {
+          onError={(error: AuthError) => {
             console.error('Auth error:', error);
             toast({
               variant: "destructive",
