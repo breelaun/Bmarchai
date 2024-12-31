@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Clock, Eye } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 interface ProfileBlogSectionProps {
   userId: string;
@@ -12,19 +12,23 @@ interface ProfileBlogSectionProps {
 
 const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const placeholderCategories = Array(5).fill("placeholder");
 
   // First, fetch the user's profile to get their username
   const { data: profile } = useQuery({
     queryKey: ["profile", userId],
     queryFn: async () => {
+      console.log("Fetching profile for user:", userId);
       const { data, error } = await supabase
         .from("profiles")
         .select("username")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
+      console.log("Fetched profile:", data);
       return data;
     },
   });
@@ -34,12 +38,12 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
     queryKey: ["profile-blogs", profile?.username, selectedCategory],
     queryFn: async () => {
       if (!profile?.username) return [];
+      console.log("Fetching blogs for username:", profile.username);
       
       let query = supabase
         .from("blogs")
         .select("*")
-        .eq("author", profile.username)
-        .order("created_at", { ascending: false });
+        .eq("author", profile.username);
 
       if (selectedCategory) {
         query = query.eq("category", selectedCategory);
@@ -52,25 +56,18 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
         throw error;
       }
       
+      console.log("Fetched blogs:", data);
       return data || [];
     },
     enabled: !!profile?.username,
   });
 
   // Get unique categories from user's blogs
-  const activeCategories = blogs
-    ? Array.from(new Set(blogs.map((blog) => blog.category)))
-    : [];
-
-  // Combine active categories with placeholders
-  const displayCategories = [
-    ...activeCategories,
-    ...placeholderCategories.slice(activeCategories.length),
-  ].slice(0, 5);
+  const categories = blogs ? Array.from(new Set(blogs.map((blog) => blog.category))) : [];
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-7xl mx-auto p-4">
+      <div className="w-full p-4">
         <div className="flex items-center justify-center h-40">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -79,12 +76,12 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   }
 
   return (
-    <div className="w-full bg-background/50 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
-        {/* Categories Header */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 mb-8">
-          <h2 className="text-2xl font-bold font-heading">Blog Categories</h2>
-          <div className="flex flex-wrap items-center gap-3">
+    <div className="w-full bg-background">
+      <div className="max-w-7xl mx-auto p-4">
+        {/* Categories Filter */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4">My Blogs</h2>
+          <div className="flex flex-wrap gap-2">
             <Badge
               variant={selectedCategory === null ? "default" : "outline"}
               className="cursor-pointer"
@@ -92,7 +89,7 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
             >
               All
             </Badge>
-            {activeCategories.map((category) => (
+            {categories.map((category) => (
               <Badge
                 key={category}
                 variant={selectedCategory === category ? "default" : "outline"}
@@ -107,51 +104,33 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
 
         {/* Blog Grid */}
         {blogs && blogs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {blogs.map((blog) => (
               <Link
                 key={blog.id}
                 to={`/blogs/${blog.category}/${blog.slug}`}
-                className="group hover:opacity-90 transition-all"
+                className="block hover:opacity-90 transition-all"
               >
-                <Card className="overflow-hidden h-full border-border/50 hover:border-primary/50 transition-colors">
-                  <div className="aspect-video relative">
+                <Card className="h-full">
+                  <div className="relative aspect-video">
                     <img
                       src={blog.image_url || "/placeholder.svg"}
                       alt={blog.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-t-lg"
                     />
                     <Badge 
-                      variant="secondary" 
                       className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm"
                     >
                       {blog.status}
                     </Badge>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                    <h3 className="font-medium line-clamp-2 mb-2">
                       {blog.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-                      {blog.excerpt}
-                    </p>
-                    <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <CalendarIcon className="w-3 h-3" />
-                        {new Date(blog.created_at).toLocaleDateString()}
-                      </span>
-                      {blog.reading_time && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {blog.reading_time} min read
-                        </span>
-                      )}
-                      {blog.view_count !== null && (
-                        <span className="flex items-center gap-1">
-                          <Eye className="w-3 h-3" />
-                          {blog.view_count} views
-                        </span>
-                      )}
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CalendarIcon className="w-4 h-4" />
+                      {new Date(blog.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </Card>
