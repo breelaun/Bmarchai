@@ -10,7 +10,7 @@ interface ProfileBlogSectionProps {
 
 const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const categories = ["Food", "Health", "Lifestyle", "Drama", "Sports"];
+  const placeholderCategories = Array(5).fill("placeholder");
 
   const { data: blogs, isLoading } = useQuery({
     queryKey: ["profile-blogs", userId, selectedCategory],
@@ -30,6 +30,17 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
     },
   });
 
+  // Get unique categories from user's blogs
+  const activeCategories = blogs
+    ? Array.from(new Set(blogs.map((blog) => blog.category)))
+    : [];
+
+  // Combine active categories with placeholders
+  const displayCategories = [
+    ...activeCategories,
+    ...placeholderCategories.slice(activeCategories.length),
+  ].slice(0, 5);
+
   if (isLoading) {
     return <div>Loading blogs...</div>;
   }
@@ -41,25 +52,20 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
         <div className="flex items-center gap-8 mb-8">
           <h2 className="text-2xl font-bold">Categories</h2>
           <div className="flex items-center gap-6">
-            {categories.map((category, index) => (
-              <div key={category} className="flex items-center gap-2">
-                <button
-                  onClick={() => setSelectedCategory(category)}
-                  className={`text-lg hover:text-primary transition-colors ${
-                    selectedCategory === category ? "underline font-semibold" : ""
-                  }`}
-                >
-                  {category}
-                </button>
-                <span
-                  className={`w-8 h-8 flex items-center justify-center rounded-full ${
-                    selectedCategory === category
-                      ? "bg-yellow-400 text-black"
-                      : "text-white"
-                  }`}
-                >
-                  {index + 1}
-                </span>
+            {displayCategories.map((category, index) => (
+              <div key={index} className="flex items-center gap-2">
+                {category === "placeholder" ? (
+                  <div className="w-20 h-1 bg-gray-600 rounded" />
+                ) : (
+                  <button
+                    onClick={() => setSelectedCategory(category)}
+                    className={`text-lg hover:text-primary transition-colors ${
+                      selectedCategory === category ? "underline font-semibold" : ""
+                    }`}
+                  >
+                    {category}
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -100,7 +106,7 @@ const ProfileBlogSection = ({ userId }: ProfileBlogSectionProps) => {
               to="/blogs/new"
               className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Create Your First Blog
+              Create a Blog
             </Link>
           </div>
         )}
