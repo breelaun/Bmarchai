@@ -28,52 +28,78 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
     queryKey: ['profile', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
       
-      if (error) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching profile:', error);
+          toast({
+            variant: "destructive",
+            title: "Error fetching profile",
+            description: error.message
+          });
+          throw error;
+        }
+        return data;
+      } catch (error: any) {
+        console.error('Error in profile query:', error);
         toast({
           variant: "destructive",
-          title: "Error fetching profile",
-          description: error.message
+          title: "Error",
+          description: "Failed to fetch profile data"
         });
         throw error;
       }
-      return data;
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id,
+    retry: 1
   });
 
   const { data: vendorProfile, isLoading: vendorLoading } = useQuery({
     queryKey: ['vendorProfile', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
-      const { data, error } = await supabase
-        .from('vendor_profiles')
-        .select(`
-          *,
-          template:vendor_templates(*)
-        `)
-        .eq('id', session.user.id)
-        .single();
       
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+      try {
+        const { data, error } = await supabase
+          .from('vendor_profiles')
+          .select(`
+            *,
+            template:vendor_templates(*)
+          `)
+          .eq('id', session.user.id)
+          .maybeSingle();
+        
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+          console.error('Error fetching vendor profile:', error);
+          toast({
+            variant: "destructive",
+            title: "Error fetching vendor profile",
+            description: error.message
+          });
+          throw error;
+        }
+
+        // Type assertion after validating the shape of the data
+        const typedData = data as unknown as VendorProfileData;
+        return typedData;
+      } catch (error: any) {
+        console.error('Error in vendor profile query:', error);
         toast({
           variant: "destructive",
-          title: "Error fetching vendor profile",
-          description: error.message
+          title: "Error",
+          description: "Failed to fetch vendor profile data"
         });
         throw error;
       }
-
-      // Type assertion after validating the shape of the data
-      const typedData = data as unknown as VendorProfileData;
-      return typedData;
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id,
+    retry: 1
   });
 
   if (profileLoading || vendorLoading) {
