@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { SetupStep, VendorSetupState, SocialLinks } from "../types/vendor-setup";
+import { SetupStep, VendorSetupState, SocialLinks, VendorProfileInsert } from "../types/vendor-setup";
 
 export function useVendorSetup() {
   const navigate = useNavigate();
@@ -45,7 +45,7 @@ export function useVendorSetup() {
         return;
       }
 
-      const profileData = {
+      const profileData: VendorProfileInsert = {
         id: user.id,
         template_id: selectedTemplate,
         customizations: {
@@ -53,7 +53,7 @@ export function useVendorSetup() {
           bento_style: selectedBento,
         },
         business_description: aboutMe,
-        social_links: socialLinks,
+        social_links: socialLinks, // Now TypeScript knows this is safe
       };
 
       const { error: profileError } = await supabase
