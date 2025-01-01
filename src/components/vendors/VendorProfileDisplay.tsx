@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Facebook, Instagram, Twitter, Star, Store } from "lucide-react";
+import { Facebook, Instagram, Twitter, Star, Store, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VendorProfileDisplayProps {
   vendorData: {
@@ -19,6 +21,21 @@ interface VendorProfileDisplayProps {
 }
 
 const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
+  const { data: template } = useQuery({
+    queryKey: ['vendorTemplate', vendorData.template],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('vendor_templates')
+        .select('*')
+        .eq('id', vendorData.template)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!vendorData.template
+  });
+
   const getTemplateTitle = (template: string) => {
     const titles: Record<string, string> = {
       classic: "Classic Elegance",
@@ -45,7 +62,28 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         <CardContent className="space-y-6">
           <div>
             <h3 className="text-lg font-semibold mb-2">Template Style</h3>
-            <p className="text-muted-foreground">{getTemplateTitle(vendorData.template)}</p>
+            <div className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              <p className="text-muted-foreground">
+                {template?.name || "No template selected"}
+              </p>
+            </div>
+            {template?.style_config && (
+              <div className="mt-2 flex gap-2">
+                <div
+                  className="w-6 h-6 rounded-full"
+                  style={{ backgroundColor: template.style_config.colors.primary }}
+                />
+                <div
+                  className="w-6 h-6 rounded-full"
+                  style={{ backgroundColor: template.style_config.colors.secondary }}
+                />
+                <div
+                  className="w-6 h-6 rounded-full"
+                  style={{ backgroundColor: template.style_config.colors.background }}
+                />
+              </div>
+            )}
           </div>
 
           <div>
