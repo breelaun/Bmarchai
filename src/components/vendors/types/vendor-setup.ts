@@ -4,6 +4,7 @@ export interface TemplateStyleConfig {
   colors: {
     primary: string;
     secondary: string;
+    background: string; // Added background color
   };
   font: string;
 }
