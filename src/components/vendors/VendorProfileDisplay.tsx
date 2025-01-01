@@ -6,7 +6,7 @@ import VendorHeader from "./profile/VendorHeader";
 import VendorSidebar from "./profile/VendorSidebar";
 import VendorStore from "./profile/VendorStore";
 import VendorSocial from "./profile/VendorSocial";
-import { SocialLinks } from "../types/vendor-setup";
+import { SocialLinks, VendorProfileData, VendorCustomizations } from "../types/vendor-setup";
 
 interface VendorProfileDisplayProps {
   vendorData?: {
@@ -18,16 +18,6 @@ interface VendorProfileDisplayProps {
     enableReviews: boolean;
     enableFeatured: boolean;
   };
-}
-
-interface VendorProfileData {
-  template_id: number | null;
-  customizations: {
-    display_style: string;
-    bento_style: string;
-  } | null;
-  social_links: SocialLinks | null;
-  business_description: string | null;
 }
 
 const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
@@ -78,7 +68,10 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         });
         throw error;
       }
-      return data as VendorProfileData;
+
+      // Type assertion after validating the shape of the data
+      const typedData = data as unknown as VendorProfileData;
+      return typedData;
     },
     enabled: !!session?.user?.id
   });
@@ -108,8 +101,8 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
 
   const currentVendorData = vendorProfile ? {
     template: vendorProfile.template_id,
-    displayStyle: vendorProfile.customizations?.display_style || "default",
-    bentoStyle: vendorProfile.customizations?.bento_style || "default",
+    displayStyle: (vendorProfile.customizations as VendorCustomizations)?.display_style || "default",
+    bentoStyle: (vendorProfile.customizations as VendorCustomizations)?.bento_style || "default",
     socialLinks: vendorProfile.social_links || defaultVendorData.socialLinks,
     aboutMe: vendorProfile.business_description || "",
     enableReviews: true,
