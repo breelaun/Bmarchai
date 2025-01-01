@@ -28,18 +28,26 @@ const VendorProfile = () => {
     queryFn: async () => {
       if (!id || isNewVendor) return null;
       
+      // If the route is "profile", we need to get the current user's profile
+      const isProfileRoute = id === "profile";
+      
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      
+      const userId = isProfileRoute ? userData.user?.id : id;
+      if (!userId) return null;
+
       const { data, error } = await supabase
         .from('vendor_profiles')
         .select(`
           *,
           template:vendor_templates(*)
         `)
-        .eq('id', id)
+        .eq('id', userId)
         .maybeSingle();
 
       if (error) throw error;
 
-      // Type assertion after validation
       if (data) {
         const customizations = data.customizations as { display_style?: string; bento_style?: string; } | null;
         const socialLinks = data.social_links as { facebook?: string; instagram?: string; twitter?: string; } | null;
@@ -61,10 +69,10 @@ const VendorProfile = () => {
     template: vendorProfile.template_id,
     displayStyle: vendorProfile.customizations?.display_style || "Default Display",
     bentoStyle: vendorProfile.customizations?.bento_style || "Show Image + Name + Price",
-    socialLinks: vendorProfile.social_links || {
-      facebook: "",
-      instagram: "",
-      twitter: "",
+    socialLinks: {
+      facebook: vendorProfile.social_links?.facebook || "",
+      instagram: vendorProfile.social_links?.instagram || "",
+      twitter: vendorProfile.social_links?.twitter || "",
     },
     aboutMe: vendorProfile.business_description || "",
     enableReviews: true,
