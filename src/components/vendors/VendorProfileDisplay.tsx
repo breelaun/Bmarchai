@@ -6,21 +6,28 @@ import VendorHeader from "./profile/VendorHeader";
 import VendorSidebar from "./profile/VendorSidebar";
 import VendorStore from "./profile/VendorStore";
 import VendorSocial from "./profile/VendorSocial";
+import { SocialLinks } from "../types/vendor-setup";
 
 interface VendorProfileDisplayProps {
   vendorData?: {
     template: number | null;
     displayStyle: string;
     bentoStyle: string;
-    socialLinks: {
-      facebook: string;
-      instagram: string;
-      twitter: string;
-    };
+    socialLinks: SocialLinks;
     aboutMe: string;
     enableReviews: boolean;
     enableFeatured: boolean;
   };
+}
+
+interface VendorProfileData {
+  template_id: number | null;
+  customizations: {
+    display_style: string;
+    bento_style: string;
+  } | null;
+  social_links: SocialLinks | null;
+  business_description: string | null;
 }
 
 const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
@@ -71,7 +78,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         });
         throw error;
       }
-      return data;
+      return data as VendorProfileData;
     },
     enabled: !!session?.user?.id
   });
