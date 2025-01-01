@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Store, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 interface VendorStoreProps {
   vendorId?: string;
@@ -19,17 +20,32 @@ interface Product {
 }
 
 const VendorStore = ({ vendorId }: VendorStoreProps) => {
-  // Only proceed with the query if vendorId is a valid UUID
-  const isValidUUID = vendorId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vendorId);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Get the current user's ID when the component mounts
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
+
+  // Use the provided vendorId or fall back to the current user's ID
+  const effectiveVendorId = vendorId || currentUserId;
+
+  // Only proceed with the query if we have a valid UUID
+  const isValidUUID = effectiveVendorId && 
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(effectiveVendorId);
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ["vendorProducts", vendorId],
+    queryKey: ["vendorProducts", effectiveVendorId],
     queryFn: async () => {
       if (!isValidUUID) return [];
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .eq("vendor_id", vendorId)
+        .eq("vendor_id", effectiveVendorId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
