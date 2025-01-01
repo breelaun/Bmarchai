@@ -8,14 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 interface VendorProfileData {
   template_id: number | null;
   customizations: {
-    display_style: string;
-    bento_style: string;
-  };
+    display_style?: string;
+    bento_style?: string;
+  } | null;
   social_links: {
-    facebook: string;
-    instagram: string;
-    twitter: string;
-  };
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+  } | null;
   business_description: string | null;
 }
 
@@ -26,7 +26,7 @@ const VendorProfile = () => {
   const { data: vendorProfile } = useQuery({
     queryKey: ['vendorProfile', id],
     queryFn: async () => {
-      if (!id) return null;
+      if (!id || isNewVendor) return null;
       
       const { data, error } = await supabase
         .from('vendor_profiles')
@@ -38,7 +38,21 @@ const VendorProfile = () => {
         .maybeSingle();
 
       if (error) throw error;
-      return data as VendorProfileData;
+
+      // Type assertion after validation
+      if (data) {
+        const customizations = data.customizations as { display_style?: string; bento_style?: string; } | null;
+        const socialLinks = data.social_links as { facebook?: string; instagram?: string; twitter?: string; } | null;
+        
+        return {
+          template_id: data.template_id,
+          customizations,
+          social_links: socialLinks,
+          business_description: data.business_description
+        } as VendorProfileData;
+      }
+      
+      return null;
     },
     enabled: !isNewVendor && !!id
   });
