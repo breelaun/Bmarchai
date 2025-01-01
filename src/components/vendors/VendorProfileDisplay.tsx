@@ -20,18 +20,20 @@ interface VendorProfileDisplayProps {
   };
 }
 
+interface TemplateStyleConfig {
+  colors: {
+    primary: string;
+    secondary: string;
+    background: string;
+  };
+  font: string;
+}
+
 interface TemplateData {
   id: number;
   name: string;
   description: string | null;
-  style_config: {
-    colors: {
-      primary: string;
-      secondary: string;
-      background: string;
-    };
-    font: string;
-  };
+  style_config: TemplateStyleConfig;
 }
 
 const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
@@ -44,10 +46,30 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         .from('vendor_templates')
         .select('*')
         .eq('id', vendorData.template)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      return data as TemplateData;
+      
+      // Type guard to validate the style config structure
+      const isValidStyleConfig = (config: any): config is TemplateStyleConfig => {
+        return (
+          config &&
+          config.colors &&
+          typeof config.colors.primary === 'string' &&
+          typeof config.colors.secondary === 'string' &&
+          typeof config.colors.background === 'string' &&
+          typeof config.font === 'string'
+        );
+      };
+
+      if (data && isValidStyleConfig(data.style_config)) {
+        return {
+          ...data,
+          style_config: data.style_config as TemplateStyleConfig,
+        } as TemplateData;
+      }
+      
+      throw new Error("Invalid template data structure");
     },
     enabled: !!vendorData.template
   });

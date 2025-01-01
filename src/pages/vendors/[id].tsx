@@ -5,6 +5,20 @@ import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
 import { supabase } from "@/integrations/supabase/client";
 
+interface VendorProfileData {
+  template_id: number | null;
+  customizations: {
+    display_style: string;
+    bento_style: string;
+  };
+  social_links: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
+  business_description: string | null;
+}
+
 const VendorProfile = () => {
   const { id } = useParams();
   const isNewVendor = id === "new";
@@ -12,6 +26,8 @@ const VendorProfile = () => {
   const { data: vendorProfile } = useQuery({
     queryKey: ['vendorProfile', id],
     queryFn: async () => {
+      if (!id) return null;
+      
       const { data, error } = await supabase
         .from('vendor_profiles')
         .select(`
@@ -22,35 +38,35 @@ const VendorProfile = () => {
         .maybeSingle();
 
       if (error) throw error;
-      return data;
+      return data as VendorProfileData;
     },
     enabled: !isNewVendor && !!id
   });
 
-  const vendorData = {
-    template: vendorProfile?.template_id || null,
-    displayStyle: vendorProfile?.customizations?.display_style as string || "Default Display",
-    bentoStyle: vendorProfile?.customizations?.bento_style as string || "Show Image + Name + Price",
-    socialLinks: (vendorProfile?.social_links as { facebook: string; instagram: string; twitter: string; }) || {
+  const vendorData = vendorProfile ? {
+    template: vendorProfile.template_id,
+    displayStyle: vendorProfile.customizations?.display_style || "Default Display",
+    bentoStyle: vendorProfile.customizations?.bento_style || "Show Image + Name + Price",
+    socialLinks: vendorProfile.social_links || {
       facebook: "",
       instagram: "",
       twitter: "",
     },
-    aboutMe: vendorProfile?.business_description || "",
+    aboutMe: vendorProfile.business_description || "",
     enableReviews: true,
     enableFeatured: true,
-  };
+  } : null;
 
   return (
     <div className="container mx-auto px-4 py-8">
       {isNewVendor ? (
         <VendorProfileSetup />
-      ) : (
+      ) : vendorData ? (
         <div className="space-y-8">
           <VendorProfileDisplay vendorData={vendorData} />
           <VendorStore vendorId={id} />
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
