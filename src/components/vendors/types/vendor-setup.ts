@@ -8,11 +8,22 @@ export interface TemplateStyleConfig {
   font: string;
 }
 
-// Update SocialLinks to use an index signature
 export interface SocialLinks extends Record<string, string> {
   facebook: string;
   instagram: string;
   twitter: string;
+}
+
+export interface VendorTheme {
+  primaryColor: string;
+  secondaryColor: string;
+  font: string;
+}
+
+export interface VendorCustomizations {
+  theme?: VendorTheme;
+  display_style?: string;
+  bento_style?: string;
 }
 
 export interface VendorSetupState {
@@ -25,14 +36,10 @@ export interface VendorSetupState {
   enableFeatured: boolean;
 }
 
-// Helper type for database operations
 export interface VendorProfileInsert {
   id: string;
   template_id: number | null;
-  customizations: {
-    display_style: string;
-    bento_style: string;
-  };
+  customizations: VendorCustomizations;
   business_description: string | null;
   social_links: Record<string, string>;
 }

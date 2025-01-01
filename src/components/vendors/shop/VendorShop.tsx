@@ -1,13 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import VendorHeader from "./VendorHeader";
 import ProductGrid from "./ProductGrid";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface VendorCustomizations {
+  theme?: {
+    primaryColor: string;
+    secondaryColor: string;
+    font: string;
+  };
+}
+
 const VendorShop = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // Redirect to home if id is "new" or invalid
+  if (id === "new" || !id) {
+    navigate("/");
+    return null;
+  }
 
   const { data: vendorData, isLoading: vendorLoading } = useQuery({
     queryKey: ["vendor", id],
@@ -24,7 +39,7 @@ const VendorShop = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && id !== "new",
   });
 
   const { data: products, isLoading: productsLoading } = useQuery({
@@ -39,7 +54,7 @@ const VendorShop = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && id !== "new",
   });
 
   if (vendorLoading || productsLoading) {
@@ -63,7 +78,8 @@ const VendorShop = () => {
     );
   }
 
-  const theme = vendorData.customizations?.theme || {
+  const customizations = vendorData.customizations as VendorCustomizations;
+  const theme = customizations?.theme || {
     primaryColor: "#f7bd00",
     secondaryColor: "#222222",
     font: "sans",
