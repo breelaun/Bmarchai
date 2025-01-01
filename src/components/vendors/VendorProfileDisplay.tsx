@@ -37,10 +37,12 @@ interface TemplateData {
 }
 
 const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
-  const { data: template } = useQuery({
+  const { data: template, isLoading: templateLoading } = useQuery({
     queryKey: ['vendorTemplate', vendorData.template],
     queryFn: async () => {
       if (!vendorData.template) return null;
+      
+      console.log("Fetching template data for ID:", vendorData.template);
       
       const { data, error } = await supabase
         .from('vendor_templates')
@@ -48,7 +50,12 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         .eq('id', vendorData.template)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching template:", error);
+        throw error;
+      }
+
+      console.log("Template data:", data);
       
       // Type guard to validate the style config structure
       const isValidStyleConfig = (config: any): config is TemplateStyleConfig => {
@@ -69,10 +76,21 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         } as TemplateData;
       }
       
+      console.error("Invalid template data structure:", data);
       throw new Error("Invalid template data structure");
     },
     enabled: !!vendorData.template
   });
+
+  if (templateLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading template...</CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-8">

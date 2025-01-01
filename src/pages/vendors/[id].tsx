@@ -28,7 +28,6 @@ const VendorProfile = () => {
   const isNewVendor = id === "new";
   const isProfileRoute = id === "profile";
 
-  // Handle authentication redirect in useEffect
   useEffect(() => {
     if (isProfileRoute && !session) {
       navigate("/auth/login");
@@ -49,6 +48,8 @@ const VendorProfile = () => {
         userId = session.user.id;
       }
 
+      console.log("Fetching vendor profile for userId:", userId);
+
       const { data, error } = await supabase
         .from('vendor_profiles')
         .select(`
@@ -58,20 +59,33 @@ const VendorProfile = () => {
         .eq('id', userId)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching vendor profile:", error);
+        throw error;
+      }
+
+      console.log("Vendor profile data:", data);
       return data as VendorProfileData;
     },
     enabled: !isNewVendor && !!id && (!isProfileRoute || !!session)
   });
 
-  // Early return for loading state
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
   }
 
-  // Early return for authentication check
   if (isProfileRoute && !session) {
     return null;
+  }
+
+  // If we're on the profile route and there's no vendor profile, show the setup
+  if (isProfileRoute && !vendorProfile) {
+    console.log("No vendor profile found, showing setup");
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <VendorProfileSetup />
+      </div>
+    );
   }
 
   const vendorData = vendorProfile ? {
@@ -97,7 +111,9 @@ const VendorProfile = () => {
           <VendorProfileDisplay vendorData={vendorData} />
           <VendorStore vendorId={id} />
         </div>
-      ) : null}
+      ) : (
+        <VendorProfileSetup />
+      )}
     </div>
   );
 };
