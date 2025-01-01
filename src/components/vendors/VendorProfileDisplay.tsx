@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import VendorHeader from "./profile/VendorHeader";
 import VendorSidebar from "./profile/VendorSidebar";
 import VendorStore from "./profile/VendorStore";
 import VendorSocial from "./profile/VendorSocial";
 
 interface VendorProfileDisplayProps {
-  vendorData: {
+  vendorData?: {
     template: number | null;
     displayStyle: string;
     bentoStyle: string;
@@ -24,7 +25,9 @@ interface VendorProfileDisplayProps {
 
 const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
   const session = useSession();
-  const { data: profile } = useQuery({
+  const { toast } = useToast();
+
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
@@ -34,15 +37,84 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         .eq('id', session.user.id)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching profile",
+          description: error.message
+        });
+        throw error;
+      }
       return data;
     },
     enabled: !!session?.user?.id
   });
 
+  const { data: vendorProfile, isLoading: vendorLoading } = useQuery({
+    queryKey: ['vendorProfile', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data, error } = await supabase
+        .from('vendor_profiles')
+        .select(`
+          *,
+          template:vendor_templates(*)
+        `)
+        .eq('id', session.user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+        toast({
+          variant: "destructive",
+          title: "Error fetching vendor profile",
+          description: error.message
+        });
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!session?.user?.id
+  });
+
+  if (profileLoading || vendorLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  // If no vendor profile exists yet, we'll use default empty values
+  const defaultVendorData = {
+    template: null,
+    displayStyle: "default",
+    bentoStyle: "default",
+    socialLinks: {
+      facebook: "",
+      instagram: "",
+      twitter: ""
+    },
+    aboutMe: "",
+    enableReviews: false,
+    enableFeatured: false
+  };
+
+  const currentVendorData = vendorProfile ? {
+    template: vendorProfile.template_id,
+    displayStyle: vendorProfile.customizations?.display_style || "default",
+    bentoStyle: vendorProfile.customizations?.bento_style || "default",
+    socialLinks: vendorProfile.social_links || defaultVendorData.socialLinks,
+    aboutMe: vendorProfile.business_description || "",
+    enableReviews: true,
+    enableFeatured: true
+  } : defaultVendorData;
+
   return (
     <div className="min-h-screen bg-background">
-      <VendorHeader profile={profile} aboutMe={vendorData.aboutMe} />
+      <VendorHeader 
+        profile={profile} 
+        aboutMe={currentVendorData.aboutMe}
+      />
       
       <div className="container mx-auto mt-8">
         <div className="grid grid-cols-12 gap-6">
@@ -52,7 +124,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           
           <div className="col-span-9 space-y-6">
             <VendorStore />
-            <VendorSocial socialLinks={vendorData.socialLinks} />
+            <VendorSocial socialLinks={currentVendorData.socialLinks} />
           </div>
         </div>
       </div>
