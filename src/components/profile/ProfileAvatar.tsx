@@ -10,12 +10,24 @@ interface ProfileAvatarProps {
   avatarUrl: string | null;
   fullName: string;
   username: string;
+  size?: "sm" | "md" | "lg";
 }
 
-const ProfileAvatar = ({ avatarUrl, fullName, username }: ProfileAvatarProps) => {
+const ProfileAvatar = ({ avatarUrl, fullName, username, size = "md" }: ProfileAvatarProps) => {
   const session = useSession();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+
+  const getAvatarSize = () => {
+    switch (size) {
+      case "sm":
+        return "w-16 h-16";
+      case "lg":
+        return "w-32 h-32";
+      default:
+        return "w-24 h-24";
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,7 +84,7 @@ const ProfileAvatar = ({ avatarUrl, fullName, username }: ProfileAvatarProps) =>
 
   return (
     <div className="relative">
-      <Avatar className="w-32 h-32 border-4 border-background">
+      <Avatar className={`border-4 border-background ${getAvatarSize()}`}>
         <AvatarImage src={avatarUrl || undefined} />
         <AvatarFallback className="text-4xl bg-primary text-primary-foreground">
           {fullName?.charAt(0) || username?.charAt(0) || '?'}
