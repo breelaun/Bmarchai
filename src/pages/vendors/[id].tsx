@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@supabase/auth-helpers-react";
+import { useEffect } from "react";
 import VendorProfileSetup from "@/components/vendors/VendorProfileSetup";
 import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
@@ -27,11 +28,12 @@ const VendorProfile = () => {
   const isNewVendor = id === "new";
   const isProfileRoute = id === "profile";
 
-  // Redirect to login if trying to access profile without being authenticated
-  if (isProfileRoute && !session) {
-    navigate("/auth/login");
-    return null;
-  }
+  // Handle authentication redirect in useEffect
+  useEffect(() => {
+    if (isProfileRoute && !session) {
+      navigate("/auth/login");
+    }
+  }, [isProfileRoute, session, navigate]);
 
   const { data: vendorProfile, isLoading } = useQuery({
     queryKey: ['vendorProfile', id, session?.user?.id],
@@ -40,7 +42,6 @@ const VendorProfile = () => {
       
       let userId = id;
       
-      // If accessing /profile route, use the authenticated user's ID
       if (isProfileRoute) {
         if (!session?.user?.id) {
           throw new Error("No authenticated user found");
@@ -58,26 +59,19 @@ const VendorProfile = () => {
         .maybeSingle();
 
       if (error) throw error;
-
-      if (data) {
-        const customizations = data.customizations as { display_style?: string; bento_style?: string; } | null;
-        const socialLinks = data.social_links as { facebook?: string; instagram?: string; twitter?: string; } | null;
-        
-        return {
-          template_id: data.template_id,
-          customizations,
-          social_links: socialLinks,
-          business_description: data.business_description
-        } as VendorProfileData;
-      }
-      
-      return null;
+      return data as VendorProfileData;
     },
     enabled: !isNewVendor && !!id && (!isProfileRoute || !!session)
   });
 
+  // Early return for loading state
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
+  }
+
+  // Early return for authentication check
+  if (isProfileRoute && !session) {
+    return null;
   }
 
   const vendorData = vendorProfile ? {
