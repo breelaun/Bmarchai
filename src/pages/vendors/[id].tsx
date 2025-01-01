@@ -1,5 +1,6 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "@supabase/auth-helpers-react";
 import VendorProfileSetup from "@/components/vendors/VendorProfileSetup";
 import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
@@ -21,21 +22,31 @@ interface VendorProfileData {
 
 const VendorProfile = () => {
   const { id } = useParams();
+  const session = useSession();
+  const navigate = useNavigate();
   const isNewVendor = id === "new";
+  const isProfileRoute = id === "profile";
 
-  const { data: vendorProfile } = useQuery({
-    queryKey: ['vendorProfile', id],
+  // Redirect to login if trying to access profile without being authenticated
+  if (isProfileRoute && !session) {
+    navigate("/auth/login");
+    return null;
+  }
+
+  const { data: vendorProfile, isLoading } = useQuery({
+    queryKey: ['vendorProfile', id, session?.user?.id],
     queryFn: async () => {
       if (!id || isNewVendor) return null;
       
-      // If the route is "profile", we need to get the current user's profile
-      const isProfileRoute = id === "profile";
+      let userId = id;
       
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      
-      const userId = isProfileRoute ? userData.user?.id : id;
-      if (!userId) return null;
+      // If accessing /profile route, use the authenticated user's ID
+      if (isProfileRoute) {
+        if (!session?.user?.id) {
+          throw new Error("No authenticated user found");
+        }
+        userId = session.user.id;
+      }
 
       const { data, error } = await supabase
         .from('vendor_profiles')
@@ -62,8 +73,12 @@ const VendorProfile = () => {
       
       return null;
     },
-    enabled: !isNewVendor && !!id
+    enabled: !isNewVendor && !!id && (!isProfileRoute || !!session)
   });
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
+  }
 
   const vendorData = vendorProfile ? {
     template: vendorProfile.template_id,
