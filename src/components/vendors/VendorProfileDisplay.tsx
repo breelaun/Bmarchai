@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface VendorProfileDisplayProps {
   vendorData: {
-    template: string;
+    template: number | null;
     displayStyle: string;
     bentoStyle: string;
     socialLinks: {
@@ -20,10 +20,26 @@ interface VendorProfileDisplayProps {
   };
 }
 
+interface TemplateData {
+  id: number;
+  name: string;
+  description: string | null;
+  style_config: {
+    colors: {
+      primary: string;
+      secondary: string;
+      background: string;
+    };
+    font: string;
+  };
+}
+
 const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
   const { data: template } = useQuery({
     queryKey: ['vendorTemplate', vendorData.template],
     queryFn: async () => {
+      if (!vendorData.template) return null;
+      
       const { data, error } = await supabase
         .from('vendor_templates')
         .select('*')
@@ -31,24 +47,10 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as TemplateData;
     },
     enabled: !!vendorData.template
   });
-
-  const getTemplateTitle = (template: string) => {
-    const titles: Record<string, string> = {
-      classic: "Classic Elegance",
-      bold: "Bold & Modern",
-      minimalist: "Minimalist Chic",
-      vintage: "Vintage Vibes",
-      playful: "Playful Pop",
-      luxury: "Luxury Boutique",
-      sport: "Sport & Active",
-      tech: "Tech Modern",
-    };
-    return titles[template] || template;
-  };
 
   return (
     <div className="space-y-8">

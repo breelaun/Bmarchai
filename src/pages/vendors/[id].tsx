@@ -19,7 +19,7 @@ const VendorProfile = () => {
           template:vendor_templates(*)
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -28,10 +28,10 @@ const VendorProfile = () => {
   });
 
   const vendorData = {
-    template: vendorProfile?.template_id,
-    displayStyle: vendorProfile?.customizations?.display_style || "Default Display",
-    bentoStyle: vendorProfile?.customizations?.bento_style || "Show Image + Name + Price",
-    socialLinks: vendorProfile?.social_links || {
+    template: vendorProfile?.template_id || null,
+    displayStyle: vendorProfile?.customizations?.display_style as string || "Default Display",
+    bentoStyle: vendorProfile?.customizations?.bento_style as string || "Show Image + Name + Price",
+    socialLinks: (vendorProfile?.social_links as { facebook: string; instagram: string; twitter: string; }) || {
       facebook: "",
       instagram: "",
       twitter: "",
