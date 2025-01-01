@@ -45,28 +45,67 @@ export function useVendorSetup() {
         return;
       }
 
-      const profileData: VendorProfileInsert = {
-        id: user.id,
-        template_id: selectedTemplate,
-        customizations: {
-          display_style: selectedDisplay,
-          bento_style: selectedBento,
-        },
-        business_description: aboutMe,
-        social_links: socialLinks, // Now TypeScript knows this is safe
-      };
-
-      const { error: profileError } = await supabase
+      // First check if a vendor profile already exists
+      const { data: existingProfile } = await supabase
         .from("vendor_profiles")
-        .insert(profileData);
+        .select("id")
+        .eq("id", user.id)
+        .single();
 
-      if (profileError) throw profileError;
+      if (existingProfile) {
+        // If profile exists, update it instead of creating a new one
+        const { error: updateError } = await supabase
+          .from("vendor_profiles")
+          .update({
+            template_id: selectedTemplate,
+            customizations: {
+              display_style: selectedDisplay,
+              bento_style: selectedBento,
+            },
+            business_description: aboutMe,
+            social_links: socialLinks,
+          })
+          .eq("id", user.id);
 
-      toast.success("Your vendor profile has been created successfully!");
+        if (updateError) throw updateError;
+        
+        toast.success("Your vendor profile has been updated successfully!");
+      } else {
+        // If no profile exists, create a new one
+        const profileData: VendorProfileInsert = {
+          id: user.id,
+          template_id: selectedTemplate,
+          customizations: {
+            display_style: selectedDisplay,
+            bento_style: selectedBento,
+          },
+          business_description: aboutMe,
+          social_links: socialLinks,
+        };
+
+        const { error: insertError } = await supabase
+          .from("vendor_profiles")
+          .insert(profileData);
+
+        if (insertError) throw insertError;
+        
+        toast.success("Your vendor profile has been created successfully!");
+      }
+
+      // Also update the is_vendor flag in the profiles table
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ is_vendor: true })
+        .eq("id", user.id);
+
+      if (profileError) {
+        console.error("Error updating profile vendor status:", profileError);
+      }
+
       navigate(`/vendors/${user.id}`);
     } catch (error) {
-      console.error("Error creating vendor profile:", error);
-      toast.error("Failed to create vendor profile. Please try again.");
+      console.error("Error creating/updating vendor profile:", error);
+      toast.error("Failed to save vendor profile. Please try again.");
     }
   };
 
