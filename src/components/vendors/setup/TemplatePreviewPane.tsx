@@ -1,12 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Grid, LayoutGrid, List } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface TemplatePreviewPaneProps {
   templateStyle: {
     colors: {
       primary: string;
       secondary: string;
+      background: string;
     };
     font: string;
   };
@@ -52,10 +52,9 @@ const TemplatePreviewPane = ({
             {[1, 2, 3].map((item) => (
               <div
                 key={item}
-                className={cn(
-                  "aspect-square rounded-lg",
-                  bentoStyle === "list" && "col-span-2 md:col-span-3 h-24 aspect-auto"
-                )}
+                className={`aspect-square rounded-lg ${
+                  bentoStyle === "list" ? "col-span-2 md:col-span-3 h-24 aspect-auto" : ""
+                }`}
                 style={{
                   backgroundColor: templateStyle.colors.secondary,
                   opacity: 0.5,

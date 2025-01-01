@@ -15,6 +15,7 @@ type VendorTemplate = Database['public']['Tables']['vendor_templates']['Row'] & 
     colors: {
       primary: string;
       secondary: string;
+      background: string;
     };
     font: string;
   };
@@ -86,6 +87,10 @@ const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSe
                       <div 
                         className="w-4 h-4 rounded-full" 
                         style={{ backgroundColor: template.style_config.colors.secondary }}
+                      />
+                      <div 
+                        className="w-4 h-4 rounded-full" 
+                        style={{ backgroundColor: template.style_config.colors.background }}
                       />
                       <span className="text-xs text-muted-foreground ml-2">
                         {template.style_config.font}

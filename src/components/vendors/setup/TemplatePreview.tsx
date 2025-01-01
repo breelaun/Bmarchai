@@ -14,6 +14,7 @@ type VendorTemplate = Database['public']['Tables']['vendor_templates']['Row'] & 
     colors: {
       primary: string;
       secondary: string;
+      background: string;
     };
     font: string;
   };
@@ -46,6 +47,7 @@ const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
             style={{
               fontFamily: template.style_config.font,
               color: template.style_config.colors.primary,
+              backgroundColor: template.style_config.colors.background,
             }}
           >
             <div className="h-full flex flex-col gap-4">
