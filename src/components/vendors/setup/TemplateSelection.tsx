@@ -63,11 +63,11 @@ const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSe
     <div className="space-y-6">
       <h2 className="text-2xl font-heading font-semibold">Choose Your Template</h2>
       <RadioGroup value={selectedTemplate?.toString()} onValueChange={(value) => setSelectedTemplate(parseInt(value))}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
           {templates?.map((template) => (
             <Card 
               key={template.id}
-              className={`relative transition-all ${
+              className={`relative w-full transition-all ${
                 selectedTemplate === template.id ? "ring-2 ring-primary" : ""
               }`}
             >
@@ -81,15 +81,15 @@ const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSe
                     </Label>
                     <div className="mt-2 flex items-center gap-2">
                       <div 
-                        className="w-6 h-6 rounded-full" 
+                        className="w-4 h-4 rounded-full" 
                         style={{ backgroundColor: template.style_config.colors.primary }}
                       />
                       <div 
-                        className="w-6 h-6 rounded-full" 
+                        className="w-4 h-4 rounded-full" 
                         style={{ backgroundColor: template.style_config.colors.secondary }}
                       />
                       <div 
-                        className="w-6 h-6 rounded-full" 
+                        className="w-4 h-4 rounded-full" 
                         style={{ backgroundColor: template.style_config.colors.background }}
                       />
                       <span className="text-xs text-muted-foreground ml-2">
