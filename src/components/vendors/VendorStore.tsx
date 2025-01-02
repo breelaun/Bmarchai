@@ -25,7 +25,6 @@ const VendorStore = ({ vendorId }: VendorStoreProps) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
 
-  // Get the current user's ID when the component mounts
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -34,10 +33,9 @@ const VendorStore = ({ vendorId }: VendorStoreProps) => {
     getCurrentUser();
   }, []);
 
-  // Use the provided vendorId or fall back to the current user's ID
   const effectiveVendorId = vendorId || currentUserId;
-
-  // Only proceed with the query if we have a valid UUID
+  const isOwner = currentUserId === effectiveVendorId;
+  
   const isValidUUID = effectiveVendorId && 
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(effectiveVendorId);
 
@@ -92,7 +90,7 @@ const VendorStore = ({ vendorId }: VendorStoreProps) => {
               Cancel
             </Button>
           </div>
-          <ProductUploadForm />
+          <ProductUploadForm onSuccess={() => setShowUploadForm(false)} />
         </div>
       ) : (
         <Card>
@@ -102,7 +100,7 @@ const VendorStore = ({ vendorId }: VendorStoreProps) => {
                 <Store className="h-6 w-6" />
                 Store Preview
               </CardTitle>
-              {currentUserId === effectiveVendorId && (
+              {isOwner && (
                 <Button onClick={() => setShowUploadForm(true)}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Product
@@ -158,8 +156,20 @@ const VendorStore = ({ vendorId }: VendorStoreProps) => {
               <div className="text-center py-12">
                 <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No Products Yet</h3>
-                <p className="text-muted-foreground">
-                  Start adding products to your store to see them displayed here.
+                {isOwner && (
+                  <Button 
+                    onClick={() => setShowUploadForm(true)}
+                    variant="outline" 
+                    className="mt-4"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Your First Product
+                  </Button>
+                )}
+                <p className="text-muted-foreground mt-2">
+                  {isOwner 
+                    ? "Start adding products to your store to see them displayed here."
+                    : "This vendor hasn't added any products yet."}
                 </p>
               </div>
             )}
