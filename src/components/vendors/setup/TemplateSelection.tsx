@@ -71,8 +71,8 @@ const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSe
                 selectedTemplate === template.id ? "ring-2 ring-primary" : ""
               }`}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start space-x-3">
+              <CardContent className="p-6">
+                <div className="flex items-start space-x-4">
                   <RadioGroupItem value={template.id.toString()} id={`template-${template.id}`} />
                   <div className="flex-1">
                     <Label htmlFor={`template-${template.id}`} className="font-medium">
@@ -81,15 +81,15 @@ const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSe
                     </Label>
                     <div className="mt-2 flex items-center gap-2">
                       <div 
-                        className="w-4 h-4 rounded-full" 
+                        className="w-6 h-6 rounded-full" 
                         style={{ backgroundColor: template.style_config.colors.primary }}
                       />
                       <div 
-                        className="w-4 h-4 rounded-full" 
+                        className="w-6 h-6 rounded-full" 
                         style={{ backgroundColor: template.style_config.colors.secondary }}
                       />
                       <div 
-                        className="w-4 h-4 rounded-full" 
+                        className="w-6 h-6 rounded-full" 
                         style={{ backgroundColor: template.style_config.colors.background }}
                       />
                       <span className="text-xs text-muted-foreground ml-2">
