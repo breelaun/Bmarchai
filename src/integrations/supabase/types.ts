@@ -98,6 +98,110 @@ export type Database = {
           },
         ]
       }
+      crm_clients: {
+        Row: {
+          company: string | null
+          created_at: string | null
+          emails: string[] | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          social_links: Json | null
+          status: string | null
+          updated_at: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string | null
+          emails?: string[] | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          social_links?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string | null
+          emails?: string[] | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          social_links?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_clients_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_tasks: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string | null
