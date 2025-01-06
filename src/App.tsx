@@ -51,6 +51,7 @@ const App = () => {
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/streaming" element={<StreamingPage />} />
                   <Route path="/shop" element={<Shop />} />
+                  <Route path="/crm" element={<CRMPage />} />
                 </Routes>
               </main>
               <Footer />
