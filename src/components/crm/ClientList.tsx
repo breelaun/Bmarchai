@@ -7,7 +7,6 @@ import { Table, TableBody } from "@/components/ui/table";
 import { ClientSearchBar } from "./components/ClientSearchBar";
 import { ClientTableHeader } from "./components/ClientTableHeader";
 import { ClientTableRow } from "./components/ClientTableRow";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const ClientList = () => {
@@ -69,21 +68,19 @@ const ClientList = () => {
 
       <ClientSearchBar />
 
-      <div className="border rounded-md overflow-x-auto">
-        <div className={isMobile ? "min-w-[800px]" : "min-w-[1000px]"}>
-          <Table>
-            <ClientTableHeader />
-            <TableBody>
-              {clients?.map((client) => (
-                <ClientTableRow
-                  key={client.id}
-                  client={client}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+      <div className="border rounded-md">
+        <Table>
+          <ClientTableHeader />
+          <TableBody>
+            {clients?.map((client) => (
+              <ClientTableRow
+                key={client.id}
+                client={client}
+                onDelete={handleDelete}
+              />
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
