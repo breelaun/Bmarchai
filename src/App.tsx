@@ -19,6 +19,7 @@ import Register from "./pages/auth/Register";
 import Profile from "./pages/auth/Profile";
 import StreamingPage from "./pages/streaming";
 import Shop from "./pages/Shop";
+import CRMPage from "./pages/crm";
 import { supabase } from "./integrations/supabase/client";
 
 // Create a new QueryClient instance
