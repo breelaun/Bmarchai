@@ -27,15 +27,16 @@ export const useClientSubmit = (
       
       const socialLinks = Object.fromEntries(
         Object.entries(data.socialLinks).filter(([_, value]) => value && value.trim() !== "")
-      );
+      ) as Record<string, string>;
 
       let website = data.website;
       if (website && !website.startsWith('http://') && !website.startsWith('https://')) {
         website = `https://${website}`;
       }
 
-      const { error } = await supabase.from("crm_clients").insert([
-        {
+      const { error } = await supabase
+        .from("crm_clients")
+        .insert({
           vendor_id: user.id,
           name: data.name,
           company: data.company,
@@ -45,8 +46,7 @@ export const useClientSubmit = (
           social_links: socialLinks,
           notes: data.notes,
           contact_type: data.contactType,
-        },
-      ]);
+        });
 
       if (error) throw error;
 
