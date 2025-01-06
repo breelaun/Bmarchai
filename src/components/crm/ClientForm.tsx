@@ -1,23 +1,19 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Form, FormLabel } from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { MultiField } from "./MultiField";
 import { SocialLinksFields } from "./SocialLinksFields";
 import { ContactInfoFields } from "./form-sections/ContactInfoFields";
 import { NotesField } from "./form-sections/NotesField";
+import { FormActions } from "./form-sections/FormActions";
+import { useClientSubmit } from "./form-handlers/useClientSubmit";
 import type { ClientFormData } from "./types";
 
 export function ClientForm() {
   const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const form = useForm<ClientFormData>({
     defaultValues: {
@@ -37,66 +33,7 @@ export function ClientForm() {
     },
   });
 
-  const onSubmit = async (data: ClientFormData) => {
-    setIsSubmitting(true);
-    try {
-      // Get the current user's ID
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error("You must be logged in to add clients");
-      }
-
-      // Filter out empty emails and phones
-      const filteredEmails = data.emails.filter(email => email.trim() !== "");
-      const filteredPhones = data.phones.filter(phone => phone.trim() !== "");
-      
-      // Filter out empty social links
-      const socialLinks = Object.fromEntries(
-        Object.entries(data.socialLinks).filter(([_, value]) => value && value.trim() !== "")
-      );
-
-      // Format website URL if needed
-      let website = data.website;
-      if (website && !website.startsWith('http://') && !website.startsWith('https://')) {
-        website = `https://${website}`;
-      }
-
-      const { error } = await supabase.from("crm_clients").insert([
-        {
-          vendor_id: user.id, // Add the vendor_id
-          name: data.name,
-          company: data.company,
-          website: website,
-          emails: filteredEmails,
-          phone: filteredPhones[0], // Keep backward compatibility with existing phone field
-          social_links: socialLinks,
-          notes: data.notes,
-          contact_type: data.contactType,
-        },
-      ]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Client has been added successfully",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      setOpen(false);
-      form.reset();
-    } catch (error) {
-      console.error('Error adding client:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add client. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const { handleSubmit, isSubmitting } = useClientSubmit(form, () => setOpen(false));
 
   const addField = (fieldName: 'emails' | 'phones') => {
     const currentFields = form.getValues(fieldName) || [];
@@ -126,7 +63,7 @@ export function ClientForm() {
           <SheetTitle>Add New Client</SheetTitle>
         </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mt-4">
             <ContactInfoFields form={form} />
 
             <MultiField
@@ -150,21 +87,15 @@ export function ClientForm() {
             />
 
             <div className="space-y-2">
-              <FormLabel>Social Media Links</FormLabel>
               <SocialLinksFields form={form} />
             </div>
 
             <NotesField form={form} />
 
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Client
-              </Button>
-            </div>
+            <FormActions 
+              isSubmitting={isSubmitting}
+              onCancel={() => setOpen(false)}
+            />
           </form>
         </Form>
       </SheetContent>
