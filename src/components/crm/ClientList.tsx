@@ -69,8 +69,8 @@ const ClientList = () => {
 
       <ClientSearchBar />
 
-      <div className="border rounded-md">
-        <ScrollArea className="w-full h-full" type="always">
+      <div className="border rounded-md overflow-hidden">
+        <ScrollArea className="relative" style={{ height: 'calc(100vh - 300px)' }}>
           <div className={isMobile ? "min-w-[800px]" : "min-w-[1000px]"}>
             <Table>
               <ClientTableHeader />
