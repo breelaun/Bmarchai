@@ -68,7 +68,7 @@ const ClientList = () => {
       <ClientSearchBar />
 
       <div className="rounded-md border">
-        <ScrollArea className="w-full" type="always">
+        <ScrollArea className="h-[calc(100vh-20rem)]" type="always">
           <div className="min-w-[1000px]">
             <Table>
               <ClientTableHeader />
