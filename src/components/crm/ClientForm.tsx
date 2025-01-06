@@ -40,6 +40,13 @@ export function ClientForm() {
   const onSubmit = async (data: ClientFormData) => {
     setIsSubmitting(true);
     try {
+      // Get the current user's ID
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("You must be logged in to add clients");
+      }
+
       // Filter out empty emails and phones
       const filteredEmails = data.emails.filter(email => email.trim() !== "");
       const filteredPhones = data.phones.filter(phone => phone.trim() !== "");
@@ -49,11 +56,18 @@ export function ClientForm() {
         Object.entries(data.socialLinks).filter(([_, value]) => value && value.trim() !== "")
       );
 
+      // Format website URL if needed
+      let website = data.website;
+      if (website && !website.startsWith('http://') && !website.startsWith('https://')) {
+        website = `https://${website}`;
+      }
+
       const { error } = await supabase.from("crm_clients").insert([
         {
+          vendor_id: user.id, // Add the vendor_id
           name: data.name,
           company: data.company,
-          website: data.website,
+          website: website,
           emails: filteredEmails,
           phone: filteredPhones[0], // Keep backward compatibility with existing phone field
           social_links: socialLinks,
@@ -73,6 +87,7 @@ export function ClientForm() {
       setOpen(false);
       form.reset();
     } catch (error) {
+      console.error('Error adding client:', error);
       toast({
         title: "Error",
         description: "Failed to add client. Please try again.",
