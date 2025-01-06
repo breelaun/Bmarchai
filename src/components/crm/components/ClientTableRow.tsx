@@ -12,37 +12,45 @@ interface ClientTableRowProps {
 export const ClientTableRow = ({ client, onDelete }: ClientTableRowProps) => {
   const getContactTypeBadgeVariant = (type: string) => {
     switch (type) {
-      case 'client':
-        return 'default';
-      case 'contact':
-        return 'secondary';
-      case 'lead':
-        return 'outline';
+      case "client":
+        return "default";
+      case "contact":
+        return "secondary";
+      case "lead":
+        return "outline";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
   return (
     <TableRow>
-      <TableCell className="font-medium">
+      {/* Client Name and Company */}
+      <TableCell className="font-medium whitespace-nowrap overflow-hidden text-ellipsis">
         <div className="flex flex-col">
           <span>{client.name}</span>
           {client.company && (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground truncate">
               {client.company}
             </span>
           )}
         </div>
       </TableCell>
+
+      {/* Contact Type */}
       <TableCell>
-        <Badge variant={getContactTypeBadgeVariant(client.contact_type)}>
-          {client.contact_type || 'lead'}
+        <Badge
+          variant={getContactTypeBadgeVariant(client.contact_type)}
+          className="truncate"
+        >
+          {client.contact_type || "lead"}
         </Badge>
       </TableCell>
-      <TableCell>
+
+      {/* Email */}
+      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
         {client.emails && client.emails.length > 0 && (
-          <a 
+          <a
             href={`mailto:${client.emails[0]}`}
             className="text-primary hover:underline flex items-center gap-2"
           >
@@ -51,9 +59,11 @@ export const ClientTableRow = ({ client, onDelete }: ClientTableRowProps) => {
           </a>
         )}
       </TableCell>
-      <TableCell>
+
+      {/* Phone */}
+      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
         {client.phone && (
-          <a 
+          <a
             href={`tel:${client.phone}`}
             className="text-primary hover:underline flex items-center gap-2"
           >
@@ -62,14 +72,18 @@ export const ClientTableRow = ({ client, onDelete }: ClientTableRowProps) => {
           </a>
         )}
       </TableCell>
+
+      {/* Status */}
       <TableCell>
-        <Badge variant="outline">
-          {client.status || 'New'}
+        <Badge variant="outline" className="truncate">
+          {client.status || "New"}
         </Badge>
       </TableCell>
-      <TableCell>
+
+      {/* Website */}
+      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
         {client.website && (
-          <a 
+          <a
             href={client.website}
             target="_blank"
             rel="noopener noreferrer"
@@ -80,25 +94,31 @@ export const ClientTableRow = ({ client, onDelete }: ClientTableRowProps) => {
           </a>
         )}
       </TableCell>
+
+      {/* Social Links */}
       <TableCell>
-        {client.social_links && Object.entries(client.social_links).some(([_, value]) => value) && (
-          <div className="flex gap-2">
-            {Object.entries(client.social_links).map(([platform, url]) => 
-              url && (
-                <a 
-                  key={platform}
-                  href={url as string}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline capitalize"
-                >
-                  {platform}
-                </a>
-              )
-            )}
-          </div>
-        )}
+        {client.social_links &&
+          Object.entries(client.social_links).some(([_, value]) => value) && (
+            <div className="flex gap-2">
+              {Object.entries(client.social_links).map(
+                ([platform, url]) =>
+                  url && (
+                    <a
+                      key={platform}
+                      href={url as string}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline capitalize"
+                    >
+                      {platform}
+                    </a>
+                  )
+              )}
+            </div>
+          )}
       </TableCell>
+
+      {/* Actions */}
       <TableCell>
         <Button variant="ghost" size="sm">
           View Tasks
