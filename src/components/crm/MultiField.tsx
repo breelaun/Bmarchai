@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { FormLabel } from "@radix-ui/react-label";
 import { Plus, X } from "lucide-react";
 import type { MultiFieldProps } from "./types";
 
