@@ -7,25 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-type ClientFormData = {
-  name: string;
-  company?: string;
-  website?: string;
-  emails: string[];
-  phones: string[];
-  socialLinks: {
-    linkedin?: string;
-    twitter?: string;
-    facebook?: string;
-    instagram?: string;
-  };
-  notes?: string;
-  contactType: 'client' | 'contact' | 'lead';
-};
+import { MultiField } from "./MultiField";
+import { SocialLinksFields } from "./SocialLinksFields";
+import type { ClientFormData } from "./types";
 
 export function ClientForm() {
   const [open, setOpen] = useState(false);
@@ -98,14 +85,14 @@ export function ClientForm() {
   };
 
   const addField = (fieldName: 'emails' | 'phones') => {
-    const currentFields = form.getValues(fieldName);
+    const currentFields = form.getValues(fieldName) || [];
     if (currentFields.length < 3) {
       form.setValue(fieldName, [...currentFields, '']);
     }
   };
 
   const removeField = (fieldName: 'emails' | 'phones', index: number) => {
-    const currentFields = form.getValues(fieldName);
+    const currentFields = form.getValues(fieldName) || [];
     form.setValue(
       fieldName,
       currentFields.filter((_, i) => i !== index)
@@ -191,131 +178,29 @@ export function ClientForm() {
               )}
             />
 
-            {/* Multiple Emails */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <FormLabel>Email Addresses</FormLabel>
-                {form.watch('emails').length < 3 && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => addField('emails')}>
-                    <Plus className="h-4 w-4 mr-1" /> Add Email
-                  </Button>
-                )}
-              </div>
-              {form.watch('emails').map((_, index) => (
-                <div key={index} className="flex gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`emails.${index}`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input type="email" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {index > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeField('emails', index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
+            <MultiField
+              fieldName="emails"
+              label="Email Addresses"
+              values={form.watch('emails') || []}
+              onAdd={addField}
+              onRemove={removeField}
+              form={form}
+              type="email"
+            />
 
-            {/* Multiple Phone Numbers */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <FormLabel>Phone Numbers</FormLabel>
-                {form.watch('phones').length < 3 && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => addField('phones')}>
-                    <Plus className="h-4 w-4 mr-1" /> Add Phone
-                  </Button>
-                )}
-              </div>
-              {form.watch('phones').map((_, index) => (
-                <div key={index} className="flex gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`phones.${index}`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input type="tel" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {index > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeField('phones', index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
+            <MultiField
+              fieldName="phones"
+              label="Phone Numbers"
+              values={form.watch('phones') || []}
+              onAdd={addField}
+              onRemove={removeField}
+              form={form}
+              type="tel"
+            />
 
-            {/* Social Media Links */}
             <div className="space-y-2">
               <FormLabel>Social Media Links</FormLabel>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="socialLinks.linkedin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="LinkedIn" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="socialLinks.twitter"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Twitter" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="socialLinks.facebook"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Facebook" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="socialLinks.instagram"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Instagram" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <SocialLinksFields form={form} />
             </div>
 
             <FormField
