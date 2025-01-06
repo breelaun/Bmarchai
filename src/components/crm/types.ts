@@ -7,7 +7,7 @@ export interface Client {
   company?: string;
   emails?: string[];
   phone?: string;
-  social_links?: Record<string, string | null>;
+  social_links?: Json | null;
   website?: string;
   contact_type?: string;
   status?: string;
