@@ -101,6 +101,7 @@ export type Database = {
       crm_clients: {
         Row: {
           company: string | null
+          contact_type: string | null
           created_at: string | null
           emails: string[] | null
           id: string
@@ -111,9 +112,11 @@ export type Database = {
           status: string | null
           updated_at: string | null
           vendor_id: string | null
+          website: string | null
         }
         Insert: {
           company?: string | null
+          contact_type?: string | null
           created_at?: string | null
           emails?: string[] | null
           id?: string
@@ -124,9 +127,11 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           vendor_id?: string | null
+          website?: string | null
         }
         Update: {
           company?: string | null
+          contact_type?: string | null
           created_at?: string | null
           emails?: string[] | null
           id?: string
@@ -137,6 +142,7 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           vendor_id?: string | null
+          website?: string | null
         }
         Relationships: [
           {
