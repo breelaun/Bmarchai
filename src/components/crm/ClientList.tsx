@@ -7,12 +7,11 @@ import { Table, TableBody } from "@/components/ui/table";
 import { ClientSearchBar } from "./components/ClientSearchBar";
 import { ClientTableHeader } from "./components/ClientTableHeader";
 import { ClientTableRow } from "./components/ClientTableRow";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const ClientList = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
 
   const { data: clients, isLoading } = useQuery({
     queryKey: ['clients'],
@@ -68,19 +67,23 @@ const ClientList = () => {
 
       <ClientSearchBar />
 
-      <div className="border rounded-md">
-        <Table>
-          <ClientTableHeader />
-          <TableBody>
-            {clients?.map((client) => (
-              <ClientTableRow
-                key={client.id}
-                client={client}
-                onDelete={handleDelete}
-              />
-            ))}
-          </TableBody>
-        </Table>
+      <div className="rounded-md border">
+        <ScrollArea className="w-full" type="always">
+          <div className="min-w-[1000px]">
+            <Table>
+              <ClientTableHeader />
+              <TableBody>
+                {clients?.map((client) => (
+                  <ClientTableRow
+                    key={client.id}
+                    client={client}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
