@@ -69,23 +69,21 @@ const ClientList = () => {
 
       <ClientSearchBar />
 
-      <div className="border rounded-md overflow-hidden">
-        <ScrollArea className="relative" style={{ height: 'calc(100vh - 300px)' }}>
-          <div className={isMobile ? "min-w-[800px]" : "min-w-[1000px]"}>
-            <Table>
-              <ClientTableHeader />
-              <TableBody>
-                {clients?.map((client) => (
-                  <ClientTableRow
-                    key={client.id}
-                    client={client}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollArea>
+      <div className="border rounded-md overflow-x-auto">
+        <div className={isMobile ? "min-w-[800px]" : "min-w-[1000px]"}>
+          <Table>
+            <ClientTableHeader />
+            <TableBody>
+              {clients?.map((client) => (
+                <ClientTableRow
+                  key={client.id}
+                  client={client}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
