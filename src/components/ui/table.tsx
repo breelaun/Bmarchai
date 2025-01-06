@@ -6,7 +6,10 @@ const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-x-auto -webkit-overflow-scrolling-touch">
+  <div
+    className="relative w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+    style={{ maxHeight: "80vh" }}
+  >
     <table
       ref={ref}
       className={cn("w-full min-w-max caption-bottom text-sm", className)}
@@ -115,3 +118,4 @@ export {
   TableCell,
   TableCaption,
 };
+
