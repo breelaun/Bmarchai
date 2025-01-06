@@ -8,10 +8,12 @@ import { ClientSearchBar } from "./components/ClientSearchBar";
 import { ClientTableHeader } from "./components/ClientTableHeader";
 import { ClientTableRow } from "./components/ClientTableRow";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ClientList = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const { data: clients, isLoading } = useQuery({
     queryKey: ['clients'],
@@ -67,9 +69,9 @@ const ClientList = () => {
 
       <ClientSearchBar />
 
-      <div className="rounded-md border">
-        <ScrollArea className="w-full" type="always">
-          <div className="min-w-[1000px]">
+      <div className="border rounded-md">
+        <ScrollArea className="w-full h-full" type="always">
+          <div className={isMobile ? "min-w-[800px]" : "min-w-[1000px]"}>
             <Table>
               <ClientTableHeader />
               <TableBody>

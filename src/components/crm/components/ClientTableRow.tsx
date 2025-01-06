@@ -25,49 +25,49 @@ export const ClientTableRow = ({ client, onDelete }: ClientTableRowProps) => {
 
   return (
     <TableRow>
-      <TableCell className="font-medium">
+      <TableCell className="font-medium min-w-[150px]">
         <div className="flex flex-col">
-          <span>{client.name}</span>
+          <span className="truncate">{client.name}</span>
           {client.company && (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground truncate">
               {client.company}
             </span>
           )}
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[100px]">
         <Badge variant={getContactTypeBadgeVariant(client.contact_type)}>
           {client.contact_type || 'lead'}
         </Badge>
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[200px]">
         {client.emails && client.emails.length > 0 && (
           <a 
             href={`mailto:${client.emails[0]}`}
             className="text-primary hover:underline flex items-center gap-2"
           >
-            <Mail className="h-4 w-4" />
-            {client.emails[0]}
+            <Mail className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate">{client.emails[0]}</span>
           </a>
         )}
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[150px]">
         {client.phone && (
           <a 
             href={`tel:${client.phone}`}
             className="text-primary hover:underline flex items-center gap-2"
           >
-            <Phone className="h-4 w-4" />
-            {client.phone}
+            <Phone className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate">{client.phone}</span>
           </a>
         )}
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[100px]">
         <Badge variant="outline">
           {client.status || 'New'}
         </Badge>
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[120px]">
         {client.website && (
           <a 
             href={client.website}
@@ -75,14 +75,14 @@ export const ClientTableRow = ({ client, onDelete }: ClientTableRowProps) => {
             rel="noopener noreferrer"
             className="text-primary hover:underline flex items-center gap-2"
           >
-            <Globe className="h-4 w-4" />
-            Website
+            <Globe className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate">Website</span>
           </a>
         )}
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[150px]">
         {client.social_links && Object.entries(client.social_links).some(([_, value]) => value) && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto">
             {Object.entries(client.social_links).map(([platform, url]) => 
               url && (
                 <a 
@@ -90,7 +90,7 @@ export const ClientTableRow = ({ client, onDelete }: ClientTableRowProps) => {
                   href={url as string}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline capitalize"
+                  className="text-primary hover:underline capitalize whitespace-nowrap"
                 >
                   {platform}
                 </a>
@@ -99,12 +99,12 @@ export const ClientTableRow = ({ client, onDelete }: ClientTableRowProps) => {
           </div>
         )}
       </TableCell>
-      <TableCell>
-        <Button variant="ghost" size="sm">
+      <TableCell className="min-w-[100px]">
+        <Button variant="ghost" size="sm" className="whitespace-nowrap">
           View Tasks
         </Button>
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[80px]">
         <Button
           variant="ghost"
           size="icon"
