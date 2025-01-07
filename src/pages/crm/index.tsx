@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ClientList from "@/components/crm/ClientList";
 import TaskList from "@/components/crm/TaskList";
+import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
 
 const CRMPage = () => {
   const session = useSession();
@@ -21,12 +22,16 @@ const CRMPage = () => {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">CRM Dashboard</h1>
-      <Tabs defaultValue="clients" className="h-[calc(100vh-12rem)]">
+      <Tabs defaultValue="analytics" className="h-[calc(100vh-12rem)]">
         <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="clients">Clients</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
         </TabsList>
         <ScrollArea className="h-full rounded-md">
+          <TabsContent value="analytics" className="mt-0 p-4">
+            <AnalyticsDashboard />
+          </TabsContent>
           <TabsContent value="clients" className="mt-0 p-4">
             <ClientList />
           </TabsContent>
