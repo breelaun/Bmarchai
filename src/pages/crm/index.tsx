@@ -22,7 +22,7 @@ const CRMPage = () => {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">CRM Dashboard</h1>
-      <Tabs defaultValue="analytics" className="h-[calc(100vh-12rem)]">
+      <Tabs defaultValue="analytics" className="min-h-[calc(100vh-8rem)]">
         <TabsList>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="clients">Clients</TabsTrigger>
