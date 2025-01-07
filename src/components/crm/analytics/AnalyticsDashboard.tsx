@@ -8,6 +8,18 @@ import { TopProducts } from "./components/TopProducts";
 import { VideoAnalytics } from "./components/VideoAnalytics";
 import { FinancialOverview } from "./components/FinancialOverview";
 
+interface ProductCount {
+  name: string;
+  count: number;
+}
+
+interface ChartDataPoint {
+  date: string;
+  earned: number;
+  spent: number;
+  balance: number;
+}
+
 const AnalyticsDashboard = () => {
   const [timeframe, setTimeframe] = useState<'once' | 'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
 
@@ -53,17 +65,17 @@ const AnalyticsDashboard = () => {
 
       if (error) throw error;
 
-      const productCounts = data.reduce((acc: any, curr) => {
-        const productName = curr.products?.name;
+      const productCounts: Record<string, number> = {};
+      data.forEach((item) => {
+        const productName = item.products?.name;
         if (productName) {
-          acc[productName] = (acc[productName] || 0) + 1;
+          productCounts[productName] = (productCounts[productName] || 0) + 1;
         }
-        return acc;
-      }, {});
+      });
 
       return Object.entries(productCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a: any, b: any) => b.count - a.count)
+        .map(([name, count]): ProductCount => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
         .slice(0, 5);
     },
   });
@@ -97,13 +109,15 @@ const AnalyticsDashboard = () => {
 
   const totalRevenue = salesData?.reduce((sum, sale) => sum + Number(sale.amount), 0) || 0;
 
-  const processFinancialData = () => {
+  const processFinancialData = (): ChartDataPoint[] => {
     if (!financialData) return [];
 
-    const groupedData = financialData.reduce((acc: any, transaction) => {
+    const groupedData: Record<string, ChartDataPoint> = {};
+    
+    financialData.forEach((transaction) => {
       const date = format(new Date(transaction.date), 'yyyy-MM-dd');
-      if (!acc[date]) {
-        acc[date] = {
+      if (!groupedData[date]) {
+        groupedData[date] = {
           date,
           earned: 0,
           spent: 0,
@@ -112,15 +126,13 @@ const AnalyticsDashboard = () => {
       }
       
       if (transaction.type === 'earned') {
-        acc[date].earned += Number(transaction.amount);
-        acc[date].balance += Number(transaction.amount);
+        groupedData[date].earned += Number(transaction.amount);
+        groupedData[date].balance += Number(transaction.amount);
       } else {
-        acc[date].spent += Number(transaction.amount);
-        acc[date].balance -= Number(transaction.amount);
+        groupedData[date].spent += Number(transaction.amount);
+        groupedData[date].balance -= Number(transaction.amount);
       }
-      
-      return acc;
-    }, {});
+    });
 
     return Object.values(groupedData);
   };

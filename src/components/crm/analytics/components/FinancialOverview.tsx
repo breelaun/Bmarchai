@@ -10,15 +10,17 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+interface ChartDataPoint {
+  date: string;
+  earned: number;
+  spent: number;
+  balance: number;
+}
+
 interface FinancialOverviewProps {
   timeframe: 'once' | 'daily' | 'weekly' | 'monthly' | 'yearly';
   setTimeframe: (value: 'once' | 'daily' | 'weekly' | 'monthly' | 'yearly') => void;
-  chartData: Array<{
-    date: string;
-    earned: number;
-    spent: number;
-    balance: number;
-  }>;
+  chartData: ChartDataPoint[];
 }
 
 export const FinancialOverview = ({ timeframe, setTimeframe, chartData }: FinancialOverviewProps) => {
@@ -33,12 +35,12 @@ export const FinancialOverview = ({ timeframe, setTimeframe, chartData }: Financ
       const { error } = await supabase
         .from('financial_transactions')
         .insert({
-          type: formData.get('type'),
+          type: formData.get('type') as string,
           amount: Number(formData.get('amount')),
-          description: formData.get('description'),
-          date: formData.get('date'),
+          description: formData.get('description') as string,
+          date: formData.get('date') as string,
           recurring: formData.get('recurring') === 'true',
-          timeframe: formData.get('timeframe'),
+          timeframe: formData.get('timeframe') as string,
         });
 
       if (error) throw error;
