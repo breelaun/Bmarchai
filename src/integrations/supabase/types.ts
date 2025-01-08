@@ -250,6 +250,38 @@ export type Database = {
           },
         ]
       }
+      favorite_stocks: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          symbol: string
+          user_id: string | null
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          symbol: string
+          user_id?: string | null
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          symbol?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_stocks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_transactions: {
         Row: {
           amount: number

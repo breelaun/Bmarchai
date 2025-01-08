@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import ClientList from "@/components/crm/ClientList";
 import TaskList from "@/components/crm/TaskList";
 import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
+import { StockMarketSection } from "@/components/crm/stocks/StockMarketSection";
 
 const CRMPage = () => {
   const session = useSession();
@@ -27,6 +28,7 @@ const CRMPage = () => {
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="clients">Clients</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="stocks">Stocks</TabsTrigger>
         </TabsList>
         <ScrollArea className="h-full rounded-md">
           <TabsContent value="analytics" className="mt-0 p-4">
@@ -37,6 +39,9 @@ const CRMPage = () => {
           </TabsContent>
           <TabsContent value="tasks" className="mt-0 p-4">
             <TaskList />
+          </TabsContent>
+          <TabsContent value="stocks" className="mt-0 p-4">
+            <StockMarketSection />
           </TabsContent>
         </ScrollArea>
       </Tabs>
