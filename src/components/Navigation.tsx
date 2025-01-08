@@ -17,12 +17,10 @@ const Navigation = () => {
   const navigate = useNavigate();
 
   const menuItems: MenuItem[] = [
-    { name: "Home", path: "/" },
     { name: "Shop", path: "/shop" },
     { name: "CRM", path: "/crm" },
     { name: "Blogs", path: "/blogs" },
     { name: "Streaming", path: "/streaming" },
-    { name: "Contact", path: "/contact" },
   ];
 
   const vendorSubmenu: SubMenuItem[] = [
