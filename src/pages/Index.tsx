@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import ServiceCards from "@/components/home/ServiceCards";
 
 const Index = () => {
   return (
@@ -31,55 +32,13 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 px-4 bg-secondary">
+      {/* Services Section */}
+      <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-heading font-bold text-center text-foreground mb-12">
             Our Services
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Online Coaching */}
-            <div className="bg-background p-6 rounded-lg">
-              <h3 className="text-xl font-bold text-primary mb-4">Online Coaching</h3>
-              <p className="text-muted-foreground mb-4">
-                Get personalized training programs and expert guidance from certified coaches.
-              </p>
-              <Link
-                to="/coaching"
-                className="inline-flex items-center text-primary hover:underline"
-              >
-                Learn More <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* CRM Tools */}
-            <div className="bg-background p-6 rounded-lg">
-              <h3 className="text-xl font-bold text-primary mb-4">CRM Tools</h3>
-              <p className="text-muted-foreground mb-4">
-                Manage your fitness business with our comprehensive CRM solution.
-              </p>
-              <Link
-                to="/crm"
-                className="inline-flex items-center text-primary hover:underline"
-              >
-                Learn More <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* Video Chat */}
-            <div className="bg-background p-6 rounded-lg">
-              <h3 className="text-xl font-bold text-primary mb-4">Video Chat</h3>
-              <p className="text-muted-foreground mb-4">
-                Connect with trainers and clients through secure video consultations.
-              </p>
-              <Link
-                to="/video-chat"
-                className="inline-flex items-center text-primary hover:underline"
-              >
-                Learn More <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-          </div>
+          <ServiceCards />
         </div>
       </section>
 
