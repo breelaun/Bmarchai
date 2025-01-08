@@ -10,12 +10,67 @@
   }
 }
 
-.glass-effect {
-  @apply bg-background/80 backdrop-blur-sm border border-border/50;
+.wrapper {
+  width: 100%;
+  position: relative;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+.inner {
+  --w: 180px;
+  --h: 250px;
+  --translateZ: calc((var(--w) + var(--h)) / 2);
+  --rotateX: -15deg;
+  --perspective: 1000px;
+  position: absolute;
+  width: var(--w);
+  height: var(--h);
+  top: 25%;
+  left: calc(50% - (var(--w) / 2) - 2.5px);
+  z-index: 2;
+  transform-style: preserve-3d;
+  transform: perspective(var(--perspective));
+  animation: rotating 20s linear infinite;
+}
+
+@keyframes rotating {
+  from {
+    transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0);
+  }
+  to {
+    transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(1turn);
+  }
+}
+
+.card {
+  position: absolute;
+  border: 2px solid rgba(247, 189, 0, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  inset: 0;
+  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ));
+  transition: border-color 0.3s ease;
+  background: #222222;
+}
+
+.card:hover {
+  border-color: #f7bd00;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: transparent radial-gradient(
+    circle,
+    rgba(34, 34, 34, 0.9) 0%,
+    rgba(34, 34, 34, 0.95) 80%,
+    rgba(34, 34, 34, 1) 100%
+  );
 }
 
 /* Font Classes */
@@ -85,67 +140,4 @@
 
 .font-work {
   font-family: 'Work Sans', sans-serif;
-}
-
-/* Service Cards Animation */
-.wrapper {
-  width: 100%;
-  position: relative;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.inner {
-  --w: 250px;
-  --h: 350px;
-  --translateZ: calc((var(--w) + var(--h)) + 0px);
-  --rotateX: -15deg;
-  --perspective: 1000px;
-  position: absolute;
-  width: var(--w);
-  height: var(--h);
-  top: 25%;
-  left: calc(50% - (var(--w) / 2) - 2.5px);
-  z-index: 2;
-  transform-style: preserve-3d;
-  transform: perspective(var(--perspective));
-  animation: rotating 20s linear infinite;
-}
-
-@keyframes rotating {
-  from {
-    transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0);
-  }
-  to {
-    transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(1turn);
-  }
-}
-
-.card {
-  position: absolute;
-  border: 2px solid rgba(var(--color-card));
-  border-radius: 12px;
-  overflow: hidden;
-  inset: 0;
-  transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ));
-  transition: border-color 0.3s ease;
-}
-
-.card:hover {
-  border-color: rgba(var(--color-card), 1);
-}
-
-.img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background: transparent radial-gradient(
-    circle,
-    rgba(var(--color-card), 0.2) 0%,
-    rgba(var(--color-card), 0.6) 80%,
-    rgba(var(--color-card), 0.9) 100%
-  );
 }
