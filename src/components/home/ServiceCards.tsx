@@ -30,7 +30,6 @@ const ServiceCards = () => {
         ))}
       </div>
     </div>
-  </div>
   );
 };
 
