@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import ServiceCards from "@/components/home/ServiceCards";
+import MealPlanner from "@/components/home/MealPlanner";
 
 const Index = () => {
   return (
@@ -64,6 +65,16 @@ const Index = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Meal Planner Section */}
+      <section className="py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-heading font-bold text-center text-foreground mb-12">
+            7-Day Meal Planner
+          </h2>
+          <MealPlanner />
         </div>
       </section>
     </div>
