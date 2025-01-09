@@ -48,8 +48,21 @@ const MealPlanner = () => {
     { name: "Nuts", calories: 170, protein: 6, servingSize: "1 oz" },
   ];
 
+  const fruits: Food[] = [
+    { name: "Apple", calories: 95, protein: 0, servingSize: "1 medium" },
+    { name: "Banana", calories: 105, protein: 1, servingSize: "1 medium" },
+    { name: "Orange", calories: 62, protein: 1, servingSize: "1 medium" },
+    { name: "Berries", calories: 85, protein: 1, servingSize: "1 cup" },
+  ];
+
+  const salads: Food[] = [
+    { name: "Mixed Green Salad", calories: 70, protein: 2, servingSize: "2 cups" },
+    { name: "Caesar Salad", calories: 120, protein: 4, servingSize: "2 cups" },
+    { name: "Greek Salad", calories: 150, protein: 3, servingSize: "2 cups" },
+  ];
+
   const generateMealPlan = () => {
-    const allFoods = [...proteins, ...carbs, ...fats];
+    const allFoods = [...proteins, ...carbs, ...fats, ...fruits, ...salads];
     let newMealPlan: DayPlan[] = [];
 
     for (let day = 0; day < 7; day++) {
@@ -57,9 +70,26 @@ const MealPlanner = () => {
       let dayCalories = 0;
       let totalProtein = 0;
 
+      // Ensure at least one fruit and one salad per day
+      let dailyFruit = fruits[Math.floor(Math.random() * fruits.length)];
+      let dailySalad = salads[Math.floor(Math.random() * salads.length)];
+
       for (let meal = 0; meal < mealsPerDay; meal++) {
         let mealCalories = 0;
         let mealComponents: string[] = [];
+
+        // Add fruit to first meal and salad to last meal of the day
+        if (meal === 0) {
+          mealCalories += dailyFruit.calories;
+          totalProtein += dailyFruit.protein;
+          mealComponents.push(`${dailyFruit.name} (${dailyFruit.servingSize})`);
+        }
+
+        if (meal === mealsPerDay - 1) {
+          mealCalories += dailySalad.calories;
+          totalProtein += dailySalad.protein;
+          mealComponents.push(`${dailySalad.name} (${dailySalad.servingSize})`);
+        }
 
         while (mealCalories < (goalValue / mealsPerDay)) {
           const food = allFoods[Math.floor(Math.random() * allFoods.length)];
