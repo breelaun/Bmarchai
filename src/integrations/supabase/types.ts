@@ -419,6 +419,7 @@ export type Database = {
           id: string
           is_vendor: boolean | null
           phone_number: string | null
+          role: Database["public"]["Enums"]["user_role"]
           sms_notifications: boolean | null
           two_factor_enabled: boolean | null
           updated_at: string
@@ -436,6 +437,7 @@ export type Database = {
           id: string
           is_vendor?: boolean | null
           phone_number?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           sms_notifications?: boolean | null
           two_factor_enabled?: boolean | null
           updated_at?: string
@@ -453,6 +455,7 @@ export type Database = {
           id?: string
           is_vendor?: boolean | null
           phone_number?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           sms_notifications?: boolean | null
           two_factor_enabled?: boolean | null
           updated_at?: string
@@ -688,7 +691,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "user" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
