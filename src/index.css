@@ -101,9 +101,9 @@
 
 .inner {
   --w: 250px;
-  --h: 250px;
+  --h: 200px;
   --translateZ: calc((var(--w) + var(--h)) + 0px);
-  --rotateX: -15deg;
+  --rotateX: -11deg;
   --perspective: 1000px;
   position: absolute;
   width: var(--w);
