@@ -90,6 +90,7 @@
 /* Service Cards Animation */
 .wrapper {
   width: 100%;
+  height: 70%;
   position: relative;
   text-align: center;
   display: flex;
