@@ -7,7 +7,7 @@ const Index = () => {
   return (
     <div className="container mx-auto py-8 space-y-12">
       {/* Hero Banner */}
-      <section className="relative h-[600px] rounded-lg overflow-hidden mb-12">
+      <section className="relative h-[800px] rounded-lg overflow-hidden mb-12">
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/50">
           <img 
             src="/lovable-uploads/Banner01.jpg" 
