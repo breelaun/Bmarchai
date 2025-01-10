@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 const services = [
   { title: 'Online Coaching', link: '/coaching', color: '255, 195, 0' },
   { title: 'CRM Tools', link: '/crm', color: '44, 62, 80' },
-  { title: 'Video Chat', link: '/video-chat', color: '142, 252, 157' },
-  { title: 'Streaming', link: '/streaming', color: '215, 252, 142' },
-  { title: 'Blogs', link: '/blogs', color: '252, 252, 142' },
-  { title: 'Shops', link: '/shop', color: '252, 208, 142' },
-  { title: 'Customizable Profile', link: '/profile', color: '252, 142, 142' },
-  { title: 'Consulting', link: '/consulting', color: '252, 142, 239' }
+  { title: 'Video Chat', link: '/video-chat', color: '255, 195, 0' },
+  { title: 'Streaming', link: '/streaming', color: '44, 62, 80' },
+  { title: 'Blogs', link: '/blogs', color: '255, 195, 0' },
+  { title: 'Shops', link: '/shop', color: '44, 62, 80' },
+  { title: 'Customizable Profile', link: '/profile', color: '255, 195, 0' },
+  { title: 'Consulting', link: '/consulting', color: '44, 62, 80' }
 ];
 
 const ServiceCards = () => {
