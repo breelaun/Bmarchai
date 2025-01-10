@@ -10,8 +10,7 @@ const Index = () => {
       <section className="relative h-[500px] rounded-lg overflow-hidden mb-12">
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/50">
           <img 
-            src="/lovable-uploads/Hv8k1X8xQfa650wVFBZfXA.jpeg
-" 
+            src="/lovable-uploads/Banner01.jpg" 
             alt="Hero Banner" 
             className="w-full h-full object-cover -z-10"
           />
