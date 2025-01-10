@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const services = [
   { title: 'Online Coaching', link: '/coaching', color: '255, 195, 0' },
-  { title: 'CRM Tools', link: '/crm', color: '23, 32, 42' },
+  { title: 'CRM Tools', link: '/crm', color: '44, 62, 80' },
   { title: 'Video Chat', link: '/video-chat', color: '142, 252, 157' },
   { title: 'Streaming', link: '/streaming', color: '215, 252, 142' },
   { title: 'Blogs', link: '/blogs', color: '252, 252, 142' },
