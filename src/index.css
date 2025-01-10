@@ -107,7 +107,7 @@
   position: absolute;
   width: var(--w);
   height: var(--h);
-  top: 20%;
+  top: 15%;
   left: calc(50% - (var(--w) / 2) - 2.5px);
   z-index: 2;
   transform-style: preserve-3d;
