@@ -14,3 +14,9 @@ port = 54323
 
 [[fetch-youtube-streams.vars]]
 name = "YOUTUBE_API_KEY"
+
+[[stripe-webhook.vars]]
+name = "STRIPE_SECRET_KEY"
+
+[[stripe-webhook.vars]]
+name = "STRIPE_WEBHOOK_SECRET"
