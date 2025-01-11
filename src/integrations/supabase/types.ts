@@ -353,6 +353,66 @@ export type Database = {
           },
         ]
       }
+      payment_transactions: {
+        Row: {
+          amount: number
+          commission_amount: number
+          created_at: string | null
+          customer_id: string | null
+          id: string
+          metadata: Json | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_transaction_id: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string | null
+          vendor_id: string | null
+          vendor_payout_amount: number
+        }
+        Insert: {
+          amount: number
+          commission_amount: number
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          metadata?: Json | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_transaction_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string | null
+          vendor_id?: string | null
+          vendor_payout_amount: number
+        }
+        Update: {
+          amount?: number
+          commission_amount?: number
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          metadata?: Json | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_transaction_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string | null
+          vendor_id?: string | null
+          vendor_payout_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string | null
@@ -553,6 +613,47 @@ export type Database = {
           },
         ]
       }
+      vendor_payouts: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_payout_id: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_payout_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_payout_id?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_payouts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_profiles: {
         Row: {
           business_description: string | null
@@ -691,6 +792,13 @@ export type Database = {
       }
     }
     Enums: {
+      payment_provider: "stripe" | "paypal" | "google_pay"
+      payment_status:
+        | "pending"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "refunded"
       user_role: "user" | "admin"
     }
     CompositeTypes: {
