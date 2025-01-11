@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface VendorPayout {
@@ -14,6 +16,9 @@ interface VendorPayout {
 }
 
 const VendorPayouts = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: payouts, isLoading } = useQuery({
     queryKey: ['vendor-payouts'],
     queryFn: async () => {
@@ -28,6 +33,34 @@ const VendorPayouts = () => {
       }
 
       return data as VendorPayout[];
+    },
+  });
+
+  const processPayout = useMutation({
+    mutationFn: async (payoutId: string) => {
+      const response = await supabase.functions.invoke('process-vendor-payout', {
+        body: { payoutId },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-payouts'] });
+      toast({
+        title: "Payout Processing",
+        description: "Your payout is being processed.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -99,6 +132,15 @@ const VendorPayouts = () => {
                     {payout.status}
                   </Badge>
                   <Badge variant="outline">{payout.provider}</Badge>
+                  {payout.status === 'pending' && (
+                    <Button
+                      size="sm"
+                      onClick={() => processPayout.mutate(payout.id)}
+                      disabled={processPayout.isPending}
+                    >
+                      Process Payout
+                    </Button>
+                  )}
                 </div>
               </div>
             ))
