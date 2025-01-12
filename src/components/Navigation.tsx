@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, User, LogIn, LogOut } from "lucide-react";
+import { Menu, X, Store, User, LogIn, LogOut, Calendar } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,14 @@ const Navigation = () => {
   const navigate = useNavigate();
 
   const menuItems: MenuItem[] = [
-    { name: "Shop", path: "/shop" },
+    { 
+      name: "Shop", 
+      path: "/shop",
+      submenu: [
+        { name: "Browse Products", path: "/shop", icon: <Store className="h-4 w-4 mr-2" /> },
+        { name: "Sessions", path: "/sessions", icon: <Calendar className="h-4 w-4 mr-2" /> },
+      ]
+    },
     { name: "CRM", path: "/crm" },
     { name: "Blogs", path: "/blogs" },
     { name: "Streaming", path: "/streaming" },
@@ -67,19 +74,40 @@ const Navigation = () => {
 
           <div className="hidden md:flex md:items-center md:space-x-8">
             {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                {item.name}
-              </Link>
+              item.submenu ? (
+                <div key={item.name} className="relative group">
+                  <button className="text-foreground hover:text-primary transition-colors">
+                    {item.name}
+                  </button>
+                  <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-background border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <div className="py-1">
+                      {item.submenu.map((subItem) => (
+                        <Link
+                          key={subItem.name}
+                          to={subItem.path}
+                          className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent/50"
+                        >
+                          {subItem.icon}
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className="text-foreground hover:text-primary transition-colors"
+                >
+                  {item.name}
+                </Link>
+              )
             ))}
             <VendorMenu vendorSubmenu={vendorSubmenu} />
             {renderAuthItems()}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
