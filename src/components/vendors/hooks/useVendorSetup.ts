@@ -14,6 +14,8 @@ export function useVendorSetup() {
   const [aboutMe, setAboutMe] = useState("");
   const [enableReviews, setEnableReviews] = useState(true);
   const [enableFeatured, setEnableFeatured] = useState(true);
+  const [country, setCountry] = useState("");
+  const [timezone, setTimezone] = useState("");
 
   const handleNext = () => {
     if (currentStep === "template" && !selectedTemplate) {
@@ -64,6 +66,8 @@ export function useVendorSetup() {
             },
             business_description: aboutMe,
             social_links: socialLinks,
+            country,
+            timezone,
           })
           .eq("id", user.id);
 
@@ -81,6 +85,8 @@ export function useVendorSetup() {
           },
           business_description: aboutMe,
           social_links: socialLinks,
+          country,
+          timezone,
         };
 
         const { error: insertError } = await supabase
@@ -119,6 +125,8 @@ export function useVendorSetup() {
       aboutMe,
       enableReviews,
       enableFeatured,
+      country,
+      timezone,
     },
     setters: {
       setSelectedTemplate,
@@ -128,6 +136,8 @@ export function useVendorSetup() {
       setAboutMe,
       setEnableReviews,
       setEnableFeatured,
+      setCountry,
+      setTimezone,
     },
     navigation: {
       handleNext,

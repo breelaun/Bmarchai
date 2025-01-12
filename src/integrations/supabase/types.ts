@@ -578,6 +578,136 @@ export type Database = {
           },
         ]
       }
+      session_media: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          media_type: string
+          media_url: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order: number
+          id?: string
+          media_type: string
+          media_url: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          media_type?: string
+          media_url?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_media_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_participants: {
+        Row: {
+          created_at: string
+          has_completed: boolean | null
+          id: string
+          rating: number | null
+          session_id: string
+          tip_amount: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          has_completed?: boolean | null
+          id?: string
+          rating?: number | null
+          session_id: string
+          tip_amount?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          has_completed?: boolean | null
+          id?: string
+          rating?: number | null
+          session_id?: string
+          tip_amount?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration: unknown
+          id: string
+          max_participants: number | null
+          name: string
+          price: number
+          start_time: string
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration: unknown
+          id?: string
+          max_participants?: number | null
+          name: string
+          price: number
+          start_time: string
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration?: unknown
+          id?: string
+          max_participants?: number | null
+          name?: string
+          price?: number
+          start_time?: string
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_usage: {
         Row: {
           action: string
@@ -659,33 +789,39 @@ export type Database = {
           business_description: string | null
           business_name: string | null
           contact_email: string | null
+          country: string | null
           created_at: string
           customizations: Json | null
           id: string
           social_links: Json | null
           template_id: number | null
+          timezone: string | null
           updated_at: string
         }
         Insert: {
           business_description?: string | null
           business_name?: string | null
           contact_email?: string | null
+          country?: string | null
           created_at?: string
           customizations?: Json | null
           id: string
           social_links?: Json | null
           template_id?: number | null
+          timezone?: string | null
           updated_at?: string
         }
         Update: {
           business_description?: string | null
           business_name?: string | null
           contact_email?: string | null
+          country?: string | null
           created_at?: string
           customizations?: Json | null
           id?: string
           social_links?: Json | null
           template_id?: number | null
+          timezone?: string | null
           updated_at?: string
         }
         Relationships: [
