@@ -54,41 +54,29 @@ export function useVendorSetup() {
         .eq("id", user.id)
         .single();
 
+      const profileData: VendorProfileInsert = {
+        id: user.id,
+        template_id: selectedTemplate,
+        customizations: {
+          display_style: selectedDisplay,
+          bento_style: selectedBento,
+        },
+        business_description: aboutMe,
+        social_links: socialLinks as Record<string, string>,
+        country,
+        timezone,
+      };
+
       if (existingProfile) {
-        // If profile exists, update it instead of creating a new one
         const { error: updateError } = await supabase
           .from("vendor_profiles")
-          .update({
-            template_id: selectedTemplate,
-            customizations: {
-              display_style: selectedDisplay,
-              bento_style: selectedBento,
-            },
-            business_description: aboutMe,
-            social_links: socialLinks,
-            country,
-            timezone,
-          })
+          .update(profileData)
           .eq("id", user.id);
 
         if (updateError) throw updateError;
         
         toast.success("Your vendor profile has been updated successfully!");
       } else {
-        // If no profile exists, create a new one
-        const profileData: VendorProfileInsert = {
-          id: user.id,
-          template_id: selectedTemplate,
-          customizations: {
-            display_style: selectedDisplay,
-            bento_style: selectedBento,
-          },
-          business_description: aboutMe,
-          social_links: socialLinks,
-          country,
-          timezone,
-        };
-
         const { error: insertError } = await supabase
           .from("vendor_profiles")
           .insert(profileData);
