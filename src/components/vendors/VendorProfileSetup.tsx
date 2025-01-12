@@ -53,6 +53,10 @@ const VendorProfileSetup = () => {
             setEnableReviews={setters.setEnableReviews}
             enableFeatured={state.enableFeatured}
             setEnableFeatured={setters.setEnableFeatured}
+            country={state.country}
+            setCountry={setters.setCountry}
+            timezone={state.timezone}
+            setTimezone={setters.setTimezone}
           />
         );
       case "confirmation":

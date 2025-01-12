@@ -1,19 +1,28 @@
 export type SetupStep = "template" | "display" | "bento" | "additional" | "confirmation";
 
-export interface TemplateStyleConfig {
-  colors: {
-    primary: string;
-    secondary: string;
-    background: string; // Added background color
-  };
-  font: string;
-}
-
-// Update SocialLinks to use an index signature
-export interface SocialLinks extends Record<string, string> {
+export interface SocialLinks {
   facebook: string;
   instagram: string;
   twitter: string;
+}
+
+export interface VendorCustomizations {
+  display_style: string;
+  bento_style: string;
+}
+
+// Update VendorProfileInsert to include country and timezone
+export interface VendorProfileInsert {
+  id: string;
+  template_id: number | null;
+  customizations: {
+    display_style: string;
+    bento_style: string;
+  };
+  business_description: string | null;
+  social_links: Record<string, string>;
+  country: string | null;
+  timezone: string | null;
 }
 
 export interface VendorSetupState {
@@ -24,16 +33,6 @@ export interface VendorSetupState {
   aboutMe: string;
   enableReviews: boolean;
   enableFeatured: boolean;
-}
-
-// Helper type for database operations
-export interface VendorProfileInsert {
-  id: string;
-  template_id: number | null;
-  customizations: {
-    display_style: string;
-    bento_style: string;
-  };
-  business_description: string | null;
-  social_links: Record<string, string>;
+  country: string;
+  timezone: string;
 }

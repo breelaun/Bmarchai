@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { SetupStep, VendorSetupState, SocialLinks, VendorProfileInsert } from "../types/vendor-setup";
+import { SetupStep, SocialLinks, VendorProfileInsert } from "../types/vendor-setup";
 
 export function useVendorSetup() {
   const navigate = useNavigate();
