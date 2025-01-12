@@ -4,12 +4,11 @@ export interface TemplateStyleConfig {
   colors: {
     primary: string;
     secondary: string;
-    background?: string;
+    background: string;  // Made required to fix type error
   };
   font: string;
 }
 
-// Update SocialLinks to implement Record<string, string>
 export interface SocialLinks extends Record<string, string> {
   facebook: string;
   instagram: string;
@@ -31,6 +30,8 @@ export interface VendorProfileData {
   social_links: SocialLinks | null;
   created_at: string;
   updated_at: string;
+  timezone: string;
+  country: string;
   template?: {
     id: number;
     name: string;
@@ -40,7 +41,6 @@ export interface VendorProfileData {
   };
 }
 
-// Update VendorProfileInsert to include country and timezone
 export interface VendorProfileInsert {
   id: string;
   template_id: number | null;
@@ -50,8 +50,8 @@ export interface VendorProfileInsert {
   };
   business_description: string | null;
   social_links: Record<string, string>;
-  country: string | null;
-  timezone: string | null;
+  country: string;
+  timezone: string;
 }
 
 export interface VendorSetupState {
