@@ -1,18 +1,7 @@
-// src/components/vendors/hooks/useVendorSetup.ts
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import type { SetupStep, SocialLinks } from '../types/vendor-setup';
 
-// Define all possible steps in the setup process
-type SetupStep = 'template' | 'display' | 'bento' | 'additional' | 'confirmation';
-
-// Define the structure of our social links
-interface SocialLinks {
-  facebook: string;
-  instagram: string;
-  twitter: string;
-}
-
-// Define the complete state structure for vendor setup
 interface VendorSetupState {
   selectedTemplate: number;
   selectedDisplay: string;
@@ -25,7 +14,6 @@ interface VendorSetupState {
   timezone: string;
 }
 
-// Define return type for the hook
 interface VendorSetupHook {
   currentStep: SetupStep;
   state: VendorSetupState;
@@ -33,7 +21,7 @@ interface VendorSetupHook {
     setSelectedTemplate: (templateId: number) => void;
     setSelectedDisplay: (display: string) => void;
     setSelectedBento: (bento: string) => void;
-    setSocialLinks: (links: SocialLinks) => void;
+    setSocialLinks: React.Dispatch<React.SetStateAction<SocialLinks>>;
     setAboutMe: (about: string) => void;
     setEnableReviews: (enable: boolean) => void;
     setEnableFeatured: (enable: boolean) => void;
@@ -50,11 +38,8 @@ interface VendorSetupHook {
 
 export const useVendorSetup = (): VendorSetupHook => {
   const { toast } = useToast();
-
-  // Initialize the current step state
   const [currentStep, setCurrentStep] = useState<SetupStep>('template');
 
-  // Initialize the vendor setup state with default values
   const [state, setState] = useState<VendorSetupState>({
     selectedTemplate: 1,
     selectedDisplay: 'default',
@@ -71,7 +56,6 @@ export const useVendorSetup = (): VendorSetupHook => {
     timezone: ''
   });
 
-  // Create setters for each piece of state
   const setters = {
     setSelectedTemplate: (templateId: number) => 
       setState(prev => ({ ...prev, selectedTemplate: templateId })),
@@ -82,8 +66,11 @@ export const useVendorSetup = (): VendorSetupHook => {
     setSelectedBento: (bento: string) => 
       setState(prev => ({ ...prev, selectedBento: bento })),
 
-    setSocialLinks: (links: SocialLinks) => 
-      setState(prev => ({ ...prev, socialLinks: links })),
+    setSocialLinks: (value: React.SetStateAction<SocialLinks>) => 
+      setState(prev => ({ 
+        ...prev, 
+        socialLinks: typeof value === 'function' ? value(prev.socialLinks) : value 
+      })),
 
     setAboutMe: (about: string) => 
       setState(prev => ({ ...prev, aboutMe: about })),
