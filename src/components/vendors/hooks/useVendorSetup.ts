@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import type { SetupStep, SocialLinks } from '../types/vendor-setup';
 
 interface VendorSetupState {
@@ -39,6 +40,7 @@ interface VendorSetupHook {
 
 export const useVendorSetup = (): VendorSetupHook => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<SetupStep>('template');
 
   const [state, setState] = useState<VendorSetupState>({
@@ -105,22 +107,22 @@ export const useVendorSetup = (): VendorSetupHook => {
       
       const currentIndex = steps.indexOf(currentStep);
       if (currentIndex < steps.length - 1 && validateStep(currentStep)) {
-        // If we're moving from template step, save the template selection
+        const user = await supabase.auth.getUser();
+        const userId = user.data?.user?.id;
+        
+        if (!userId) {
+          console.error('No authenticated user found');
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "You must be logged in to continue"
+          });
+          return;
+        }
+
+        // Save template selection when moving from template step
         if (currentStep === 'template') {
           console.log('Saving template selection:', state.selectedTemplate);
-          const user = await supabase.auth.getUser();
-          const userId = user.data?.user?.id;
-          
-          if (!userId) {
-            console.error('No authenticated user found');
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: "You must be logged in to continue"
-            });
-            return;
-          }
-
           const { error } = await supabase
             .from('vendor_profiles')
             .upsert({
@@ -165,7 +167,8 @@ export const useVendorSetup = (): VendorSetupHook => {
           throw new Error('No authenticated user found');
         }
 
-        const { error } = await supabase
+        // Save all vendor profile data
+        const { error: profileError } = await supabase
           .from('vendor_profiles')
           .upsert({
             id: userId,
@@ -175,18 +178,23 @@ export const useVendorSetup = (): VendorSetupHook => {
               bento_style: state.selectedBento
             },
             social_links: state.socialLinks,
-            business_description: state.aboutMe
+            business_description: state.aboutMe,
+            country: state.country,
+            timezone: state.timezone
           });
 
-        if (error) {
-          console.error('Error saving vendor profile:', error);
-          throw error;
+        if (profileError) {
+          console.error('Error saving vendor profile:', profileError);
+          throw profileError;
         }
 
         toast({
           title: "Success!",
           description: "Your vendor profile has been created successfully!"
         });
+
+        // Redirect to the vendor's profile page
+        navigate(`/vendors/profile`);
       } catch (error) {
         console.error('Error in handleLaunch:', error);
         toast({
