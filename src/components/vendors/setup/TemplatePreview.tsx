@@ -23,6 +23,8 @@ interface TemplatePreviewProps {
 }
 
 const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
+  console.log('Rendering template preview:', template);
+  
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
@@ -44,18 +46,45 @@ const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
             }}
           >
             <div className="h-full flex flex-col gap-4">
-              {template.layout_config.sections?.map((section: string, index: number) => (
-                <div
-                  key={section}
-                  className="flex-1 rounded border border-dashed p-4 flex items-center justify-center"
-                  style={{ 
-                    borderColor: template.style_config.colors.secondary,
-                    backgroundColor: index % 2 === 0 ? `${template.style_config.colors.primary}10` : 'transparent'
-                  }}
-                >
-                  <span className="text-sm font-medium capitalize">{section}</span>
+              {/* Header Section */}
+              <div 
+                className="h-16 rounded-lg"
+                style={{ backgroundColor: template.style_config.colors.primary }}
+              >
+                <div className="flex items-center justify-between h-full px-6">
+                  <div className="text-white font-bold">Store Name</div>
+                  <div className="flex gap-4 text-white">
+                    <span>Menu</span>
+                    <span>Cart</span>
+                  </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Main Content */}
+              <div className="flex-1 grid grid-cols-12 gap-4">
+                {/* Sidebar */}
+                <div 
+                  className="col-span-3 rounded-lg p-4"
+                  style={{ backgroundColor: `${template.style_config.colors.secondary}20` }}
+                >
+                  <div className="space-y-2">
+                    <div className="h-4 w-3/4 rounded" style={{ backgroundColor: template.style_config.colors.accent }}></div>
+                    <div className="h-4 w-1/2 rounded" style={{ backgroundColor: template.style_config.colors.accent }}></div>
+                    <div className="h-4 w-2/3 rounded" style={{ backgroundColor: template.style_config.colors.accent }}></div>
+                  </div>
+                </div>
+
+                {/* Products Grid */}
+                <div className="col-span-9 grid grid-cols-3 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className="aspect-square rounded-lg"
+                      style={{ backgroundColor: `${template.style_config.colors.primary}15` }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">

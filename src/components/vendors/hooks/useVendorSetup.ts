@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import type { SetupStep, SocialLinks } from '../types/vendor-setup';
 
 interface VendorSetupState {
@@ -99,14 +100,43 @@ export const useVendorSetup = (): VendorSetupHook => {
 
   // Navigation functions
   const navigation = {
-    handleNext: () => {
+    handleNext: async () => {
+      console.log('Current step:', currentStep);
+      console.log('Current state:', state);
+      
       const currentIndex = steps.indexOf(currentStep);
       if (currentIndex < steps.length - 1 && validateStep(currentStep)) {
+        // If we're moving from template step, save the template selection
+        if (currentStep === 'template') {
+          console.log('Saving template selection:', state.selectedTemplate);
+          const { error } = await supabase
+            .from('vendor_profiles')
+            .upsert({
+              id: supabase.auth.getUser()?.data?.user?.id,
+              template_id: state.selectedTemplate,
+              customizations: {
+                display_style: state.selectedDisplay,
+                bento_style: state.selectedBento
+              }
+            });
+          
+          if (error) {
+            console.error('Error saving template:', error);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to save template selection"
+            });
+            return;
+          }
+        }
+        
         setCurrentStep(steps[currentIndex + 1]);
       }
     },
 
     handleBack: () => {
+      console.log('Moving back from step:', currentStep);
       const currentIndex = steps.indexOf(currentStep);
       if (currentIndex > 0) {
         setCurrentStep(steps[currentIndex - 1]);
@@ -114,22 +144,37 @@ export const useVendorSetup = (): VendorSetupHook => {
     },
 
     handleLaunch: async () => {
+      console.log('Launching vendor profile with state:', state);
       try {
-        // Validate all steps before launching
-        const isValid = steps.every(step => validateStep(step));
-        
-        if (!isValid) {
-          throw new Error('Please complete all required fields');
+        const user = supabase.auth.getUser();
+        if (!user) {
+          throw new Error('No authenticated user found');
         }
 
-        // Here you would typically make an API call to save the vendor profile
-        // const response = await api.createVendorProfile(state);
-        
+        const { error } = await supabase
+          .from('vendor_profiles')
+          .upsert({
+            id: user.data?.user?.id,
+            template_id: state.selectedTemplate,
+            customizations: {
+              display_style: state.selectedDisplay,
+              bento_style: state.selectedBento
+            },
+            social_links: state.socialLinks,
+            business_description: state.aboutMe
+          });
+
+        if (error) {
+          console.error('Error saving vendor profile:', error);
+          throw error;
+        }
+
         toast({
           title: "Success!",
           description: "Your vendor profile has been created successfully!"
         });
       } catch (error) {
+        console.error('Error in handleLaunch:', error);
         toast({
           variant: "destructive",
           title: "Error",
