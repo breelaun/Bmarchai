@@ -7,12 +7,6 @@ import {
   MinimalistSplitTemplate
 } from './VendorTemplates';
 
-import {
-  MagazineTemplate,
-  PortfolioTemplate,
-  SinglePageTemplate
-} from './AdditionalTemplates';
-
 import type { TemplateOption } from './types';
 
 // Define all available templates with their metadata
@@ -54,24 +48,10 @@ export const templates: TemplateOption[] = [
   },
   {
     id: 6,
-    name: 'Magazine Style',
-    component: MagazineTemplate,
-    preview: '/previews/magazine.png',
-    description: 'Editorial-inspired layout with dynamic content blocks'
-  },
-  {
-    id: 7,
-    name: 'Portfolio Grid',
-    component: PortfolioTemplate,
-    preview: '/previews/portfolio.png',
-    description: 'Professional portfolio-style product showcase'
-  },
-  {
-    id: 8,
-    name: 'Single Page Scroll',
-    component: SinglePageTemplate,
-    preview: '/previews/single-page.png',
-    description: 'Smooth-scrolling single page experience'
+    name: 'Minimalist Split',
+    component: MinimalistSplitTemplate,
+    preview: '/previews/minimalist-split.png',
+    description: 'Clean and simple layout with split sections'
   }
 ];
 
@@ -82,10 +62,7 @@ export {
   MasonryTemplate,
   CarouselTemplate,
   FullScreenTemplate,
-  MinimalistSplitTemplate,
-  MagazineTemplate,
-  PortfolioTemplate,
-  SinglePageTemplate
+  MinimalistSplitTemplate
 };
 
 // Export types

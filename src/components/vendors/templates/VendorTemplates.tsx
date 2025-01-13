@@ -1,4 +1,3 @@
-// VendorTemplates.tsx
 import React from 'react';
 
 export interface VendorTemplateProps {
@@ -320,73 +319,6 @@ export const FullScreenTemplate: React.FC<VendorTemplateProps> = ({ colors, ...p
         backgroundColor: colors.accent,
         padding: '2rem'
       }}/>
-    </div>
-  );
-};
-
-// Template Selection Component
-interface TemplateOption {
-  id: number;
-  name: string;
-  component: React.FC<VendorTemplateProps>;
-  preview: string;
-}
-
-export const templates: TemplateOption[] = [
-  { 
-    id: 1, 
-    name: 'Classic Layout',
-    component: ClassicTemplate,
-    preview: '/previews/classic.png' 
-  },
-  { 
-    id: 2, 
-    name: 'Modern Grid',
-    component: ModernGridTemplate,
-    preview: '/previews/modern.png'
-  },
-  // Add all templates here...
-];
-
-// Template Selection Integration
-export const TemplateSelector: React.FC<{
-  selectedTemplate: number;
-  onTemplateSelect: (templateId: number) => void;
-}> = ({ selectedTemplate, onTemplateSelect }) => {
-  return (
-    <div className="grid grid-cols-3 gap-4">
-      {templates.map((template) => (
-        <div
-          key={template.id}
-          className={`cursor-pointer p-4 border rounded-lg ${
-            selectedTemplate === template.id ? 'border-primary' : 'border-gray-200'
-          }`}
-          onClick={() => onTemplateSelect(template.id)}
-        >
-          <div className="aspect-video bg-gray-100 mb-2">
-            {/* Preview image placeholder */}
-          </div>
-          <h3 className="font-medium">{template.name}</h3>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// Update your existing TemplateSelection component:
-import { templates, TemplateSelector } from './VendorTemplates';
-
-export const TemplateSelection: React.FC<{
-  selectedTemplate: number;
-  setSelectedTemplate: (templateId: number) => void;
-}> = ({ selectedTemplate, setSelectedTemplate }) => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Choose Your Template</h2>
-      <TemplateSelector
-        selectedTemplate={selectedTemplate}
-        onTemplateSelect={setSelectedTemplate}
-      />
     </div>
   );
 };
