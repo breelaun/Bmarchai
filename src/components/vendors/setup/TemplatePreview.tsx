@@ -15,6 +15,8 @@ type VendorTemplate = Database['public']['Tables']['vendor_templates']['Row'] & 
       primary: string;
       secondary: string;
       background: string;
+      text: string;
+      accent: string;
     };
     font: string;
   };
@@ -46,8 +48,8 @@ const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
             className="aspect-video rounded-lg border bg-card p-4"
             style={{
               fontFamily: template.style_config.font,
-              color: template.style_config.colors.primary,
-              backgroundColor: template.style_config.colors.background,
+              color: template.style_config.text,
+              backgroundColor: template.style_config.background,
             }}
           >
             <div className="h-full flex flex-col gap-4">
@@ -55,7 +57,10 @@ const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
                 <div
                   key={section}
                   className="flex-1 rounded border border-dashed p-4 flex items-center justify-center"
-                  style={{ borderColor: template.style_config.colors.secondary }}
+                  style={{ 
+                    borderColor: template.style_config.secondary,
+                    backgroundColor: index % 2 === 0 ? template.style_config.primary + '10' : 'transparent'
+                  }}
                 >
                   <span className="text-sm font-medium capitalize">{section}</span>
                 </div>

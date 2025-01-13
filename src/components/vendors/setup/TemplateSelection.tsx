@@ -16,6 +16,8 @@ type VendorTemplate = Database['public']['Tables']['vendor_templates']['Row'] & 
       primary: string;
       secondary: string;
       background: string;
+      text: string;
+      accent: string;
     };
     font: string;
   };
@@ -80,18 +82,14 @@ const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSe
                       <p className="text-sm text-muted-foreground">{template.description}</p>
                     </Label>
                     <div className="mt-2 flex items-center gap-2">
-                      <div 
-                        className="w-4 h-4 rounded-full" 
-                        style={{ backgroundColor: template.style_config.colors.primary }}
-                      />
-                      <div 
-                        className="w-4 h-4 rounded-full" 
-                        style={{ backgroundColor: template.style_config.colors.secondary }}
-                      />
-                      <div 
-                        className="w-4 h-4 rounded-full" 
-                        style={{ backgroundColor: template.style_config.colors.background }}
-                      />
+                      {Object.entries(template.style_config.colors).map(([key, color]) => (
+                        <div 
+                          key={key}
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: color }}
+                          title={key}
+                        />
+                      ))}
                       <span className="text-xs text-muted-foreground ml-2">
                         {template.style_config.font}
                       </span>
