@@ -20,10 +20,6 @@ type VendorTemplate = Database['public']['Tables']['vendor_templates']['Row'] & 
     };
     font: string;
   };
-  layout_config: {
-    layout: string;
-    sections: string[];
-  };
 };
 
 interface TemplatePreviewProps {
@@ -32,6 +28,8 @@ interface TemplatePreviewProps {
 }
 
 const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
+  const styleConfig = template.style_config as VendorTemplate['style_config'];
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
@@ -47,19 +45,19 @@ const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
           <div 
             className="aspect-video rounded-lg border bg-card p-4"
             style={{
-              fontFamily: template.style_config.font,
-              color: template.style_config.text,
-              backgroundColor: template.style_config.background,
+              fontFamily: styleConfig.font,
+              color: styleConfig.colors.text,
+              backgroundColor: styleConfig.colors.background,
             }}
           >
             <div className="h-full flex flex-col gap-4">
-              {template.layout_config.sections.map((section, index) => (
+              {template.layout_config.sections?.map((section: string, index: number) => (
                 <div
                   key={section}
                   className="flex-1 rounded border border-dashed p-4 flex items-center justify-center"
                   style={{ 
-                    borderColor: template.style_config.secondary,
-                    backgroundColor: index % 2 === 0 ? template.style_config.primary + '10' : 'transparent'
+                    borderColor: styleConfig.colors.secondary,
+                    backgroundColor: index % 2 === 0 ? `${styleConfig.colors.primary}10` : 'transparent'
                   }}
                 >
                   <span className="text-sm font-medium capitalize">{section}</span>

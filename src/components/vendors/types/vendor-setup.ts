@@ -1,18 +1,10 @@
 export type SetupStep = "template" | "display" | "bento" | "additional" | "confirmation";
 
-export interface TemplateStyleConfig {
-  colors: {
-    primary: string;
-    secondary: string;
-    background: string;  // Made required to fix type error
-  };
-  font: string;
-}
-
-export interface SocialLinks extends Record<string, string> {
+export interface SocialLinks {
   facebook: string;
   instagram: string;
   twitter: string;
+  [key: string]: string; // Add index signature
 }
 
 export interface VendorCustomizations {
@@ -39,29 +31,4 @@ export interface VendorProfileData {
     style_config: Record<string, unknown>;
     layout_config: Record<string, unknown>;
   };
-}
-
-export interface VendorProfileInsert {
-  id: string;
-  template_id: number | null;
-  customizations: {
-    display_style: string;
-    bento_style: string;
-  };
-  business_description: string | null;
-  social_links: Record<string, string>;
-  country: string;
-  timezone: string;
-}
-
-export interface VendorSetupState {
-  selectedTemplate: number | null;
-  selectedDisplay: string;
-  selectedBento: string;
-  socialLinks: SocialLinks;
-  aboutMe: string;
-  enableReviews: boolean;
-  enableFeatured: boolean;
-  country: string;
-  timezone: string;
 }

@@ -1,10 +1,10 @@
-// src/components/vendors/templates/index.ts
 import {
   ClassicTemplate,
   ModernGridTemplate,
   MasonryTemplate,
   CarouselTemplate,
-  FullScreenTemplate
+  FullScreenTemplate,
+  MinimalistSplitTemplate
 } from './VendorTemplates';
 
 import {
@@ -13,10 +13,10 @@ import {
   SinglePageTemplate
 } from './AdditionalTemplates';
 
-import { TemplateOption } from './types';
+import type { TemplateOption } from './types';
 
 // Define all available templates with their metadata
-export const allTemplates: TemplateOption[] = [
+export const templates: TemplateOption[] = [
   {
     id: 1,
     name: 'Classic Layout',
@@ -82,6 +82,7 @@ export {
   MasonryTemplate,
   CarouselTemplate,
   FullScreenTemplate,
+  MinimalistSplitTemplate,
   MagazineTemplate,
   PortfolioTemplate,
   SinglePageTemplate
@@ -89,157 +90,3 @@ export {
 
 // Export types
 export * from './types';
-
-// src/components/vendors/hooks/useVendorSetup.ts
-import { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
-import { VendorProfile, SocialLinks } from '@/types/vendor'; // Assuming you have these types
-
-// Define the possible setup steps
-type SetupStep = 'template' | 'display' | 'bento' | 'additional' | 'confirmation';
-
-// Define the state interface
-interface VendorSetupState {
-  selectedTemplate: number;
-  selectedDisplay: string;
-  selectedBento: string;
-  socialLinks: {
-    facebook: string;
-    instagram: string;
-    twitter: string;
-  };
-  aboutMe: string;
-  enableReviews: boolean;
-  enableFeatured: boolean;
-  country: string;
-  timezone: string;
-}
-
-export const useVendorSetup = () => {
-  const { toast } = useToast();
-  
-  // Initialize setup step state
-  const [currentStep, setCurrentStep] = useState<SetupStep>('template');
-
-  // Initialize vendor profile state
-  const [state, setState] = useState<VendorSetupState>({
-    selectedTemplate: 1,
-    selectedDisplay: 'default',
-    selectedBento: 'default',
-    socialLinks: {
-      facebook: '',
-      instagram: '',
-      twitter: ''
-    },
-    aboutMe: '',
-    enableReviews: false,
-    enableFeatured: false,
-    country: '',
-    timezone: ''
-  });
-
-  // Create setters for each state property
-  const setters = {
-    setSelectedTemplate: (templateId: number) => 
-      setState(prev => ({ ...prev, selectedTemplate: templateId })),
-      
-    setSelectedDisplay: (display: string) => 
-      setState(prev => ({ ...prev, selectedDisplay: display })),
-      
-    setSelectedBento: (bento: string) => 
-      setState(prev => ({ ...prev, selectedBento: bento })),
-      
-    setSocialLinks: (links: typeof state.socialLinks) => 
-      setState(prev => ({ ...prev, socialLinks: links })),
-      
-    setAboutMe: (about: string) => 
-      setState(prev => ({ ...prev, aboutMe: about })),
-      
-    setEnableReviews: (enable: boolean) => 
-      setState(prev => ({ ...prev, enableReviews: enable })),
-      
-    setEnableFeatured: (enable: boolean) => 
-      setState(prev => ({ ...prev, enableFeatured: enable })),
-      
-    setCountry: (country: string) => 
-      setState(prev => ({ ...prev, country: country })),
-      
-    setTimezone: (timezone: string) => 
-      setState(prev => ({ ...prev, timezone: timezone }))
-  };
-
-  // Setup navigation functions
-  const navigation = {
-    handleNext: () => {
-      const steps: SetupStep[] = [
-        'template',
-        'display',
-        'bento',
-        'additional',
-        'confirmation'
-      ];
-      const currentIndex = steps.indexOf(currentStep);
-      if (currentIndex < steps.length - 1) {
-        setCurrentStep(steps[currentIndex + 1]);
-      }
-    },
-
-    handleBack: () => {
-      const steps: SetupStep[] = [
-        'template',
-        'display',
-        'bento',
-        'additional',
-        'confirmation'
-      ];
-      const currentIndex = steps.indexOf(currentStep);
-      if (currentIndex > 0) {
-        setCurrentStep(steps[currentIndex - 1]);
-      }
-    },
-
-    handleLaunch: async () => {
-      try {
-        // Add your API call here to save the vendor profile
-        // const response = await createVendorProfile(state);
-        
-        toast({
-          title: "Success",
-          description: "Your vendor profile has been created successfully!"
-        });
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to create vendor profile. Please try again."
-        });
-      }
-    }
-  };
-
-  // Optional: Add validation function
-  const validateStep = (step: SetupStep): boolean => {
-    switch (step) {
-      case 'template':
-        return state.selectedTemplate > 0;
-      case 'display':
-        return !!state.selectedDisplay;
-      case 'bento':
-        return !!state.selectedBento;
-      case 'additional':
-        return !!state.aboutMe && !!state.country && !!state.timezone;
-      case 'confirmation':
-        return true;
-      default:
-        return false;
-    }
-  };
-
-  return {
-    currentStep,
-    state,
-    setters,
-    navigation,
-    validateStep
-  };
-};
