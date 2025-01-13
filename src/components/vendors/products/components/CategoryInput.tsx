@@ -2,13 +2,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface CategoryInputProps {
-  category: string;
-  onCategoryChange: (value: string) => void;
+  onChange: (value: string) => void;
+  value: string;
 }
 
-const CategoryInput = ({ category, onCategoryChange }: CategoryInputProps) => {
+const CategoryInput = ({ onChange, value }: CategoryInputProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onCategoryChange(e.target.value);
+    onChange(e.target.value);
   };
 
   return (
@@ -16,9 +16,9 @@ const CategoryInput = ({ category, onCategoryChange }: CategoryInputProps) => {
       <Label htmlFor="category">Category</Label>
       <Input
         id="category"
-        value={category}
-        onChange={handleChange}
         placeholder="Enter product category"
+        value={value}
+        onChange={handleChange}
       />
     </div>
   );

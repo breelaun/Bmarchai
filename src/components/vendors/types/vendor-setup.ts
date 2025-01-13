@@ -12,6 +12,22 @@ export interface VendorCustomizations {
   bento_style: string;
 }
 
+export interface TemplateStyleConfig {
+  colors: {
+    primary: string;
+    secondary: string;
+    background: string;
+    text: string;
+    accent: string;
+  };
+  font: string;
+}
+
+export interface TemplateLayoutConfig {
+  layout: string;
+  sections: string[];
+}
+
 export interface VendorProfileData {
   id: string;
   template_id: number | null;
@@ -22,13 +38,11 @@ export interface VendorProfileData {
   social_links: SocialLinks | null;
   created_at: string;
   updated_at: string;
-  timezone: string;
-  country: string;
   template?: {
     id: number;
     name: string;
     description: string | null;
-    style_config: Record<string, unknown>;
-    layout_config: Record<string, unknown>;
+    style_config: TemplateStyleConfig;
+    layout_config: TemplateLayoutConfig;
   };
 }

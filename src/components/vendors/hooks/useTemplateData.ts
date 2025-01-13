@@ -11,6 +11,9 @@ function isTemplateStyleConfig(obj: unknown): obj is TemplateStyleConfig {
     candidate.colors &&
     typeof candidate.colors.primary === 'string' &&
     typeof candidate.colors.secondary === 'string' &&
+    typeof candidate.colors.text === 'string' &&
+    typeof candidate.colors.background === 'string' &&
+    typeof candidate.colors.accent === 'string' &&
     typeof candidate.font === 'string'
   );
 }

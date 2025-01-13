@@ -7,20 +7,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { Database } from "@/integrations/supabase/types";
+import { TemplateStyleConfig, TemplateLayoutConfig } from "../types/vendor-setup";
 
-type VendorTemplate = Database['public']['Tables']['vendor_templates']['Row'] & {
-  style_config: {
-    colors: {
-      primary: string;
-      secondary: string;
-      background: string;
-      text: string;
-      accent: string;
-    };
-    font: string;
-  };
-};
+interface VendorTemplate {
+  id: number;
+  name: string;
+  description: string | null;
+  style_config: TemplateStyleConfig;
+  layout_config: TemplateLayoutConfig;
+}
 
 interface TemplatePreviewProps {
   template: VendorTemplate;
@@ -28,8 +23,6 @@ interface TemplatePreviewProps {
 }
 
 const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
-  const styleConfig = template.style_config as VendorTemplate['style_config'];
-
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
@@ -45,9 +38,9 @@ const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
           <div 
             className="aspect-video rounded-lg border bg-card p-4"
             style={{
-              fontFamily: styleConfig.font,
-              color: styleConfig.colors.text,
-              backgroundColor: styleConfig.colors.background,
+              fontFamily: template.style_config.font,
+              color: template.style_config.colors.text,
+              backgroundColor: template.style_config.colors.background,
             }}
           >
             <div className="h-full flex flex-col gap-4">
@@ -56,8 +49,8 @@ const TemplatePreview = ({ template, onClose }: TemplatePreviewProps) => {
                   key={section}
                   className="flex-1 rounded border border-dashed p-4 flex items-center justify-center"
                   style={{ 
-                    borderColor: styleConfig.colors.secondary,
-                    backgroundColor: index % 2 === 0 ? `${styleConfig.colors.primary}10` : 'transparent'
+                    borderColor: template.style_config.colors.secondary,
+                    backgroundColor: index % 2 === 0 ? `${template.style_config.colors.primary}10` : 'transparent'
                   }}
                 >
                   <span className="text-sm font-medium capitalize">{section}</span>
