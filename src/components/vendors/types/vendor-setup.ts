@@ -4,7 +4,7 @@ export interface SocialLinks {
   facebook: string;
   instagram: string;
   twitter: string;
-  [key: string]: string; // Add index signature
+  [key: string]: string; // Add index signature to allow string indexing
 }
 
 export interface VendorCustomizations {

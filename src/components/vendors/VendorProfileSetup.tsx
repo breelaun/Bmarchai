@@ -8,6 +8,7 @@ import Confirmation from "./setup/Confirmation";
 import TemplatePreviewPane from "./setup/TemplatePreviewPane";
 import { useVendorSetup } from "./hooks/useVendorSetup";
 import { useTemplateData } from "./hooks/useTemplateData";
+import type { SocialLinks } from "./types/vendor-setup";
 
 const VendorProfileSetup = () => {
   const {
