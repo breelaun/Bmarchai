@@ -10,3 +10,15 @@ export interface VendorTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export interface VendorTemplateProps {
+  colors: TemplateStyleConfig['colors'];
+}
+
+export interface TemplateOption {
+  id: number;
+  name: string;
+  description: string;
+  preview: string;
+  component: React.ComponentType<VendorTemplateProps>;
+}

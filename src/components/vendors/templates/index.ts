@@ -7,7 +7,7 @@ import {
   MinimalistSplitTemplate
 } from './VendorTemplates';
 
-import type { TemplateOption } from './types';
+import { TemplateOption } from './types';
 
 // Define all available templates with their metadata
 export const templates: TemplateOption[] = [
