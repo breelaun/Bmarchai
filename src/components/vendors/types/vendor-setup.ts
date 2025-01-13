@@ -4,7 +4,7 @@ export interface SocialLinks {
   facebook: string;
   instagram: string;
   twitter: string;
-  [key: string]: string; // Add index signature to allow string indexing
+  [key: string]: string; // Add index signature
 }
 
 export interface VendorCustomizations {
@@ -28,6 +28,30 @@ export interface TemplateLayoutConfig {
   sections: string[];
 }
 
+export interface VendorTemplate {
+  id: number;
+  name: string;
+  description: string | null;
+  style_config: TemplateStyleConfig;
+  layout_config: TemplateLayoutConfig;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TemplateOption {
+  id: number;
+  name: string;
+  description: string;
+  preview: string;
+  component: React.ComponentType<VendorTemplateProps>;
+}
+
+export interface VendorTemplateProps {
+  colors: TemplateStyleConfig['colors'];
+  layout?: TemplateLayoutConfig;
+}
+
 export interface VendorProfileData {
   id: string;
   template_id: number | null;
@@ -38,11 +62,5 @@ export interface VendorProfileData {
   social_links: SocialLinks | null;
   created_at: string;
   updated_at: string;
-  template?: {
-    id: number;
-    name: string;
-    description: string | null;
-    style_config: TemplateStyleConfig;
-    layout_config: TemplateLayoutConfig;
-  };
+  template?: VendorTemplate;
 }

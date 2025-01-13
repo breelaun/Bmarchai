@@ -98,7 +98,6 @@ export const useVendorSetup = (): VendorSetupHook => {
     'confirmation'
   ];
 
-  // Navigation functions
   const navigation = {
     handleNext: async () => {
       console.log('Current step:', currentStep);
@@ -109,10 +108,23 @@ export const useVendorSetup = (): VendorSetupHook => {
         // If we're moving from template step, save the template selection
         if (currentStep === 'template') {
           console.log('Saving template selection:', state.selectedTemplate);
+          const user = await supabase.auth.getUser();
+          const userId = user.data?.user?.id;
+          
+          if (!userId) {
+            console.error('No authenticated user found');
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "You must be logged in to continue"
+            });
+            return;
+          }
+
           const { error } = await supabase
             .from('vendor_profiles')
             .upsert({
-              id: supabase.auth.getUser()?.data?.user?.id,
+              id: userId,
               template_id: state.selectedTemplate,
               customizations: {
                 display_style: state.selectedDisplay,
@@ -146,15 +158,17 @@ export const useVendorSetup = (): VendorSetupHook => {
     handleLaunch: async () => {
       console.log('Launching vendor profile with state:', state);
       try {
-        const user = supabase.auth.getUser();
-        if (!user) {
+        const user = await supabase.auth.getUser();
+        const userId = user.data?.user?.id;
+        
+        if (!userId) {
           throw new Error('No authenticated user found');
         }
 
         const { error } = await supabase
           .from('vendor_profiles')
           .upsert({
-            id: user.data?.user?.id,
+            id: userId,
             template_id: state.selectedTemplate,
             customizations: {
               display_style: state.selectedDisplay,

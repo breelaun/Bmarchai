@@ -1,63 +1,99 @@
-import React, { useState } from 'react';
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
-import TemplatePreview from "./TemplatePreview";
-import { TemplateGrid } from "./components/TemplateGrid";
-import type { VendorTemplate } from "./types";
+import React from 'react';
+import type { VendorTemplate, TemplateStyleConfig, TemplateLayoutConfig } from '../types/vendor-setup';
 
-interface TemplateSelectionProps {
-  selectedTemplate: number | null;
-  setSelectedTemplate: (id: number) => void;
-}
-
-const TemplateSelection = ({ selectedTemplate, setSelectedTemplate }: TemplateSelectionProps) => {
-  const [previewTemplate, setPreviewTemplate] = useState<VendorTemplate | null>(null);
-
-  const { data: templates, isLoading } = useQuery({
-    queryKey: ["vendorTemplates"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("vendor_templates")
-        .select("*")
-        .order("id");
-      
-      if (error) throw error;
-      return data as VendorTemplate[];
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-heading font-semibold">Choose Your Template</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-40 w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+export const ClassicTemplate: React.FC<{ colors: TemplateStyleConfig['colors'] }> = ({ colors }) => {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-heading font-semibold">Choose Your Template</h2>
-      <TemplateGrid
-        templates={templates || []}
-        selectedTemplate={selectedTemplate}
-        onTemplateSelect={setSelectedTemplate}
-        onPreview={setPreviewTemplate}
-      />
-
-      {previewTemplate && (
-        <TemplatePreview
-          template={previewTemplate}
-          onClose={() => setPreviewTemplate(null)}
-        />
-      )}
+    <div style={{ backgroundColor: colors.background, color: colors.text }}>
+      <header style={{ backgroundColor: colors.primary, padding: '1rem' }}>
+        <h1 style={{ color: colors.text }}>Classic Template</h1>
+      </header>
+      <main className="grid grid-cols-3 gap-4 p-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} style={{ backgroundColor: colors.secondary }} className="p-4 rounded">
+            Product {i}
+          </div>
+        ))}
+      </main>
     </div>
   );
 };
 
-export default TemplateSelection;
+export const ModernGridTemplate: React.FC<{ colors: TemplateStyleConfig['colors'] }> = ({ colors }) => {
+  return (
+    <div style={{ backgroundColor: colors.background, color: colors.text }}>
+      <div className="grid grid-cols-4 gap-4 p-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} style={{ backgroundColor: colors.secondary }} className="aspect-square rounded" />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export const MasonryTemplate: React.FC<{ colors: TemplateStyleConfig['colors'] }> = ({ colors }) => {
+  return (
+    <div style={{ backgroundColor: colors.background, color: colors.text }}>
+      <div className="columns-3 gap-4 p-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div 
+            key={i} 
+            style={{ backgroundColor: colors.secondary }} 
+            className={`mb-4 break-inside-avoid rounded h-${Math.floor(Math.random() * 3 + 2) * 32}`} 
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export const CarouselTemplate: React.FC<{ colors: TemplateStyleConfig['colors'] }> = ({ colors }) => {
+  return (
+    <div style={{ backgroundColor: colors.background, color: colors.text }}>
+      <div className="flex overflow-x-auto gap-4 p-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div 
+            key={i} 
+            style={{ backgroundColor: colors.secondary }} 
+            className="flex-none w-64 h-64 rounded"
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export const FullScreenTemplate: React.FC<{ colors: TemplateStyleConfig['colors'] }> = ({ colors }) => {
+  return (
+    <div style={{ backgroundColor: colors.background, color: colors.text }} className="min-h-screen">
+      <div className="h-screen grid place-items-center">
+        <div style={{ backgroundColor: colors.secondary }} className="p-8 rounded">
+          Full Screen Content
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const MinimalistSplitTemplate: React.FC<{ colors: TemplateStyleConfig['colors'] }> = ({ colors }) => {
+  return (
+    <div style={{ backgroundColor: colors.background, color: colors.text }} className="min-h-screen">
+      <div className="grid grid-cols-2 min-h-screen">
+        <div style={{ backgroundColor: colors.primary }} className="p-8">
+          Left Content
+        </div>
+        <div style={{ backgroundColor: colors.secondary }} className="p-8">
+          Right Content
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default {
+  ClassicTemplate,
+  ModernGridTemplate,
+  MasonryTemplate,
+  CarouselTemplate,
+  FullScreenTemplate,
+  MinimalistSplitTemplate
+};
