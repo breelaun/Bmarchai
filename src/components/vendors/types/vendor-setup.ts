@@ -1,66 +1,51 @@
-export type SetupStep = "template" | "display" | "bento" | "additional" | "confirmation";
-
-export interface SocialLinks {
-  facebook: string;
-  instagram: string;
-  twitter: string;
-  [key: string]: string; // Add index signature
-}
-
-export interface VendorCustomizations {
-  display_style: string;
-  bento_style: string;
-}
-
-export interface TemplateStyleConfig {
-  colors: {
-    primary: string;
-    secondary: string;
-    background: string;
-    text: string;
-    accent: string;
+export interface VendorSetupData {
+  template_id?: number;
+  customizations?: {
+    display_style?: string;
+    bento_style?: string;
   };
-  font: string;
+  business_name?: string;
+  business_description?: string;
+  contact_email?: string;
+  social_links?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+  };
+  timezone?: string;
+  country?: string;
 }
 
-export interface TemplateLayoutConfig {
-  layout: string;
-  sections: string[];
-}
-
-export interface VendorTemplate {
-  id: number;
+export interface Session {
+  id: string;
+  vendor_id: string;
   name: string;
   description: string | null;
-  style_config: TemplateStyleConfig;
-  layout_config: TemplateLayoutConfig;
-  is_active: boolean;
+  price: number;
+  duration: string;
+  start_time: string;
+  max_participants: number | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface TemplateOption {
-  id: number;
-  name: string;
-  description: string;
-  preview: string;
-  component: React.ComponentType<VendorTemplateProps>;
-}
-
-export interface VendorTemplateProps {
-  colors: TemplateStyleConfig['colors'];
-  layout?: TemplateLayoutConfig;
-}
-
-export interface VendorProfileData {
+export interface SessionMedia {
   id: string;
-  template_id: number | null;
-  customizations: VendorCustomizations | null;
-  business_name: string | null;
-  business_description: string | null;
-  contact_email: string | null;
-  social_links: SocialLinks | null;
+  session_id: string;
+  media_type: string;
+  media_url: string;
+  display_order: number;
+  created_at: string;
+}
+
+export interface SessionParticipant {
+  id: string;
+  session_id: string;
+  user_id: string;
+  has_completed: boolean | null;
+  rating: number | null;
+  tip_amount: number | null;
   created_at: string;
   updated_at: string;
-  template?: VendorTemplate;
 }

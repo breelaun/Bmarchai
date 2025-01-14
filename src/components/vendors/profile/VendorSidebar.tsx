@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Video, Store, FileText, Book, Headphones, BookOpen, Image } from "lucide-react";
+import { Video, Store, FileText, Book, Headphones, BookOpen, Image, Calendar } from "lucide-react";
 
 const sidebarItems = [
   { icon: <Video className="w-4 h-4" />, label: "Videos" },
@@ -9,7 +9,7 @@ const sidebarItems = [
   { icon: <Book className="w-4 h-4" />, label: "Books" },
   { icon: <Headphones className="w-4 h-4" />, label: "Podcasts" },
   { icon: <BookOpen className="w-4 h-4" />, label: "Ebooks" },
-  { icon: <Video className="w-4 h-4" />, label: "Lives" },
+  { icon: <Calendar className="w-4 h-4" />, label: "Sessions" },
   { icon: <Image className="w-4 h-4" />, label: "Photos" },
 ];
 

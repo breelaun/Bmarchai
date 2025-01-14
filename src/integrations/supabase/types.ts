@@ -935,6 +935,14 @@ export type Database = {
         | "completed"
         | "failed"
         | "refunded"
+      product_category:
+        | "Books"
+        | "Clothing"
+        | "Consultation"
+        | "Ebook"
+        | "Photo"
+        | "Podcast"
+        | "Session"
       user_role: "user" | "admin"
     }
     CompositeTypes: {
