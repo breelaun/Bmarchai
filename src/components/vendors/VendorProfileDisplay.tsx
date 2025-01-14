@@ -83,7 +83,13 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           throw error;
         }
 
-        return data as VendorProfileData;
+        // Type assertion to ensure social_links matches expected structure
+        const typedData = data ? {
+          ...data,
+          social_links: data.social_links as VendorProfileData['social_links']
+        } : null;
+
+        return typedData as VendorProfileData;
       } catch (error: any) {
         console.error('Error in vendor profile query:', error);
         toast({
