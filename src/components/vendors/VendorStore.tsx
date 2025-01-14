@@ -19,6 +19,7 @@ interface Product {
   category: string | null;
   is_featured: boolean;
   inventory_count: number;
+  file_urls: string[] | null;
 }
 
 const VendorStore = ({ vendorId }: VendorStoreProps) => {

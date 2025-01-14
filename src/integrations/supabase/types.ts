@@ -418,6 +418,7 @@ export type Database = {
           category: string | null
           created_at: string
           description: string | null
+          file_urls: string[] | null
           id: number
           image_url: string | null
           inventory_count: number | null
@@ -432,6 +433,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string | null
+          file_urls?: string[] | null
           id?: number
           image_url?: string | null
           inventory_count?: number | null
@@ -446,6 +448,7 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string | null
+          file_urls?: string[] | null
           id?: number
           image_url?: string | null
           inventory_count?: number | null
