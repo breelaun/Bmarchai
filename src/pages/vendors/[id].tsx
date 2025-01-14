@@ -34,10 +34,7 @@ const VendorProfile = () => {
 
       const { data, error } = await supabase
         .from('vendor_profiles')
-        .select(`
-          *,
-          template:vendor_templates(*)
-        `)
+        .select('*')
         .eq('id', userId)
         .maybeSingle();
 
@@ -59,11 +56,7 @@ const VendorProfile = () => {
     return null;
   }
 
-  // Default vendor data
   const defaultVendorData = {
-    template: null,
-    displayStyle: "default",
-    bentoStyle: "default",
     socialLinks: {
       facebook: "",
       instagram: "",
@@ -74,11 +67,7 @@ const VendorProfile = () => {
     enableFeatured: true,
   };
 
-  // Use either the fetched profile data or default data
   const vendorData = vendorProfile ? {
-    template: vendorProfile.template_id,
-    displayStyle: vendorProfile.customizations?.display_style || defaultVendorData.displayStyle,
-    bentoStyle: vendorProfile.customizations?.bento_style || defaultVendorData.bentoStyle,
     socialLinks: vendorProfile.social_links || defaultVendorData.socialLinks,
     aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
     enableReviews: true,

@@ -6,14 +6,15 @@ import VendorHeader from "./profile/VendorHeader";
 import VendorSidebar from "./profile/VendorSidebar";
 import VendorStore from "./profile/VendorStore";
 import VendorSocial from "./profile/VendorSocial";
-import { SocialLinks, VendorProfileData, VendorCustomizations } from "../types/vendor-setup";
+import type { VendorProfileData } from "../types/vendor-setup";
 
 interface VendorProfileDisplayProps {
   vendorData?: {
-    template: number | null;
-    displayStyle: string;
-    bentoStyle: string;
-    socialLinks: SocialLinks;
+    socialLinks: {
+      facebook: string;
+      instagram: string;
+      twitter: string;
+    };
     aboutMe: string;
     enableReviews: boolean;
     enableFeatured: boolean;
@@ -68,14 +69,11 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
       try {
         const { data, error } = await supabase
           .from('vendor_profiles')
-          .select(`
-            *,
-            template:vendor_templates(*)
-          `)
+          .select('*')
           .eq('id', session.user.id)
           .maybeSingle();
         
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+        if (error && error.code !== 'PGRST116') {
           console.error('Error fetching vendor profile:', error);
           toast({
             variant: "destructive",
@@ -85,9 +83,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           throw error;
         }
 
-        // Type assertion after validating the shape of the data
-        const typedData = data as unknown as VendorProfileData;
-        return typedData;
+        return data as VendorProfileData;
       } catch (error: any) {
         console.error('Error in vendor profile query:', error);
         toast({
@@ -110,11 +106,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
     );
   }
 
-  // If no vendor profile exists yet, we'll use default empty values
   const defaultVendorData = {
-    template: null,
-    displayStyle: "default",
-    bentoStyle: "default",
     socialLinks: {
       facebook: "",
       instagram: "",
@@ -126,9 +118,6 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
   };
 
   const currentVendorData = vendorProfile ? {
-    template: vendorProfile.template_id,
-    displayStyle: (vendorProfile.customizations as VendorCustomizations)?.display_style || "default",
-    bentoStyle: (vendorProfile.customizations as VendorCustomizations)?.bento_style || "default",
     socialLinks: vendorProfile.social_links || defaultVendorData.socialLinks,
     aboutMe: vendorProfile.business_description || "",
     enableReviews: true,
