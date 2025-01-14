@@ -2,18 +2,12 @@ export interface ProductFormData {
   name: string;
   description: string;
   price: number;
-  category: string;
+  category: ProductCategory;
   inventory_count: number;
   is_featured: boolean;
 }
 
-export interface ProductCategory {
-  id: string;
-  name: string;
-  description: string | null;
-  slug: string;
-  parent_id: string | null;
-}
+export type ProductCategory = 'Books' | 'Clothing' | 'Consultation' | 'Ebook' | 'Photo' | 'Podcast' | 'Session';
 
 export type ProductStatus = 'active' | 'draft' | 'archived';
 
@@ -23,4 +17,9 @@ export interface ProductFilters {
   maxPrice?: number;
   status?: ProductStatus;
   featured?: boolean;
+}
+
+export interface ProductFile {
+  file: File;
+  type: string;
 }

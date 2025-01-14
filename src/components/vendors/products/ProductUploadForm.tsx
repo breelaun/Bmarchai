@@ -11,7 +11,8 @@ import ImageUpload from "./components/ImageUpload";
 import ProductDetails from "./components/ProductDetails";
 import PricingInventory from "./components/PricingInventory";
 import CategoryInput from "./components/CategoryInput";
-import type { ProductFormData } from "./types";
+import ProductFileUpload from "./components/ProductFileUpload";
+import type { ProductFormData, ProductFile, ProductCategory } from "./types";
 
 interface ProductUploadFormProps {
   onSuccess?: () => void;
@@ -22,7 +23,9 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [productFiles, setProductFiles] = useState<ProductFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory>();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProductFormData>();
 
@@ -40,7 +43,9 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
 
     try {
       let imageUrl = null;
+      let productFileUrls: string[] = [];
 
+      // Upload product image
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const filePath = `${session.user.id}/${crypto.randomUUID()}.${fileExt}`;
@@ -58,6 +63,24 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
         imageUrl = publicUrl;
       }
 
+      // Upload product files
+      for (const productFile of productFiles) {
+        const fileExt = productFile.file.name.split('.').pop();
+        const filePath = `${session.user.id}/files/${crypto.randomUUID()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(filePath, productFile.file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('products')
+          .getPublicUrl(filePath);
+
+        productFileUrls.push(publicUrl);
+      }
+
       const { error: insertError } = await supabase
         .from('products')
         .insert({
@@ -65,9 +88,10 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
           name: data.name,
           description: data.description,
           price: data.price,
-          category: data.category,
+          category: selectedCategory,
           inventory_count: data.inventory_count,
           image_url: imageUrl,
+          file_urls: productFileUrls,
         });
 
       if (insertError) throw insertError;
@@ -79,6 +103,7 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
 
       reset();
       setImageFile(null);
+      setProductFiles([]);
       queryClient.invalidateQueries({ queryKey: ['vendorProducts'] });
       onSuccess?.();
 
@@ -106,8 +131,16 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <ProductDetails register={register} errors={errors} />
           <PricingInventory register={register} errors={errors} />
-          <CategoryInput register={register} />
+          <CategoryInput 
+            register={register} 
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+          />
           <ImageUpload onImageChange={setImageFile} imageFile={imageFile} />
+          <ProductFileUpload 
+            files={productFiles}
+            onFilesChange={setProductFiles}
+          />
           <Button type="submit" className="w-full" disabled={isUploading}>
             {isUploading ? "Adding Product..." : "Add Product"}
           </Button>
