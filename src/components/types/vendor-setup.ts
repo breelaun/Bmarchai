@@ -10,4 +10,6 @@ export interface VendorProfileData {
   } | null;
   created_at: string;
   updated_at: string;
+  timezone?: string;
+  country?: string;
 }

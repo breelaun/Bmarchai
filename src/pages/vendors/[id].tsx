@@ -30,8 +30,6 @@ const VendorProfile = () => {
         userId = session.user.id;
       }
 
-      console.log("Fetching vendor profile for userId:", userId);
-
       const { data, error } = await supabase
         .from('vendor_profiles')
         .select('*')
