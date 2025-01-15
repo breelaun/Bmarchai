@@ -1,9 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Navigation } from "./components/Navigation";
-import { Footer } from "./components/Footer";
-import Home from "./pages/Home";
-import Shop from "./pages/Shop";
-import ProductPage from "./pages/ProductPage";
+import Navigation from "./components/Navigation";
+import Footer from "./components/Footer";
+import { lazy } from "react";
+
+const Home = lazy(() => import("./pages/Index"));
+const Shop = lazy(() => import("./pages/Shop"));
+const ProductPage = lazy(() => import("./pages/ProductPage"));
 
 const App = () => {
   return (

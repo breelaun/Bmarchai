@@ -19,9 +19,10 @@ interface VendorProfileDisplayProps {
     enableReviews: boolean;
     enableFeatured: boolean;
   };
+  vendorId?: string;
 }
 
-const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
+const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProps) => {
   const session = useSession();
   const { toast } = useToast();
 
@@ -82,14 +83,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           });
           throw error;
         }
-
-        // Type assertion to ensure social_links matches expected structure
-        const typedData = data ? {
-          ...data,
-          social_links: data.social_links as VendorProfileData['social_links']
-        } : null;
-
-        return typedData as VendorProfileData;
+        return data as VendorProfileData;
       } catch (error: any) {
         console.error('Error in vendor profile query:', error);
         toast({
@@ -145,7 +139,10 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           
           <div className="col-span-9 space-y-6">
             <VendorStore />
-            <VendorSocial socialLinks={currentVendorData.socialLinks} />
+            <VendorSocial 
+              socialLinks={currentVendorData.socialLinks} 
+              vendorId={vendorId}
+            />
           </div>
         </div>
       </div>
