@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Store, Package, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import ProductUploadForm from "./products/ProductUploadForm";
 
 interface VendorStoreProps {
@@ -125,32 +126,34 @@ const VendorStore = ({ vendorId }: VendorStoreProps) => {
             ) : products && products.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {products.map((product) => (
-                  <Card key={product.id}>
-                    <CardContent className="p-4">
-                      {product.image_url ? (
-                        <img
-                          src={product.image_url}
-                          alt={product.name}
-                          className="w-full h-48 object-cover rounded-lg mb-4"
-                        />
-                      ) : (
-                        <div className="w-full h-48 bg-muted rounded-lg mb-4 flex items-center justify-center">
-                          <Package className="h-12 w-12 text-muted-foreground" />
-                        </div>
-                      )}
-                      <h3 className="font-semibold mb-2">{product.name}</h3>
-                      <p className="text-muted-foreground text-sm mb-2">
-                        {product.description?.slice(0, 100)}
-                        {product.description && product.description.length > 100 ? "..." : ""}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">{formatPrice(product.price)}</span>
-                        {product.inventory_count === 0 && (
-                          <span className="text-sm text-destructive">Out of stock</span>
+                  <Link to={`/products/${product.id}`} key={product.id}>
+                    <Card className="h-full transition-transform hover:scale-[1.02]">
+                      <CardContent className="p-4">
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-48 object-cover rounded-lg mb-4"
+                          />
+                        ) : (
+                          <div className="w-full h-48 bg-muted rounded-lg mb-4 flex items-center justify-center">
+                            <Package className="h-12 w-12 text-muted-foreground" />
+                          </div>
                         )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <h3 className="font-semibold mb-2">{product.name}</h3>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          {product.description?.slice(0, 100)}
+                          {product.description && product.description.length > 100 ? "..." : ""}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">{formatPrice(product.price)}</span>
+                          {product.inventory_count === 0 && (
+                            <span className="text-sm text-destructive">Out of stock</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             ) : (
