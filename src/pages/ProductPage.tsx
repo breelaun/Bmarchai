@@ -1,91 +1,222 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui'; // Adjust imports based on your actual component paths
-import ProductList from './ProductList'; // Assuming you have a component for listing products
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Package } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Product {
-  id: string;
+  id: number;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
-  imageUrl: string;
-  // Add fields like category, tags that could be used to find related items
-  category?: string;
-  tags?: string[];
+  image_url: string | null;
+  category: string | null;
+  inventory_count: number | null;
+  vendor_id: string;
+  vendor_profiles: {
+    business_name: string | null;
+    profiles: {
+      username: string | null;
+    }
+  }
 }
 
-const ProductPage: React.FC = () => {
+const ProductPage = () => {
   const { productId } = useParams<{ productId: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        // Fetch the current product
-        const fetchedProduct: Product = await fetchProductById(productId); // Simulate API call
-        setProduct(fetchedProduct);
+  const { data: product, isLoading } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          vendor_profiles (
+            business_name,
+            profiles (
+              username
+            )
+          )
+        `)
+        .eq("id", productId)
+        .single();
 
-        // Fetch related products based on product's category or tags
-        const related = await fetchRelatedProducts(fetchedProduct.category, fetchedProduct.tags);
-        setRelatedProducts(related);
-      } catch (error) {
-        console.error('Error fetching product and related items:', error);
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error loading product",
+          description: error.message,
+        });
+        throw error;
       }
-    };
-    fetchProduct();
-  }, [productId]);
 
-  if (!product) return <div>Loading...</div>;
+      return data as Product;
+    },
+  });
+
+  const { data: relatedProducts } = useQuery({
+    queryKey: ["relatedProducts", product?.category],
+    queryFn: async () => {
+      if (!product?.category) return [];
+      
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          vendor_profiles (
+            business_name,
+            profiles (
+              username
+            )
+          )
+        `)
+        .eq("category", product.category)
+        .neq("id", product.id)
+        .limit(3);
+
+      if (error) {
+        console.error("Error fetching related products:", error);
+        return [];
+      }
+
+      return data as Product[];
+    },
+    enabled: !!product?.category,
+  });
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(price);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card className="animate-pulse">
+          <CardContent className="p-4">
+            <div className="w-full h-64 bg-muted rounded-lg mb-4" />
+            <div className="h-8 bg-muted rounded w-3/4 mb-4" />
+            <div className="h-4 bg-muted rounded w-1/2 mb-2" />
+            <div className="h-4 bg-muted rounded w-1/4" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Product Not Found</h2>
+            <p className="text-muted-foreground">
+              The product you're looking for doesn't exist or has been removed.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">
-      <Card className="mx-auto max-w-2xl">
-        <CardHeader>
-          <CardTitle>{product.name}</CardTitle>
-          <CardDescription>{product.description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <img src={product.imageUrl} alt={product.name} className="mb-4 w-full h-64 object-cover" />
-          <p>Price: ${product.price}</p>
+      <Card>
+        <CardContent className="p-6">
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              {product.image_url ? (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full rounded-lg object-cover aspect-square"
+                />
+              ) : (
+                <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
+                  <Package className="h-20 w-20 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
+              <p className="text-muted-foreground mb-6">
+                {product.description}
+              </p>
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-2xl font-bold">
+                  {formatPrice(product.price)}
+                </span>
+                {product.inventory_count === 0 ? (
+                  <span className="text-destructive">Out of stock</span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {product.inventory_count} in stock
+                  </span>
+                )}
+              </div>
+              <Button
+                className="w-full"
+                disabled={product.inventory_count === 0}
+              >
+                Add to Cart
+              </Button>
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="font-semibold mb-2">Seller Information</h3>
+                <p className="text-muted-foreground">
+                  {product.vendor_profiles?.business_name || 
+                   product.vendor_profiles?.profiles?.username || 
+                   "Unknown Vendor"}
+                </p>
+              </div>
+            </div>
+          </div>
         </CardContent>
-        <CardFooter>
-          <Button>Add to Cart</Button>
-        </CardFooter>
       </Card>
 
-      {/* Related Items Section */}
-      {relatedProducts.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Related Items</h2>
-          <ProductList products={relatedProducts} />
+      {relatedProducts && relatedProducts.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6">Related Products</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {relatedProducts.map((relatedProduct) => (
+              <Card key={relatedProduct.id}>
+                <CardContent className="p-4">
+                  {relatedProduct.image_url ? (
+                    <img
+                      src={relatedProduct.image_url}
+                      alt={relatedProduct.name}
+                      className="w-full h-48 object-cover rounded-lg mb-4"
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-muted rounded-lg mb-4 flex items-center justify-center">
+                      <Package className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                  )}
+                  <h3 className="font-semibold mb-2">{relatedProduct.name}</h3>
+                  <p className="text-muted-foreground text-sm mb-2 line-clamp-2">
+                    {relatedProduct.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">
+                      {formatPrice(relatedProduct.price)}
+                    </span>
+                    {relatedProduct.inventory_count === 0 && (
+                      <span className="text-sm text-destructive">Out of stock</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
-};
-
-// Mock functions for fetching data
-const fetchProductById = async (id: string): Promise<Product> => {
-  // Here you would make an actual API call
-  return {
-    id: id,
-    name: "Example Product",
-    description: "This is a very cool product!",
-    price: 99.99,
-    imageUrl: 'path/to/image.jpg',
-    category: 'Electronics',
-    tags: ['new', 'tech']
-  };
-};
-
-const fetchRelatedProducts = async (category?: string, tags?: string[]): Promise<Product[]> => {
-  // This would call your backend to get products related by category or tags
-  // For now, we'll just return mock data
-  return [
-    { id: '2', name: 'Another Product', description: 'Another cool product', price: 79.99, imageUrl: 'path/to/another.jpg', category: 'Electronics', tags: ['deal', 'tech'] },
-    // More related products...
-  ];
 };
 
 export default ProductPage;

@@ -61,9 +61,6 @@ const Shop = () => {
     }).format(price);
   };
 
-  // Log the current state
-  console.log("Current state:", { isLoading, products, error });
-
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -124,41 +121,43 @@ const Shop = () => {
       <h1 className="text-3xl font-bold mb-8">Shop</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product) => (
-          <Card key={product.id}>
-            <CardContent className="p-4">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
-                />
-              ) : (
-                <div className="w-full h-48 bg-muted rounded-lg mb-4 flex items-center justify-center">
-                  <Package className="h-12 w-12 text-muted-foreground" />
-                </div>
-              )}
-              <h3 className="font-semibold mb-2">{product.name}</h3>
-              <p className="text-muted-foreground text-sm mb-2 line-clamp-2">
-                {product.description}
-              </p>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold">
-                  {formatPrice(product.price)}
-                </span>
-                {product.inventory_count === 0 && (
-                  <span className="text-sm text-destructive">Out of stock</span>
+          <Link key={product.id} to={`/products/${product.id}`}>
+            <Card className="h-full hover:shadow-lg transition-shadow">
+              <CardContent className="p-4">
+                {product.image_url ? (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-muted rounded-lg mb-4 flex items-center justify-center">
+                    <Package className="h-12 w-12 text-muted-foreground" />
+                  </div>
                 )}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Sold by: {product.vendor_profiles?.business_name || product.vendor_profiles?.profiles?.username || "Unknown Vendor"}
-                {product.vendor_profiles?.profiles?.is_vendor && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
-                    Verified Vendor
+                <h3 className="font-semibold mb-2">{product.name}</h3>
+                <p className="text-muted-foreground text-sm mb-2 line-clamp-2">
+                  {product.description}
+                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold">
+                    {formatPrice(product.price)}
                   </span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  {product.inventory_count === 0 && (
+                    <span className="text-sm text-destructive">Out of stock</span>
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Sold by: {product.vendor_profiles?.business_name || product.vendor_profiles?.profiles?.username || "Unknown Vendor"}
+                  {product.vendor_profiles?.profiles?.is_vendor && (
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                      Verified Vendor
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
