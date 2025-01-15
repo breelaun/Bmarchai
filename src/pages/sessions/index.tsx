@@ -46,8 +46,7 @@ const SessionsPage = () => {
             )
           )
         `)
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
+        .eq('user_id', session.user.id);
 
       if (error) throw error;
       return data?.map(sp => sp.sessions) as Session[] || [];

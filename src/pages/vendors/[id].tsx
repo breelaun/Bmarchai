@@ -66,7 +66,11 @@ const VendorProfile = () => {
   };
 
   const vendorData = vendorProfile ? {
-    socialLinks: vendorProfile.social_links || defaultVendorData.socialLinks,
+    socialLinks: vendorProfile.social_links ? {
+      facebook: (vendorProfile.social_links as any)?.facebook || "",
+      instagram: (vendorProfile.social_links as any)?.instagram || "",
+      twitter: (vendorProfile.social_links as any)?.twitter || "",
+    } : defaultVendorData.socialLinks,
     aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
     enableReviews: true,
     enableFeatured: true,
