@@ -12,6 +12,4 @@ export interface VendorProfileData {
   updated_at: string;
   timezone?: string;
   country?: string;
-  template_id?: number;
-  customizations?: Record<string, unknown>;
 }
