@@ -13,6 +13,13 @@ const ProductPage = () => {
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
+      // Convert the string ID to a number
+      const numericId = parseInt(id!, 10);
+      
+      if (isNaN(numericId)) {
+        throw new Error("Invalid product ID");
+      }
+
       const { data, error } = await supabase
         .from("products")
         .select(`
@@ -25,7 +32,7 @@ const ProductPage = () => {
             )
           )
         `)
-        .eq("id", id)
+        .eq("id", numericId)
         .maybeSingle();
 
       if (error) throw error;
