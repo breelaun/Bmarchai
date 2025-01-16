@@ -19,6 +19,8 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/auth/Profile";
 import StreamingPage from "./pages/streaming";
+import ArtsPage from "./pages/arts";
+import AdminPage from "./pages/admin";
 import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
 import ProductPage from "./pages/products/[id]";
@@ -55,6 +57,8 @@ const App = () => {
                     <Route path="/register" element={<Register />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/streaming" element={<StreamingPage />} />
+                    <Route path="/arts" element={<ArtsPage />} />
+                    <Route path="/admin" element={<AdminPage />} />
                     <Route path="/shop" element={<Shop />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/products/:id" element={<ProductPage />} />

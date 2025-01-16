@@ -51,6 +51,59 @@ export type Database = {
         }
         Relationships: []
       }
+      arts_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      arts_embeds: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          embed_url: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          embed_url: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          embed_url?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arts_embeds_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "arts_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blogs: {
         Row: {
           author: string
@@ -592,6 +645,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin: boolean | null
           avatar_url: string | null
           country: string | null
           created_at: string
@@ -610,6 +664,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          admin?: boolean | null
           avatar_url?: string | null
           country?: string | null
           created_at?: string
@@ -628,6 +683,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          admin?: boolean | null
           avatar_url?: string | null
           country?: string | null
           created_at?: string

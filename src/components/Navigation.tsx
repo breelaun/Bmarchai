@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, Calendar, User, LogOut, LogIn } from "lucide-react";
+import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -34,6 +34,22 @@ const Navigation = () => {
     enabled: !!session?.user?.id,
   });
 
+  // Fetch admin status
+  const { data: profile } = useQuery({
+    queryKey: ["profile", session?.user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("admin")
+        .eq("id", session?.user?.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
   const menuItems: MenuItem[] = [
     { 
       name: "Shop", 
@@ -43,10 +59,21 @@ const Navigation = () => {
         { name: "Sessions", path: "/sessions", icon: <Calendar className="h-4 w-4 mr-2" /> },
       ]
     },
+    { 
+      name: "Entertainment", 
+      path: "/streaming",
+      submenu: [
+        { name: "Streaming", path: "/streaming", icon: <Film className="h-4 w-4 mr-2" /> },
+        { name: "Arts", path: "/arts", icon: <Palette className="h-4 w-4 mr-2" /> },
+      ]
+    },
     { name: "CRM", path: "/crm" },
     { name: "Blogs", path: "/blogs" },
-    { name: "Streaming", path: "/streaming" },
   ];
+
+  if (profile?.admin) {
+    menuItems.push({ name: "Admin", path: "/admin" });
+  }
 
   const vendorSubmenu: SubMenuItem[] = [
     { name: "All Vendors", path: "/vendors", icon: <Store className="h-4 w-4 mr-2" /> },
