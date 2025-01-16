@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { CartProvider } from "./components/cart/CartProvider";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
@@ -30,38 +31,40 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionContextProvider supabaseClient={supabase}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <div className="min-h-screen flex flex-col bg-background text-foreground">
-              <Navigation />
-              <main className="flex-grow pt-16">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/vendors" element={<Vendors />} />
-                  <Route path="/vendors/new" element={<VendorProfile />} />
-                  <Route path="/vendors/:id" element={<VendorProfile />} />
-                  <Route path="/vendors/profile" element={<VendorProfile />} />
-                  <Route path="/blogs" element={<BlogsPage />} />
-                  <Route path="/blogs/new" element={<CreateBlog />} />
-                  <Route path="/blogs/category/:category" element={<BlogCategory />} />
-                  <Route path="/blogs/tags/:tag" element={<BlogTag />} />
-                  <Route path="/blogs/:category/:slug" element={<BlogPost />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/streaming" element={<StreamingPage />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/products/:id" element={<ProductPage />} />
-                  <Route path="/sessions" element={<SessionsPage />} />
-                  <Route path="/crm" element={<CRMPage />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-          </BrowserRouter>
-        </TooltipProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <div className="min-h-screen flex flex-col bg-background text-foreground">
+                <Navigation />
+                <main className="flex-grow pt-16">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/vendors" element={<Vendors />} />
+                    <Route path="/vendors/new" element={<VendorProfile />} />
+                    <Route path="/vendors/:id" element={<VendorProfile />} />
+                    <Route path="/vendors/profile" element={<VendorProfile />} />
+                    <Route path="/blogs" element={<BlogsPage />} />
+                    <Route path="/blogs/new" element={<CreateBlog />} />
+                    <Route path="/blogs/category/:category" element={<BlogCategory />} />
+                    <Route path="/blogs/tags/:tag" element={<BlogTag />} />
+                    <Route path="/blogs/:category/:slug" element={<BlogPost />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/streaming" element={<StreamingPage />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/products/:id" element={<ProductPage />} />
+                    <Route path="/sessions" element={<SessionsPage />} />
+                    <Route path="/crm" element={<CRMPage />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
       </SessionContextProvider>
     </QueryClientProvider>
   );
