@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
+import { useCart } from "@/components/cart/CartProvider";
 
 interface Product {
   id: number;
@@ -25,13 +26,15 @@ interface Product {
 
 const Shop = () => {
   const session = useSession();
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
   
   const { data: products, isLoading, error } = useQuery({
-    queryKey: ["products"],
+    queryKey: ['products'],
     queryFn: async () => {
       console.log("Fetching products...");
       const { data, error } = await supabase
-        .from("products")
+        .from('products')
         .select(`
           *,
           vendor_profiles (
@@ -42,7 +45,7 @@ const Shop = () => {
             )
           )
         `)
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error("Error fetching products:", error);
@@ -61,8 +64,9 @@ const Shop = () => {
     }).format(price);
   };
 
-  // Log the current state
-  console.log("Current state:", { isLoading, products, error });
+  const handleProductClick = (productId: number) => {
+    navigate(`/products/${productId}`);
+  };
 
   if (error) {
     return (
@@ -124,7 +128,11 @@ const Shop = () => {
       <h1 className="text-3xl font-bold mb-8">Shop</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product) => (
-          <Card key={product.id}>
+          <Card 
+            key={product.id}
+            className="cursor-pointer transition-transform hover:scale-[1.02]"
+            onClick={() => handleProductClick(product.id)}
+          >
             <CardContent className="p-4">
               {product.image_url ? (
                 <img

@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, User, LogIn, LogOut, Calendar, ShoppingCart } from "lucide-react";
+import { Menu, X, Store, Calendar } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import DesktopMenu from "./navigation/DesktopMenu";
 import MobileMenu from "./navigation/MobileMenu";
 import ProfileMenu from "./navigation/ProfileMenu";
 import VendorMenu from "./navigation/VendorMenu";
 import AuthButtons from "./navigation/AuthButtons";
-import { Badge } from "@/components/ui/badge";
+import CartIcon from "./navigation/CartIcon";
 import type { MenuItem, SubMenuItem } from "./navigation/types";
 
 const Navigation = () => {
@@ -91,53 +91,15 @@ const Navigation = () => {
           </div>
 
           <div className="hidden md:flex md:items-center md:space-x-8">
-            {menuItems.map((item) => (
-              item.submenu ? (
-                <div key={item.name} className="relative group">
-                  <button className="text-foreground hover:text-primary transition-colors">
-                    {item.name}
-                  </button>
-                  <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-background border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <div className="py-1">
-                      {item.submenu.map((subItem) => (
-                        <Link
-                          key={subItem.name}
-                          to={subItem.path}
-                          className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent/50"
-                        >
-                          {subItem.icon}
-                          {subItem.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className="text-foreground hover:text-primary transition-colors"
-                >
-                  {item.name}
-                </Link>
-              )
-            ))}
+            <DesktopMenu 
+              menuItems={menuItems} 
+              vendorSubmenu={vendorSubmenu}
+              session={!!session}
+              cartItemsCount={cartItemsCount}
+            />
             <VendorMenu vendorSubmenu={vendorSubmenu} />
             {renderAuthItems()}
-            
-            {session && (
-              <Link to="/cart" className="relative">
-                <ShoppingCart className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
-                {cartItemsCount > 0 && (
-                  <Badge 
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                    variant="destructive"
-                  >
-                    {cartItemsCount}
-                  </Badge>
-                )}
-              </Link>
-            )}
+            {session && <CartIcon count={cartItemsCount} />}
           </div>
 
           <div className="flex items-center md:hidden">
@@ -159,6 +121,7 @@ const Navigation = () => {
         authItems={authItems}
         onClose={() => setIsOpen(false)}
         session={!!session}
+        cartItemsCount={cartItemsCount}
       />
     </nav>
   );
