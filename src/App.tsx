@@ -20,6 +20,7 @@ import Register from "./pages/auth/Register";
 import Profile from "./pages/auth/Profile";
 import StreamingPage from "./pages/streaming";
 import Shop from "./pages/Shop";
+import Cart from "./pages/Cart";
 import ProductPage from "./pages/products/[id]";
 import SessionsPage from "./pages/sessions";
 import CRMPage from "./pages/crm";
@@ -55,6 +56,7 @@ const App = () => {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/streaming" element={<StreamingPage />} />
                     <Route path="/shop" element={<Shop />} />
+                    <Route path="/cart" element={<Cart />} />
                     <Route path="/products/:id" element={<ProductPage />} />
                     <Route path="/sessions" element={<SessionsPage />} />
                     <Route path="/crm" element={<CRMPage />} />
