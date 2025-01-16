@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { MenuItem, SubMenuItem } from "./types";
+import CartIcon from "./CartIcon";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface MobileMenuProps {
   authItems: SubMenuItem[];
   onClose: () => void;
   session: boolean;
+  cartItemsCount: number;
 }
 
 const MobileMenu = ({ 
@@ -18,7 +20,8 @@ const MobileMenu = ({
   profileSubmenu,
   authItems,
   onClose,
-  session
+  session,
+  cartItemsCount
 }: MobileMenuProps) => {
   if (!isOpen) return null;
 
@@ -47,19 +50,24 @@ const MobileMenu = ({
           </Link>
         ))}
         {session ? (
-          profileSubmenu?.map((item) => (
-            <div
-              key={item.name}
-              onClick={() => {
-                onClose();
-                item.onClick?.();
-              }}
-              className="flex items-center px-3 py-2 text-foreground hover:text-primary transition-colors cursor-pointer"
-            >
-              {item.icon}
-              {item.name}
+          <>
+            {profileSubmenu?.map((item) => (
+              <div
+                key={item.name}
+                onClick={() => {
+                  onClose();
+                  item.onClick?.();
+                }}
+                className="flex items-center px-3 py-2 text-foreground hover:text-primary transition-colors cursor-pointer"
+              >
+                {item.icon}
+                {item.name}
+              </div>
+            ))}
+            <div className="px-3 py-2">
+              <CartIcon count={cartItemsCount} />
             </div>
-          ))
+          </>
         ) : (
           authItems.map((item) => (
             <Link
