@@ -5,14 +5,14 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
-  const { items, updateQuantity, removeFromCart } = useCart();
+  const { items = [], updateQuantity, removeFromCart } = useCart();
   const navigate = useNavigate();
 
-  const total = items.reduce((sum, item) => {
+  const total = Array.isArray(items) ? items.reduce((sum, item) => {
     return sum + (item.product.price * item.quantity);
-  }, 0);
+  }, 0) : 0;
 
-  if (items.length === 0) {
+  if (!Array.isArray(items) || items.length === 0) {
     return (
       <div className="container mx-auto py-8">
         <Card>
