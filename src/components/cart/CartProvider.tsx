@@ -64,17 +64,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const { error } = await supabase
+      // First check if item already exists in cart
+      const { data: existingItem } = await supabase
         .from("cart_items")
-        .upsert({
-          user_id: session.user.id,
-          product_id: productId,
-          quantity: 1,
-        }, {
-          onConflict: "user_id,product_id",
-        });
+        .select("quantity")
+        .eq("user_id", session.user.id)
+        .eq("product_id", productId)
+        .single();
 
-      if (error) throw error;
+      if (existingItem) {
+        // If item exists, increment quantity
+        const { error } = await supabase
+          .from("cart_items")
+          .update({ quantity: existingItem.quantity + 1 })
+          .eq("user_id", session.user.id)
+          .eq("product_id", productId);
+
+        if (error) throw error;
+      } else {
+        // If item doesn't exist, insert new item
+        const { error } = await supabase
+          .from("cart_items")
+          .insert({
+            user_id: session.user.id,
+            product_id: productId,
+            quantity: 1,
+          });
+
+        if (error) throw error;
+      }
 
       queryClient.invalidateQueries({ queryKey: ["cartItems"] });
       toast({
@@ -120,6 +138,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!session?.user?.id) return;
 
     try {
+      if (quantity <= 0) {
+        await removeFromCart(productId);
+        return;
+      }
+
       const { error } = await supabase
         .from("cart_items")
         .update({ quantity })
