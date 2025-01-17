@@ -7,28 +7,12 @@ import { toast } from "sonner";
 import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
 import { supabase } from "@/integrations/supabase/client";
+import { BannerData } from "@/components/types/vendor-setup";
 import 'react-image-crop/dist/ReactCrop.css';
 
-interface BannerData {
-  type: 'image' | 'video';
-  url: string;
-  position?: {
-    x: number;
-    y: number;
-  };
-  crop?: Crop;
-}
-
-interface VendorProfileData {
-  socialLinks: {
-    facebook: string;
-    instagram: string;
-    twitter: string;
-  };
-  aboutMe: string;
-  enableReviews: boolean;
-  enableFeatured: boolean;
-  banner?: BannerData;
+interface FileUploadOptions {
+  upsert?: boolean;
+  onProgress?: (progress: { loaded: number; total: number }) => void;
 }
 
 const VendorProfile = () => {
@@ -127,36 +111,43 @@ const VendorProfile = () => {
       const fileName = `${session.user.id}-banner-${Date.now()}.${fileExt}`;
       const filePath = `vendor-banners/${fileName}`;
 
-      // Upload file to Supabase Storage
+      const uploadOptions: FileUploadOptions = {
+        upsert: true,
+        onProgress: (progress) => {
+          const percentage = (progress.loaded / progress.total) * 100;
+          setUploadProgress(Math.round(percentage));
+        }
+      };
+
       const { error: uploadError } = await supabase.storage
         .from('banners')
-        .upload(filePath, bannerFile, { 
-          upsert: true,
-          onUploadProgress: (progress) => {
-            const percentage = (progress.loaded / progress.total) * 100;
-            setUploadProgress(Math.round(percentage));
-          }
-        });
+        .upload(filePath, bannerFile, uploadOptions);
 
       if (uploadError) {
         throw new Error('Error uploading banner');
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('banners')
         .getPublicUrl(filePath);
 
-      // Update vendor profile with banner data
+      const bannerData: BannerData = {
+        type: bannerFile.type.startsWith('video/') ? 'video' : 'image',
+        url: publicUrl,
+        position,
+        crop: crop ? {
+          x: crop.x,
+          y: crop.y,
+          width: crop.width,
+          height: crop.height,
+          unit: crop.unit
+        } : undefined
+      };
+
       const { error: updateError } = await supabase
         .from('vendor_profiles')
         .update({
-          banner_data: {
-            type: bannerFile.type.startsWith('video/') ? 'video' : 'image',
-            url: publicUrl,
-            position,
-            crop
-          }
+          banner_data: bannerData
         })
         .eq('id', session.user.id);
 

@@ -13,3 +13,23 @@ export interface VendorProfileData {
   timezone?: string;
   country?: string;
 }
+
+export interface BannerData {
+  type: 'image' | 'video';
+  url: string;
+  position?: {
+    x: number;
+    y: number;
+  };
+  crop?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    unit: 'px' | '%';
+  };
+}
+
+export interface VendorProfile extends VendorProfileData {
+  banner_data?: BannerData;
+}
