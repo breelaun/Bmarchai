@@ -12,11 +12,15 @@ port = 54322
 enabled = true
 port = 54323
 
-[[fetch-youtube-streams.vars]]
-name = "YOUTUBE_API_KEY"
+[functions.fetch-youtube-streams]
+verify_jwt = false
 
-[[stripe-webhook.vars]]
-name = "STRIPE_SECRET_KEY"
+[functions.fetch-youtube-streams.secrets]
+YOUTUBE_API_KEY = ""
 
-[[stripe-webhook.vars]]
-name = "STRIPE_WEBHOOK_SECRET"
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.stripe-webhook.secrets]
+STRIPE_SECRET_KEY = ""
+STRIPE_WEBHOOK_SECRET = ""
