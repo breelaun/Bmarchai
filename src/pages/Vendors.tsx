@@ -4,13 +4,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Search, Store, BadgeCheck, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { VendorProfile } from "@/components/types/vendor-setup";
 
 const Vendors = () => {
   const navigate = useNavigate();
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const { data: vendors, isLoading } = useQuery({
     queryKey: ['vendors'],
@@ -27,13 +24,13 @@ const Vendors = () => {
             id,
             name,
             price,
-            image_url
+            main_image_url
           )
         `)
         .limit(3, { foreignTable: 'products' });
 
       if (error) throw error;
-      return data as unknown as VendorProfile[];
+      return data;
     }
   });
 
@@ -72,28 +69,18 @@ const Vendors = () => {
           {isLoading ? (
             // Loading skeleton
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-card animate-pulse">
-                <div className="h-48 bg-muted rounded-t-lg" />
-                <CardHeader>
-                  <div className="h-6 bg-muted rounded w-3/4" />
-                  <div className="h-4 bg-muted rounded w-1/2 mt-2" />
-                </CardHeader>
-                <CardContent>
-                  <div className="h-4 bg-muted rounded w-full mt-2" />
-                  <div className="h-4 bg-muted rounded w-5/6 mt-2" />
-                </CardContent>
+              <Card key={i} className="bg-card animate-pulse h-48">
+                <div className="h-full bg-muted rounded-lg" />
               </Card>
             ))
           ) : vendors && vendors.length > 0 ? (
             vendors.map((vendor) => (
               <Card 
                 key={vendor.id} 
-                className="group relative bg-card overflow-hidden transition-all duration-300 hover:shadow-lg"
-                onMouseEnter={() => setHoveredCard(vendor.id)}
-                onMouseLeave={() => setHoveredCard(null)}
+                className="relative h-48 overflow-hidden group"
               >
-                {/* Banner Image with Overlay */}
-                <div className="relative h-48 overflow-hidden">
+                {/* Background Banner with Overlay */}
+                <div className="absolute inset-0">
                   {vendor.banner_data?.url ? (
                     vendor.banner_data.type === 'video' ? (
                       <video
@@ -115,87 +102,44 @@ const Vendors = () => {
                       <Store className="h-12 w-12 text-primary/40" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                  {/* Dark Overlay */}
+                  <div className="absolute inset-0 bg-black/60" />
                 </div>
 
-                {/* Content that slides up on hover */}
-                <div className={`absolute inset-0 bg-background/98 transition-transform duration-300 ease-in-out ${hoveredCard === vendor.id ? 'translate-y-0' : 'translate-y-full'}`}>
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-2">Featured Products</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {vendor.products?.slice(0, 4).map((product: any) => (
-                        <div key={product.id} className="relative group/product cursor-pointer">
-                          <div className="aspect-square rounded-lg overflow-hidden">
-                            <img
-                              src={product.main_image_url || '/placeholder-product.png'}
-                              alt={product.name}
-                              className="w-full h-full object-cover group-hover/product:scale-110 transition-transform"
-                            />
-                          </div>
-                          <div className="absolute inset-0 flex items-end p-2">
-                            <div className="w-full bg-background/80 backdrop-blur-sm p-2 rounded">
-                              <p className="text-sm font-medium truncate">{product.name}</p>
-                              <p className="text-xs text-primary">${product.price}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                {/* Content */}
+                <div className="relative h-full flex flex-col justify-between p-6 text-white">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-bold">
+                        {vendor.business_name || vendor.profiles?.username}
+                      </h3>
+                      <BadgeCheck className="h-5 w-5 text-primary" />
                     </div>
+                    <p className="text-sm text-white/80 line-clamp-2">
+                      {vendor.business_description || "This vendor hasn't added a description yet."}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between items-center">
                     <Button 
-                      className="w-full mt-4"
-                      onClick={() => navigate(`/vendors/${vendor.id}/store`)}
+                      variant="secondary" 
+                      size="sm" 
+                      onClick={() => navigate(`/vendors/${vendor.id}`)}
+                      className="backdrop-blur-sm"
                     >
-                      View All Products
+                      View Profile
+                    </Button>
+                    <Button 
+                      variant="primary" 
+                      size="sm" 
+                      onClick={() => navigate(`/vendors/${vendor.id}/store`)}
+                      className="backdrop-blur-sm"
+                    >
+                      <Store className="h-4 w-4 mr-2" />
+                      Visit Store
                     </Button>
                   </div>
                 </div>
-
-                {/* Main Card Content */}
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <CardTitle>{vendor.business_name || vendor.profiles?.username}</CardTitle>
-                    <BadgeCheck className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardDescription>Verified Marketplace Vendor</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground line-clamp-2">
-                    {vendor.business_description || "This vendor hasn't added a description yet."}
-                  </p>
-                  {vendor.social_links && Object.keys(vendor.social_links).length > 0 && (
-                    <div className="mt-4 flex gap-2">
-                      {Object.entries(vendor.social_links).map(([platform, url]) => (
-                        <a
-                          key={platform}
-                          href={url as string}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline flex items-center gap-1"
-                        >
-                          {platform}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => navigate(`/vendors/${vendor.id}`)}
-                  >
-                    View Profile
-                  </Button>
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    onClick={() => navigate(`/vendors/${vendor.id}/store`)}
-                  >
-                    <Store className="h-4 w-4 mr-2" />
-                    Visit Store
-                  </Button>
-                </CardFooter>
               </Card>
             ))
           ) : (
