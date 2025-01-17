@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "
-@tanstack
-/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,26 +35,26 @@ export const EmbedForm = ({ categories }: EmbedFormProps) => {
           embed_url: embedUrl,
           end_date: endDate || null,
         }]);
-
-  if (error) throw error;
-},
-onSuccess: () => {
-  queryClient.invalidateQueries({ queryKey: ["arts-embeds"] });
-  setEmbedTitle("");
-  setEmbedUrl("");
-  setEndDate("");
-  toast({
-    title: "Success",
-    description: "Embed added successfully",
-  });
-},
-onError: (error) => {
-  toast({
-    title: "Error",
-    description: error.message,
-    variant: "destructive",
-  });
-},
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["arts-embeds"] });
+      setEmbedTitle("");
+      setEmbedUrl("");
+      setEndDate("");
+      toast({
+        title: "Success",
+        description: "Embed added successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   return (
