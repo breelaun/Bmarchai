@@ -19,9 +19,10 @@ export const StockMarketSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("1M");
   const [selectedStock, setSelectedStock] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   const { data: favoriteStocks, refetch: refetchFavorites } = useQuery({
-    queryKey: ["favorite-stocks"],
+    queryKey: ["favorite-stocks", session?.user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("favorite_stocks")
@@ -31,7 +32,33 @@ export const StockMarketSection = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!session?.user?.id,
   });
+
+  // Set up real-time subscription for favorite stocks
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const channel = supabase
+      .channel('favorite-stocks-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'favorite_stocks',
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        () => {
+          refetchFavorites();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user?.id, refetchFavorites]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -43,8 +70,7 @@ export const StockMarketSection = () => {
       const data = await response.json();
       
       if (data.bestMatches) {
-        // Handle search results
-        console.log(data.bestMatches);
+        setSearchResults(data.bestMatches);
       }
     } catch (error) {
       toast({
@@ -56,12 +82,10 @@ export const StockMarketSection = () => {
   };
 
   const addToFavorites = async (symbol: string, companyName: string) => {
-    if (!session?.user?.id) return;
-
-    if (favoriteStocks && favoriteStocks.length >= 5) {
+    if (!session?.user?.id) {
       toast({
-        title: "Limit Reached",
-        description: "You can only add up to 5 favorite stocks.",
+        title: "Authentication Required",
+        description: "Please log in to add stocks to favorites.",
         variant: "destructive",
       });
       return;
@@ -74,7 +98,18 @@ export const StockMarketSection = () => {
         company_name: companyName,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('User cannot have more than 10 favorite stocks')) {
+          toast({
+            title: "Limit Reached",
+            description: "You can only add up to 10 favorite stocks.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       toast({
         title: "Success",
@@ -86,6 +121,30 @@ export const StockMarketSection = () => {
       toast({
         title: "Error",
         description: "Failed to add stock to favorites.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeFromFavorites = async (stockId: string) => {
+    try {
+      const { error } = await supabase
+        .from("favorite_stocks")
+        .delete()
+        .eq("id", stockId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Stock removed from favorites.",
+      });
+      
+      refetchFavorites();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove stock from favorites.",
         variant: "destructive",
       });
     }
@@ -103,6 +162,7 @@ export const StockMarketSection = () => {
               placeholder="Search stocks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
             <Button onClick={handleSearch}>Search</Button>
           </div>
@@ -130,9 +190,14 @@ export const StockMarketSection = () => {
               </Tabs>
             </div>
             <div className="space-y-4">
-              <TrendingStocks onSelect={setSelectedStock} />
+              <TrendingStocks 
+                onSelect={setSelectedStock}
+                favorites={favoriteStocks || []}
+                onAddToFavorites={addToFavorites}
+                onRemoveFromFavorites={removeFromFavorites}
+              />
               <SearchResults
-                query={searchQuery}
+                results={searchResults}
                 onAddToFavorites={addToFavorites}
                 favorites={favoriteStocks || []}
               />
