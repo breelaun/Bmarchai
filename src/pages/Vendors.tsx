@@ -6,6 +6,7 @@ import { Search, Store, BadgeCheck, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import ImageCropper from '@/components/ImageCropper';
 
 const Vendors = () => {
   const navigate = useNavigate();
