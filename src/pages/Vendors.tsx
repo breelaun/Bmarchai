@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Vendors = () => {
   const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: vendors, isLoading } = useQuery({
     queryKey: ['vendors'],
@@ -36,9 +37,10 @@ const Vendors = () => {
     }
   });
 
-  const handleBecomeVendor = () => {
-    navigate('/vendors/new');
-  };
+  const filteredVendors = vendors?.filter(vendor => 
+    vendor.business_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    vendor.business_description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -58,10 +60,12 @@ const Vendors = () => {
               type="search"
               placeholder="Search vendors..."
               className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           </div>
-          <Button variant="outline" onClick={handleBecomeVendor}>
+          <Button variant="outline" onClick={() => navigate('/vendors/new')}>
             Become a Vendor
           </Button>
         </div>
@@ -83,8 +87,8 @@ const Vendors = () => {
                 </CardContent>
               </Card>
             ))
-          ) : vendors && vendors.length > 0 ? (
-            vendors.map((vendor) => (
+          ) : filteredVendors && filteredVendors.length > 0 ? (
+            filteredVendors.map((vendor) => (
               <Card 
                 key={vendor.id} 
                 className="group relative bg-card overflow-hidden transition-all duration-300 hover:shadow-lg"
@@ -93,22 +97,12 @@ const Vendors = () => {
               >
                 {/* Banner Image with Overlay */}
                 <div className="relative h-48 overflow-hidden">
-                  {vendor.banner_data?.url ? (
-                    vendor.banner_data.type === 'video' ? (
-                      <video
-                        src={vendor.banner_data.url}
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        muted
-                        loop
-                      />
-                    ) : (
-                      <img
-                        src={vendor.banner_data.url}
-                        alt={vendor.business_name}
-                        className="w-full h-full object-cover"
-                      />
-                    )
+                  {vendor.banner_url ? (
+                    <img
+                      src={vendor.banner_url}
+                      alt={vendor.business_name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/10 flex items-center justify-center">
                       <Store className="h-12 w-12 text-primary/40" />
@@ -118,7 +112,11 @@ const Vendors = () => {
                 </div>
 
                 {/* Content that slides up on hover */}
-                <div className={`absolute inset-0 bg-background/98 transition-transform duration-300 ease-in-out ${hoveredCard === vendor.id ? 'translate-y-0' : 'translate-y-full'}`}>
+                <div 
+                  className={`absolute inset-0 bg-background/98 transition-transform duration-300 ease-in-out ${
+                    hoveredCard === vendor.id ? 'translate-y-0' : 'translate-y-full'
+                  }`}
+                >
                   <div className="p-6">
                     <h3 className="text-lg font-semibold mb-2">Featured Products</h3>
                     <div className="grid grid-cols-2 gap-4">
@@ -153,9 +151,13 @@ const Vendors = () => {
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <CardTitle>{vendor.business_name || vendor.profiles?.username}</CardTitle>
-                    <BadgeCheck className="h-5 w-5 text-primary" />
+                    {vendor.is_verified && (
+                      <BadgeCheck className="h-5 w-5 text-primary" />
+                    )}
                   </div>
-                  <CardDescription>Verified Marketplace Vendor</CardDescription>
+                  <CardDescription>
+                    {vendor.is_verified ? "Verified Marketplace Vendor" : "Marketplace Vendor"}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground line-clamp-2">
@@ -203,7 +205,7 @@ const Vendors = () => {
               <Button 
                 variant="default" 
                 className="mt-4"
-                onClick={handleBecomeVendor}
+                onClick={() => navigate('/vendors/new')}
               >
                 Become a Vendor
               </Button>
