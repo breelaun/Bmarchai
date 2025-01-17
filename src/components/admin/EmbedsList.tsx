@@ -59,9 +59,9 @@ export const EmbedForm = ({ categories, initialValues, mode, onSave, onCancel }:
       setEmbedTitle("");
       setEmbedUrl("");
       setEndDate("");
-      setSelectedCategory("");
+      setSelectedCategory(""); // Reset only if creating a new one
       onSave({
-        ...initialValues,
+        ...(initialValues || {}),
         category_id: selectedCategory,
         title: embedTitle,
         embed_url: embedUrl,
