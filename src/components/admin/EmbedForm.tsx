@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "
+@tanstack
+/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,83 +13,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ArtsCategory, ArtsEmbed } from "./types";
+import type { ArtsCategory } from "./types";
 
 interface EmbedFormProps {
   categories: ArtsCategory[];
-  initialValues?: ArtsEmbed;
-  mode: "create" | "edit";
-  onSave: (embedData: ArtsEmbed) => void;
-  onCancel?: () => void;
 }
 
-export const EmbedForm = ({ categories, initialValues, mode, onSave, onCancel }: EmbedFormProps) => {
+export const EmbedForm = ({ categories }: EmbedFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedCategory, setSelectedCategory] = useState(initialValues?.category_id || "");
-  const [embedTitle, setEmbedTitle] = useState(initialValues?.title || "");
-  const [embedUrl, setEmbedUrl] = useState(initialValues?.embed_url || "");
-  const [endDate, setEndDate] = useState(initialValues?.end_date || "");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [embedTitle, setEmbedTitle] = useState("");
+  const [embedUrl, setEmbedUrl] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  const mutation = useMutation({
+  const addEmbed = useMutation({
     mutationFn: async () => {
-      if (mode === "edit" && initialValues) {
-        return supabase
-          .from("arts_embeds")
-          .update({
-            category_id: selectedCategory,
-            title: embedTitle,
-            embed_url: embedUrl,
-            end_date: endDate || null,
-          })
-          .eq("id", initialValues.id);
-      } else {
-        return supabase
-          .from("arts_embeds")
-          .insert([
-            {
-              category_id: selectedCategory,
-              title: embedTitle,
-              embed_url: embedUrl,
-              end_date: endDate || null,
-            }
-          ]);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["arts-embeds"] });
-      setEmbedTitle("");
-      setEmbedUrl("");
-      setEndDate("");
-      setSelectedCategory("");
-      onSave({
-        ...initialValues,
-        category_id: selectedCategory,
-        title: embedTitle,
-        embed_url: embedUrl,
-        end_date: endDate || null,
-      });
-      toast({
-        title: "Success",
-        description: mode === "edit" ? "Embed updated successfully" : "Embed added successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+      const { error } = await supabase
+        .from("arts_embeds")
+        .insert([{
+          category_id: selectedCategory,
+          title: embedTitle,
+          embed_url: embedUrl,
+          end_date: endDate || null,
+        }]);
 
-  const handleSubmit = () => {
-    mutation.mutate();
-  };
+  if (error) throw error;
+},
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ["arts-embeds"] });
+  setEmbedTitle("");
+  setEmbedUrl("");
+  setEndDate("");
+  toast({
+    title: "Success",
+    description: "Embed added successfully",
+  });
+},
+onError: (error) => {
+  toast({
+    title: "Error",
+    description: error.message,
+    variant: "destructive",
+  });
+},
+  });
 
   return (
     <div className="space-y-4 p-4 border rounded-lg">
-      <h3 className="text-lg font-medium">{mode === "edit" ? "Edit Embed" : "Add New Embed"}</h3>
+      <h3 className="text-lg font-medium">Add New Embed</h3>
       <div className="grid gap-4">
         <Select
           value={selectedCategory}
@@ -120,10 +94,7 @@ export const EmbedForm = ({ categories, initialValues, mode, onSave, onCancel }:
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
         />
-        <div className="flex gap-2">
-          <Button onClick={handleSubmit}>{mode === "edit" ? "Save Changes" : "Add Embed"}</Button>
-          {mode === "edit" && onCancel && <Button variant="outline" onClick={onCancel}>Cancel</Button>}
-        </div>
+        <Button onClick={() => addEmbed.mutate()}>Add Embed</Button>
       </div>
     </div>
   );
