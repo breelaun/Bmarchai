@@ -1,146 +1,120 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer,
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
   CartesianGrid,
-  ReferenceLine 
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
-import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface StockChartProps {
+  data: {
+    date: string;
+    price: number;
+  }[];
   symbol: string;
-  timeRange: string;
 }
 
-export const StockChart = ({ symbol, timeRange }: StockChartProps) => {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [previousClose, setPreviousClose] = useState<number | null>(null);
+const StockChart = ({ data, symbol }: StockChartProps) => {
+  const [averagePrice, setAveragePrice] = useState<number>(0);
 
   useEffect(() => {
-    const fetchStockData = async () => {
-      setLoading(true);
-      try {
-        let interval = "60min";
-        let function_name = "TIME_SERIES_INTRADAY";
-
-        switch (timeRange) {
-          case "1D":
-            interval = "5min";
-            function_name = "TIME_SERIES_INTRADAY";
-            break;
-          case "1W":
-            interval = "60min";
-            function_name = "TIME_SERIES_INTRADAY";
-            break;
-          case "1M":
-          case "1Y":
-          case "3Y":
-          case "5Y":
-          case "10Y":
-            function_name = "TIME_SERIES_DAILY";
-            break;
-        }
-
-        const response = await fetch(
-          `https://www.alphavantage.co/query?function=${function_name}&symbol=${symbol}&interval=${interval}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
-        );
-        
-        const result = await response.json();
-        
-        // Transform the data for the chart
-        const timeSeriesKey = Object.keys(result).find(key => key.includes("Time Series"));
-        if (timeSeriesKey) {
-          const transformedData = Object.entries(result[timeSeriesKey]).map(([date, values]: [string, any]) => ({
-            date,
-            value: parseFloat(values["4. close"]),
-          }));
-
-          // Set previous close for reference line
-          if (transformedData.length > 0) {
-            setPreviousClose(transformedData[0].value);
-          }
-
-          setData(transformedData.reverse());
-        }
-      } catch (error) {
-        console.error("Error fetching stock data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (symbol) {
-      fetchStockData();
+    if (data.length > 0) {
+      const avg = data.reduce((sum, item) => sum + item.price, 0) / data.length;
+      setAveragePrice(Number(avg.toFixed(2)));
     }
-  }, [symbol, timeRange]);
+  }, [data]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-background border border-border p-2 rounded-lg shadow-lg">
-          <p className="text-sm font-medium">
-            {format(new Date(label), "PPp")}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Price: ${payload[0].value.toFixed(2)}
-          </p>
-        </div>
+        <Card className="bg-background/95 backdrop-blur-sm border shadow-lg">
+          <CardContent className="p-3">
+            <p className="font-semibold">{format(new Date(label), "PPP")}</p>
+            <p className="text-primary">
+              ${Number(payload[0].value).toFixed(2)}
+            </p>
+          </CardContent>
+        </Card>
       );
     }
     return null;
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="h-[400px]">
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>{symbol} Price History</span>
+          <span className="text-sm text-muted-foreground">
+            Avg: ${averagePrice}
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={(date) => format(new Date(date), "MMM d")}
+            <AreaChart
+              data={data}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="hsl(var(--primary))"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="hsl(var(--primary))"
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-muted/30"
               />
-              <YAxis 
-                domain={['auto', 'auto']}
-                tickFormatter={(value) => `$${value.toFixed(2)}`}
+              <XAxis
+                dataKey="date"
+                tickFormatter={(date) => format(new Date(date), "MMM d")}
+                className="text-xs"
+              />
+              <YAxis
+                domain={["dataMin - 1", "dataMax + 1"]}
+                className="text-xs"
+                tickFormatter={(value) => `$${value}`}
               />
               <Tooltip content={<CustomTooltip />} />
-              {previousClose && (
-                <ReferenceLine 
-                  y={previousClose} 
-                  stroke="#888" 
-                  strokeDasharray="3 3" 
-                  label={{ value: 'Previous Close', position: 'right' }} 
-                />
-              )}
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke="#3b82f6" 
-                dot={false}
-                strokeWidth={2}
-                animationDuration={500}
+              <ReferenceLine
+                y={averagePrice}
+                stroke="hsl(var(--primary))"
+                strokeDasharray="3 3"
+                label={{
+                  value: "Average",
+                  position: "right",
+                  className: "text-xs text-primary fill-primary",
+                }}
               />
-            </LineChart>
+              <Area
+                type="monotone"
+                dataKey="price"
+                stroke="hsl(var(--primary))"
+                fillOpacity={1}
+                fill="url(#colorPrice)"
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
   );
 };
+
+export default StockChart;
