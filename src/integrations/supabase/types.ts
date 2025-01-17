@@ -73,7 +73,9 @@ export type Database = {
         Row: {
           category_id: string | null
           created_at: string
+          created_by: string | null
           embed_url: string
+          end_date: string | null
           id: string
           title: string
           updated_at: string
@@ -81,7 +83,9 @@ export type Database = {
         Insert: {
           category_id?: string | null
           created_at?: string
+          created_by?: string | null
           embed_url: string
+          end_date?: string | null
           id?: string
           title: string
           updated_at?: string
@@ -89,7 +93,9 @@ export type Database = {
         Update: {
           category_id?: string | null
           created_at?: string
+          created_by?: string | null
           embed_url?: string
+          end_date?: string | null
           id?: string
           title?: string
           updated_at?: string
@@ -100,6 +106,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "arts_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arts_embeds_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1100,6 +1113,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_expired_embeds: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_slug: {
         Args: {
           title: string
