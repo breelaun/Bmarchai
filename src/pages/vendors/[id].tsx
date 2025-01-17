@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
 import { supabase } from "@/integrations/supabase/client";
-import type { BannerData, VendorProfile } from "@/components/types/vendor-setup";
+import type { BannerData, VendorProfile, VendorDisplayData } from "@/components/types/vendor-setup";
 import 'react-image-crop/dist/ReactCrop.css';
 
 interface FileUploadOptions {
@@ -61,7 +61,7 @@ const VendorProfile = () => {
 
       const { data, error } = await supabase
         .from('vendor_profiles')
-        .select('*, banner_data')
+        .select('*, profiles:vendor_profiles_id_fkey(username, avatar_url)')
         .eq('id', userId)
         .maybeSingle();
 
@@ -70,7 +70,7 @@ const VendorProfile = () => {
         throw error;
       }
 
-      return data as VendorProfile;
+      return data as unknown as VendorProfile;
     },
     enabled: !!id && (!isProfileRoute || !!session)
   });
@@ -206,20 +206,22 @@ const VendorProfile = () => {
     return null;
   }
 
-  const defaultVendorData: VendorProfile = {
-    social_links: {
+  const defaultVendorData: VendorDisplayData = {
+    socialLinks: {
       facebook: "",
       instagram: "",
       twitter: "",
     },
-    business_description: "Welcome to my vendor profile!",
-    banner_data: null,
+    aboutMe: "Welcome to my vendor profile!",
+    enableReviews: true,
+    enableFeatured: true
   };
 
-  const vendorData = vendorProfile ? {
-    social_links: vendorProfile.social_links || defaultVendorData.social_links,
-    business_description: vendorProfile.business_description || defaultVendorData.business_description,
-    banner_data: vendorProfile.banner_data,
+  const vendorData: VendorDisplayData = vendorProfile ? {
+    socialLinks: vendorProfile.social_links || defaultVendorData.socialLinks,
+    aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
+    enableReviews: true,
+    enableFeatured: true
   } : defaultVendorData;
 
   return (

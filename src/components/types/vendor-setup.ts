@@ -4,9 +4,9 @@ export interface VendorProfileData {
   business_description: string | null;
   contact_email: string | null;
   social_links: {
-    facebook: string;
-    instagram: string;
-    twitter: string;
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
   } | null;
   created_at: string;
   updated_at: string;
