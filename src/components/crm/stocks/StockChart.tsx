@@ -115,4 +115,4 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   );
 };
 
-export default StockChart;  // Using default export
+export default StockChart;

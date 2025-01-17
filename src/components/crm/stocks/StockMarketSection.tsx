@@ -2,12 +2,10 @@ import { useState, useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import StockChart from "./StockChart";  // Changed from { StockChart }
+import { SearchBar } from "./SearchBar";
+import { ChartSection } from "./ChartSection";
 import { TrendingStocks } from "./TrendingStocks";
 import { SearchResults } from "./SearchResults";
 
@@ -35,7 +33,6 @@ export const StockMarketSection = () => {
     enabled: !!session?.user?.id,
   });
 
-  // Set up real-time subscription for favorite stocks
   useEffect(() => {
     if (!session?.user?.id) return;
 
@@ -157,37 +154,19 @@ export const StockMarketSection = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Search stocks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
-            <Button onClick={handleSearch}>Search</Button>
-          </div>
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onSearch={handleSearch}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
-              <StockChart
+              <ChartSection
                 symbol={selectedStock || (favoriteStocks?.[0]?.symbol ?? "AAPL")}
-                timeRange={selectedTimeRange}
+                selectedTimeRange={selectedTimeRange}
+                onTimeRangeChange={setSelectedTimeRange}
               />
-              <Tabs
-                value={selectedTimeRange}
-                onValueChange={(value) => setSelectedTimeRange(value as TimeRange)}
-                className="mt-4"
-              >
-                <TabsList className="grid grid-cols-7 w-full">
-                  <TabsTrigger value="1D">1D</TabsTrigger>
-                  <TabsTrigger value="1W">1W</TabsTrigger>
-                  <TabsTrigger value="1M">1M</TabsTrigger>
-                  <TabsTrigger value="1Y">1Y</TabsTrigger>
-                  <TabsTrigger value="3Y">3Y</TabsTrigger>
-                  <TabsTrigger value="5Y">5Y</TabsTrigger>
-                  <TabsTrigger value="10Y">10Y</TabsTrigger>
-                </TabsList>
-              </Tabs>
             </div>
             <div className="space-y-4">
               <TrendingStocks 
