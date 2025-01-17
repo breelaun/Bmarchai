@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
 import { supabase } from "@/integrations/supabase/client";
-import { BannerData } from "@/components/types/vendor-setup";
+import type { BannerData, VendorProfile } from "@/components/types/vendor-setup";
 import 'react-image-crop/dist/ReactCrop.css';
 
 interface FileUploadOptions {
@@ -70,7 +70,7 @@ const VendorProfile = () => {
         throw error;
       }
 
-      return data;
+      return data as VendorProfile;
     },
     enabled: !!id && (!isProfileRoute || !!session)
   });
@@ -121,7 +121,7 @@ const VendorProfile = () => {
 
       const { error: uploadError } = await supabase.storage
         .from('banners')
-        .upload(filePath, bannerFile, uploadOptions);
+        .upload(filePath, bannerFile, uploadOptions as any);
 
       if (uploadError) {
         throw new Error('Error uploading banner');
@@ -147,7 +147,7 @@ const VendorProfile = () => {
       const { error: updateError } = await supabase
         .from('vendor_profiles')
         .update({
-          banner_data: bannerData
+          banner_data: bannerData as any
         })
         .eq('id', session.user.id);
 
@@ -206,27 +206,20 @@ const VendorProfile = () => {
     return null;
   }
 
-  const defaultVendorData: VendorProfileData = {
-    socialLinks: {
+  const defaultVendorData: VendorProfile = {
+    social_links: {
       facebook: "",
       instagram: "",
       twitter: "",
     },
-    aboutMe: "Welcome to my vendor profile!",
-    enableReviews: true,
-    enableFeatured: true,
+    business_description: "Welcome to my vendor profile!",
+    banner_data: null,
   };
 
   const vendorData = vendorProfile ? {
-    socialLinks: vendorProfile.social_links ? {
-      facebook: (vendorProfile.social_links as any)?.facebook || "",
-      instagram: (vendorProfile.social_links as any)?.instagram || "",
-      twitter: (vendorProfile.social_links as any)?.twitter || "",
-    } : defaultVendorData.socialLinks,
-    aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
-    enableReviews: true,
-    enableFeatured: true,
-    banner: vendorProfile.banner_data,
+    social_links: vendorProfile.social_links || defaultVendorData.social_links,
+    business_description: vendorProfile.business_description || defaultVendorData.business_description,
+    banner_data: vendorProfile.banner_data,
   } : defaultVendorData;
 
   return (
@@ -270,13 +263,13 @@ const VendorProfile = () => {
                 loop
               />
             )
-          ) : vendorData.banner ? (
-            vendorData.banner.type === 'video' ? (
+          ) : vendorData.banner_data ? (
+            vendorData.banner_data.type === 'video' ? (
               <video
-                src={vendorData.banner.url}
+                src={vendorData.banner_data.url}
                 className="w-full h-full object-cover"
-                style={vendorData.banner.position && {
-                  transform: `translate(${vendorData.banner.position.x}px, ${vendorData.banner.position.y}px)`
+                style={vendorData.banner_data.position && {
+                  transform: `translate(${vendorData.banner_data.position.x}px, ${vendorData.banner_data.position.y}px)`
                 }}
                 autoPlay
                 muted
@@ -284,11 +277,11 @@ const VendorProfile = () => {
               />
             ) : (
               <img
-                src={vendorData.banner.url}
+                src={vendorData.banner_data.url}
                 alt="Vendor Banner"
                 className="w-full h-full object-cover"
-                style={vendorData.banner.position && {
-                  transform: `translate(${vendorData.banner.position.x}px, ${vendorData.banner.position.y}px)`
+                style={vendorData.banner_data.position && {
+                  transform: `translate(${vendorData.banner_data.position.x}px, ${vendorData.banner_data.position.y}px)`
                 }}
               />
             )

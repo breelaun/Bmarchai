@@ -12,6 +12,7 @@ export interface VendorProfileData {
   updated_at: string;
   timezone?: string;
   country?: string;
+  banner_data?: BannerData;
 }
 
 export interface BannerData {
@@ -31,5 +32,14 @@ export interface BannerData {
 }
 
 export interface VendorProfile extends VendorProfileData {
-  banner_data?: BannerData;
+  profiles?: {
+    username: string | null;
+    avatar_url: string | null;
+  };
+  products?: Array<{
+    id: number;
+    name: string;
+    price: number;
+    image_url: string | null;
+  }>;
 }

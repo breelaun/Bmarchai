@@ -6,8 +6,7 @@ import { Search, Store, BadgeCheck, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BannerData } from "@/components/types/vendor-setup";
-import ImageCropper from '@/components/ImageCropper';
+import type { VendorProfile } from "@/components/types/vendor-setup";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -28,13 +27,13 @@ const Vendors = () => {
             id,
             name,
             price,
-            main_image_url
+            image_url
           )
         `)
         .limit(3, { foreignTable: 'products' });
 
       if (error) throw error;
-      return data;
+      return data as VendorProfile[];
     }
   });
 
