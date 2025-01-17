@@ -33,7 +33,7 @@ const Vendors = () => {
         .limit(3, { foreignTable: 'products' });
 
       if (error) throw error;
-      return data as VendorProfile[];
+      return data as unknown as VendorProfile[];
     }
   });
 

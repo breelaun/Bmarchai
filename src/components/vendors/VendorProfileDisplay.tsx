@@ -6,19 +6,10 @@ import VendorHeader from "./profile/VendorHeader";
 import VendorSidebar from "./profile/VendorSidebar";
 import VendorStore from "./profile/VendorStore";
 import VendorSocial from "./profile/VendorSocial";
-import type { VendorProfileData } from "../types/vendor-setup";
+import type { VendorProfileData, VendorDisplayData } from "../types/vendor-setup";
 
 interface VendorProfileDisplayProps {
-  vendorData?: {
-    socialLinks: {
-      facebook: string;
-      instagram: string;
-      twitter: string;
-    };
-    aboutMe: string;
-    enableReviews: boolean;
-    enableFeatured: boolean;
-  };
+  vendorData?: VendorDisplayData;
 }
 
 const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
@@ -83,13 +74,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           throw error;
         }
 
-        // Type assertion to ensure social_links matches expected structure
-        const typedData = data ? {
-          ...data,
-          social_links: data.social_links as VendorProfileData['social_links']
-        } : null;
-
-        return typedData as VendorProfileData;
+        return data as VendorProfileData;
       } catch (error: any) {
         console.error('Error in vendor profile query:', error);
         toast({
@@ -112,7 +97,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
     );
   }
 
-  const defaultVendorData = {
+  const defaultVendorData: VendorDisplayData = {
     socialLinks: {
       facebook: "",
       instagram: "",
@@ -123,7 +108,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
     enableFeatured: false
   };
 
-  const currentVendorData = vendorProfile ? {
+  const currentVendorData: VendorDisplayData = vendorProfile ? {
     socialLinks: vendorProfile.social_links || defaultVendorData.socialLinks,
     aboutMe: vendorProfile.business_description || "",
     enableReviews: true,

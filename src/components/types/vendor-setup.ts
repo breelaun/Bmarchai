@@ -12,7 +12,9 @@ export interface VendorProfileData {
   updated_at: string;
   timezone?: string;
   country?: string;
-  banner_data?: BannerData;
+  banner_data?: BannerData | null;
+  customizations?: Record<string, unknown>;
+  template_id?: number;
 }
 
 export interface BannerData {
@@ -42,4 +44,15 @@ export interface VendorProfile extends VendorProfileData {
     price: number;
     image_url: string | null;
   }>;
+}
+
+export interface VendorDisplayData {
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
+  aboutMe: string;
+  enableReviews: boolean;
+  enableFeatured: boolean;
 }
