@@ -82,7 +82,7 @@ const Vendors = () => {
               >
                 {/* Background Banner with Overlay */}
                 <div className="absolute inset-0">
-                  {vendor.banner_data?.url ? (
+                  {vendor.banner_data ? (
                     vendor.banner_data.type === 'video' ? (
                       <video
                         src={vendor.banner_data.url}
@@ -94,7 +94,7 @@ const Vendors = () => {
                     ) : (
                       <img
                         src={vendor.banner_data.url}
-                        alt={vendor.business_name}
+                        alt={vendor.business_name || ''}
                         className="w-full h-full object-cover"
                       />
                     )
@@ -131,7 +131,7 @@ const Vendors = () => {
                       View Profile
                     </Button>
                     <Button 
-                      variant="primary" 
+                      variant="secondary" 
                       size="sm" 
                       onClick={() => navigate(`/vendors/${vendor.id}/store`)}
                       className="backdrop-blur-sm"
