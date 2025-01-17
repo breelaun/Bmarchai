@@ -1,133 +1,72 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { ArtsCategory, ArtsEmbed } from "./types";
+import { CategoryManager } from "./CategoryManager";
+import { EmbedForm } from "./EmbedForm";
+import { EmbedsList } from "./EmbedsList";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"; // Assuming you use a library like Radix UI or shadcn/ui for dialogs
+import type { ArtsEmbed } from "./types";
 
-interface EmbedFormProps {
-  categories: ArtsCategory[];
-  initialValues?: ArtsEmbed;
-  mode: "create" | "edit";
-  onSave: (embedData: ArtsEmbed) => void;
-  onCancel?: () => void;
-}
+const ArtsSection = () => {
+  const [selectedEmbed, setSelectedEmbed] = useState<ArtsEmbed | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-export const EmbedForm = ({ categories, initialValues, mode, onSave, onCancel }: EmbedFormProps) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [selectedCategory, setSelectedCategory] = useState(initialValues?.category_id || "");
-  const [embedTitle, setEmbedTitle] = useState(initialValues?.title || "");
-  const [embedUrl, setEmbedUrl] = useState(initialValues?.embed_url || "");
-  const [endDate, setEndDate] = useState(initialValues?.end_date || "");
-
-  const mutation = useMutation({
-    mutationFn: async () => {
-      if (mode === "edit" && initialValues) {
-        return supabase
-          .from("arts_embeds")
-          .update({
-            category_id: selectedCategory,
-            title: embedTitle,
-            embed_url: embedUrl,
-            end_date: endDate || null,
-          })
-          .eq("id", initialValues.id);
-      } else {
-        return supabase
-          .from("arts_embeds")
-          .insert([
-            {
-              category_id: selectedCategory,
-              title: embedTitle,
-              embed_url: embedUrl,
-              end_date: endDate || null,
-            }
-          ]);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["arts-embeds"] });
-      setEmbedTitle("");
-      setEmbedUrl("");
-      setEndDate("");
-      setSelectedCategory("");
-      onSave({
-        ...initialValues,
-        category_id: selectedCategory,
-        title: embedTitle,
-        embed_url: embedUrl,
-        end_date: endDate || null,
-      });
-      toast({
-        title: "Success",
-        description: mode === "edit" ? "Embed updated successfully" : "Embed added successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+  // Fetch categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ["arts-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("arts_categories")
+        .select("*")
+        .order("name");
+      
+      if (error) throw error;
+      return data;
     },
   });
 
-  const handleSubmit = () => {
-    mutation.mutate();
+  // Fetch embeds
+  const { data: embeds = [], refetch: refetchEmbeds } = useQuery({
+    queryKey: ["arts-embeds"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("arts_embeds")
+        .select("*, arts_categories(name)")
+        .order("created_at");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleEditEmbed = (embed: ArtsEmbed) => {
+    console.log('Editing:', embed);
+    setSelectedEmbed(embed);
+    setIsEditModalOpen(true);
   };
 
-  return (
-    <div className="space-y-4 p-4 border rounded-lg">
-      <h3 className="text-lg font-medium">{mode === "edit" ? "Edit Embed" : "Add New Embed"}</h3>
-      <div className="grid gap-4">
-        <Select
-          value={selectedCategory}
-          onValueChange={setSelectedCategory}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          placeholder="Embed title"
-          value={embedTitle}
-          onChange={(e) => setEmbedTitle(e.target.value)}
-        />
-        <Input
-          placeholder="Embed URL"
-          value={embedUrl}
-          onChange={(e) => setEmbedUrl(e.target.value)}
-        />
-        <Input
-          type="datetime-local"
-          placeholder="End date (optional)"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
-        <div className="flex gap-2">
-          <Button onClick={handleSubmit}>{mode === "edit" ? "Save Changes" : "Add Embed"}</Button>
-          {mode === "edit" && onCancel && <Button variant="outline" onClick={onCancel}>Cancel</Button>}
-        </div>
-      </div>
-    </div>
-  );
-};
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedEmbed(null); // Reset selected embed when closing the modal
+  };
+
+  const handleSaveEdit = async (updatedEmbed: ArtsEmbed) => {
+    // Here you would handle updating the embed in Supabase
+    const { data, error } = await supabase
+      .from("arts_embeds")
+      .update(updatedEmbed)
+      .eq("id", updatedEmbed.id);
+    
+    if (error) {
+      console.error("Error updating embed:", error);
+      // Handle error, perhaps show a toast or alert to the user
+    } else {
+      console.log("Embed updated successfully:", data);
+      handleCloseModal();
+      // Refetch to get the latest data from the server
+      refetchEmbeds();
+    }
+  };
 
   return (
     <div className="space-y-8">
