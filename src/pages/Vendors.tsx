@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, Store, BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import type { VendorProfile } from "@/components/types/vendor-setup";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -20,18 +19,11 @@ const Vendors = () => {
           profiles:vendor_profiles_id_fkey (
             username,
             avatar_url
-          ),
-          products:products (
-            id,
-            name,
-            price,
-            image_url
           )
-        `)
-        .limit(3, { foreignTable: 'products' });
+        `);
 
       if (error) throw error;
-      return data as unknown as VendorProfile[];
+      return data;
     }
   });
 
@@ -68,79 +60,54 @@ const Vendors = () => {
         {/* Vendors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
-            // Loading skeleton
-            Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-card animate-pulse h-48">
-                <div className="h-full bg-muted rounded-lg" />
-              </Card>
-            ))
+            <p>Loading vendors...</p>
           ) : vendors && vendors.length > 0 ? (
             vendors.map((vendor) => (
-              <Card 
-                key={vendor.id} 
-                className="relative h-48 overflow-hidden group"
-              >
-                {/* Background Banner with Overlay */}
-                <div className="absolute inset-0">
-                  {vendor.banner_data ? (
-                    vendor.banner_data.type === 'video' ? (
-                      <video
-                        src={vendor.banner_data.url}
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        muted
-                        loop
-                      />
-                    ) : (
-                      <img
-                        src={vendor.banner_data.url}
-                        alt={vendor.business_name || ''}
-                        className="w-full h-full object-cover"
-                      />
-                    )
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/10 flex items-center justify-center">
-                      <Store className="h-12 w-12 text-primary/40" />
+              <Card key={vendor.id} className="bg-card hover:bg-card/80 transition-colors">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <CardTitle>{vendor.business_name || vendor.profiles?.username}</CardTitle>
+                    <BadgeCheck className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardDescription>Verified Marketplace Vendor</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    {vendor.business_description || "This vendor hasn't added a description yet."}
+                  </p>
+                  {vendor.social_links && Object.keys(vendor.social_links).length > 0 && (
+                    <div className="mt-4 flex gap-2">
+                      {Object.entries(vendor.social_links).map(([platform, url]) => (
+                        <a
+                          key={platform}
+                          href={url as string}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline"
+                        >
+                          {platform}
+                        </a>
+                      ))}
                     </div>
                   )}
-                  {/* Dark Overlay */}
-                  <div className="absolute inset-0 bg-black/60" />
-                </div>
-
-                {/* Content */}
-                <div className="relative h-full flex flex-col justify-between p-6 text-white">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-bold">
-                        {vendor.business_name || vendor.profiles?.username}
-                      </h3>
-                      <BadgeCheck className="h-5 w-5 text-primary" />
-                    </div>
-                    <p className="text-sm text-white/80 line-clamp-2">
-                      {vendor.business_description || "This vendor hasn't added a description yet."}
-                    </p>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      onClick={() => navigate(`/vendors/${vendor.id}`)}
-                      className="backdrop-blur-sm"
-                    >
-                      View Profile
-                    </Button>
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      onClick={() => navigate(`/vendors/${vendor.id}/store`)}
-                      className="backdrop-blur-sm"
-                    >
-                      <Store className="h-4 w-4 mr-2" />
-                      Visit Store
-                    </Button>
-                  </div>
-                </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate(`/vendors/${vendor.id}`)}
+                  >
+                    View Profile
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => navigate(`/vendors/${vendor.id}/store`)}
+                  >
+                    <Store className="h-4 w-4 mr-2" />
+                    Visit Store
+                  </Button>
+                </CardFooter>
               </Card>
             ))
           ) : (

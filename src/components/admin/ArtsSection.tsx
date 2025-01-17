@@ -39,10 +39,7 @@ const ArtsSection = () => {
 
   const handleEditEmbed = (embed: ArtsEmbed) => {
     setSelectedEmbed(embed);
-  };
-
-  const handleCancelEdit = () => {
-    setSelectedEmbed(null);
+    // TODO: Implement edit modal
   };
 
   return (
@@ -51,11 +48,7 @@ const ArtsSection = () => {
         <h2 className="text-2xl font-semibold mb-4">Arts Management</h2>
         
         <CategoryManager categories={categories} />
-        <EmbedForm 
-          categories={categories} 
-          embedToEdit={selectedEmbed}
-          onCancelEdit={handleCancelEdit}
-        />
+        <EmbedForm categories={categories} />
 
         <div className="mt-8">
           <h3 className="text-lg font-medium mb-4">Current Embeds</h3>
