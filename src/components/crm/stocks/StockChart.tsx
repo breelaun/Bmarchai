@@ -13,14 +13,12 @@ import {
 import { format } from "date-fns";
 
 interface StockChartProps {
-  data: {
-    date: string;
-    price: number;
-  }[];
   symbol: string;
+  timeRange: string;
 }
 
-const StockChart = ({ data, symbol }: StockChartProps) => {
+const StockChart = ({ symbol, timeRange }: StockChartProps) => {
+  const [data, setData] = useState<{ date: string; price: number; }[]>([]);
   const [averagePrice, setAveragePrice] = useState<number>(0);
 
   useEffect(() => {
@@ -117,4 +115,4 @@ const StockChart = ({ data, symbol }: StockChartProps) => {
   );
 };
 
-export default StockChart;
+export default StockChart;  // Using default export

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { StockChart } from "./StockChart";
+import StockChart from "./StockChart";  // Changed from { StockChart }
 import { TrendingStocks } from "./TrendingStocks";
 import { SearchResults } from "./SearchResults";
 
