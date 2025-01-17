@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Store, BadgeCheck, ExternalLink } from "lucide-react";
+import { Search, Store, BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { VendorProfile } from "@/components/types/vendor-setup";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -24,13 +25,13 @@ const Vendors = () => {
             id,
             name,
             price,
-            main_image_url
+            image_url
           )
         `)
         .limit(3, { foreignTable: 'products' });
 
       if (error) throw error;
-      return data;
+      return data as unknown as VendorProfile[];
     }
   });
 

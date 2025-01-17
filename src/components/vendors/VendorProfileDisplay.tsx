@@ -74,7 +74,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           throw error;
         }
 
-        return data as VendorProfileData;
+        return data as unknown as VendorProfileData;
       } catch (error: any) {
         console.error('Error in vendor profile query:', error);
         toast({
