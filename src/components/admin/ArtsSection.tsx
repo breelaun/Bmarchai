@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CategoryManager } from "./CategoryManager";
 import { EmbedForm } from "./EmbedForm";
 import { EmbedsList } from "./EmbedsList";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"; // Assuming you use a library like Radix UI or shadcn/ui for dialogs
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { ArtsEmbed } from "./types";
 
 const ArtsSection = () => {
