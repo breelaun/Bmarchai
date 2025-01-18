@@ -166,6 +166,15 @@ const Shop = () => {
                 )}
               </div>
             </CardContent>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product.id);
+              }}
+              disabled={product.inventory_count === 0}
+            >
+              Add to Cart
+            </Button>
           </Card>
         ))}
       </div>

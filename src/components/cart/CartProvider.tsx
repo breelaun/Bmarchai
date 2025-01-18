@@ -7,6 +7,7 @@ interface CartItem {
   id: string;
   quantity: number;
   product: {
+    id: number; // Add this to match what we need in Cart.tsx
     name: string;
     price: number;
     image_url: string | null;
@@ -16,8 +17,8 @@ interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (productId: number, quantity: number) => Promise<void>;
-  removeItem: (itemId: string) => Promise<void>;
+  addToCart: (productId: number) => Promise<void>; // Changed from addItem
+  removeFromCart: (itemId: string) => Promise<void>; // Changed from removeItem
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
 }
@@ -42,6 +43,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         .select(`
           *,
           product:products(
+            id,
             name,
             price,
             image_url,
@@ -63,7 +65,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const addItem = async (productId: number, quantity: number) => {
+  const addToCart = async (productId: number) => {
     if (!session?.user?.id) {
       toast({
         title: "Error",
@@ -79,7 +81,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         .insert({
           user_id: session.user.id,
           product_id: productId,
-          quantity,
+          quantity: 1,
         });
 
       if (error) throw error;
@@ -99,7 +101,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const removeItem = async (itemId: string) => {
+  const removeFromCart = async (itemId: string) => {
     try {
       const { error } = await supabase
         .from('cart_items')
@@ -172,7 +174,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ 
+      items, 
+      addToCart, 
+      removeFromCart, 
+      updateQuantity, 
+      clearCart 
+    }}>
       {children}
     </CartContext.Provider>
   );
