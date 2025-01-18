@@ -4,16 +4,20 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import ImageCropper from "../shared/ImageCropper";
 
 interface ProfileBannerProps {
   defaultBannerUrl?: string;
+  userId?: string;
 }
 
-const ProfileBanner = ({ defaultBannerUrl }: ProfileBannerProps) => {
+const ProfileBanner = ({ defaultBannerUrl, userId }: ProfileBannerProps) => {
   const session = useSession();
   const { toast } = useToast();
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [cropperImage, setCropperImage] = useState<string | null>(null);
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -28,9 +32,26 @@ const ProfileBanner = ({ defaultBannerUrl }: ProfileBannerProps) => {
       return;
     }
 
+    // Create a temporary URL for the cropper
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCropperImage(e.target?.result as string);
+      setIsCropperOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedImage: string) => {
+    if (!session?.user.id) return;
     setIsUploading(true);
+
     try {
-      const fileExt = file.name.split('.').pop();
+      // Convert base64 to blob
+      const response = await fetch(croppedImage);
+      const blob = await response.blob();
+      const file = new File([blob], 'banner.jpg', { type: 'image/jpeg' });
+
+      const fileExt = 'jpg';
       const filePath = `${session.user.id}/banner.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
@@ -48,7 +69,7 @@ const ProfileBanner = ({ defaultBannerUrl }: ProfileBannerProps) => {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ default_banner_url: publicUrl })
-        .eq('id', session.user.id);
+        .eq('id', userId || session.user.id);
 
       if (updateError) throw updateError;
 
@@ -64,37 +85,55 @@ const ProfileBanner = ({ defaultBannerUrl }: ProfileBannerProps) => {
       });
     } finally {
       setIsUploading(false);
+      setIsCropperOpen(false);
     }
   };
 
   const displayBannerUrl = bannerUrl || defaultBannerUrl || '/lovable-uploads/3736fb63-bd29-4e8a-833f-6a29178e4460.png';
 
   return (
-    <div className="relative w-full h-[400px] overflow-hidden">
-      <img 
-        src={displayBannerUrl}
-        alt="Profile Banner"
-        className="w-full h-full object-cover"
-      />
-      
-      <label className="absolute bottom-4 right-4 flex gap-2">
-        <Button 
-          variant="secondary" 
-          className="relative overflow-hidden backdrop-blur-sm hover:bg-primary/10"
-          disabled={isUploading}
-        >
-          <Upload className="w-4 h-4 mr-2" />
-          {isUploading ? "Uploading..." : "Upload Banner"}
-          <input
-            type="file"
-            className="absolute inset-0 opacity-0 cursor-pointer"
-            accept="image/*"
-            onChange={handleBannerUpload}
-            disabled={isUploading}
-          />
-        </Button>
-      </label>
-    </div>
+    <>
+      <div className="relative w-full h-[400px] overflow-hidden">
+        <img 
+          src={displayBannerUrl}
+          alt="Profile Banner"
+          className="w-full h-full object-cover"
+        />
+        
+        {session && (userId === undefined || userId === session.user.id) && (
+          <label className="absolute bottom-4 right-4 flex gap-2">
+            <Button 
+              variant="secondary" 
+              className="relative overflow-hidden backdrop-blur-sm hover:bg-primary/10"
+              disabled={isUploading}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {isUploading ? "Uploading..." : "Upload Banner"}
+              <input
+                type="file"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                accept="image/*"
+                onChange={handleBannerUpload}
+                disabled={isUploading}
+              />
+            </Button>
+          </label>
+        )}
+      </div>
+
+      {cropperImage && (
+        <ImageCropper
+          image={cropperImage}
+          onCropComplete={handleCropComplete}
+          aspectRatio={21/9}
+          isOpen={isCropperOpen}
+          onClose={() => {
+            setIsCropperOpen(false);
+            setCropperImage(null);
+          }}
+        />
+      )}
+    </>
   );
 };
 

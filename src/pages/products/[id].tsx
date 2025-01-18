@@ -3,17 +3,19 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Package, ShoppingCart, Heart, Star } from "lucide-react";
+import { Package, ShoppingCart, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/components/cart/CartProvider";
+import PaymentButton from "@/components/payment/PaymentButton";
 
 const ProductPage = () => {
   const { id } = useParams();
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
-      // Convert the string ID to a number
       const numericId = parseInt(id!, 10);
       
       if (isNaN(numericId)) {
@@ -33,7 +35,7 @@ const ProductPage = () => {
           )
         `)
         .eq("id", numericId)
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       return data;
@@ -80,11 +82,8 @@ const ProductPage = () => {
     );
   }
 
-  const handleAddToCart = () => {
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+  const handleAddToCart = async () => {
+    await addToCart(product.id);
   };
 
   const handleAddToWishlist = () => {
@@ -124,13 +123,6 @@ const ProductPage = () => {
               <div className="space-y-4">
                 <p className="text-muted-foreground">{product.description}</p>
                 
-                <div className="flex items-center space-x-2">
-                  <Star className="h-5 w-5 text-yellow-400" />
-                  <span className="text-sm text-muted-foreground">
-                    New Product
-                  </span>
-                </div>
-
                 {product.inventory_count === 0 ? (
                   <p className="text-destructive font-semibold">Out of Stock</p>
                 ) : (
@@ -141,8 +133,15 @@ const ProductPage = () => {
               </div>
 
               <div className="flex flex-col space-y-4">
+                <PaymentButton 
+                  amount={product.price} 
+                  vendorId={product.vendor_id}
+                  className="w-full"
+                />
+                
                 <Button
                   size="lg"
+                  variant="outline"
                   className="w-full"
                   onClick={handleAddToCart}
                   disabled={product.inventory_count === 0}

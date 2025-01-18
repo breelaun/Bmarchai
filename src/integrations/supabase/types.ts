@@ -979,6 +979,7 @@ export type Database = {
       }
       vendor_profiles: {
         Row: {
+          banner_data: Json | null
           business_description: string | null
           business_name: string | null
           contact_email: string | null
@@ -992,6 +993,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_data?: Json | null
           business_description?: string | null
           business_name?: string | null
           contact_email?: string | null
@@ -1005,6 +1007,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_data?: Json | null
           business_description?: string | null
           business_name?: string | null
           contact_email?: string | null
