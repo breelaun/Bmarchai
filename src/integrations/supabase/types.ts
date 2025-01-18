@@ -660,6 +660,7 @@ export type Database = {
         Row: {
           admin: boolean | null
           avatar_url: string | null
+          banner_media_type: string | null
           country: string | null
           created_at: string
           date_of_birth: string
@@ -679,6 +680,7 @@ export type Database = {
         Insert: {
           admin?: boolean | null
           avatar_url?: string | null
+          banner_media_type?: string | null
           country?: string | null
           created_at?: string
           date_of_birth?: string
@@ -698,6 +700,7 @@ export type Database = {
         Update: {
           admin?: boolean | null
           avatar_url?: string | null
+          banner_media_type?: string | null
           country?: string | null
           created_at?: string
           date_of_birth?: string
