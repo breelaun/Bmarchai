@@ -13,73 +13,129 @@ const services = [
   { title: 'Consulting', link: '/consulting', color: '44, 62, 80' }
 ];
 
-interface CustomCSSProperties extends React.CSSProperties {
-  '--quantity': number;
-  '--w': string;
-  '--h': string;
-  '--translateZ': string;
-  '--rotateX': string;
-  '--perspective': string;
-}
-
 const ServiceCards = () => {
   const [speed, setSpeed] = useState(9);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const innerRef = useRef(null);
-  const audioRef = useRef(new Audio('/audio/helicopter.mp3'));
+  
+  // Create two audio players for crossfade
+  const audioRef1 = useRef(new Audio('/audio/helicopter.mp3'));
+  const audioRef2 = useRef(new Audio('/audio/helicopter.mp3'));
+  const activeAudioRef = useRef(1); // Track which audio player is currently active
 
-  // Setup audio
+  // Setup audio players
   useEffect(() => {
-    const audio = audioRef.current;
-    audio.loop = true;
-    
-    return () => {
-      audio.pause();
-      audio.currentTime = 0;
+    const audio1 = audioRef1.current;
+    const audio2 = audioRef2.current;
+
+    // Set up event listeners for seamless loop
+    const handleAudioEnd = (audioNumber) => {
+      if (!soundEnabled) return;
+      
+      if (audioNumber === 1) {
+        // Start audio2 and fade it in
+        audio2.currentTime = 0;
+        audio2.volume = 0;
+        audio2.play();
+        fadeAudio(audio2, 'in');
+        // Fade out audio1
+        fadeAudio(audio1, 'out');
+        activeAudioRef.current = 2;
+      } else {
+        // Start audio1 and fade it in
+        audio1.currentTime = 0;
+        audio1.volume = 0;
+        audio1.play();
+        fadeAudio(audio1, 'in');
+        // Fade out audio2
+        fadeAudio(audio2, 'out');
+        activeAudioRef.current = 1;
+      }
     };
-  }, []);
+
+    audio1.addEventListener('timeupdate', () => {
+      // Start transition slightly before the end
+      if (audio1.currentTime >= audio1.duration - 0.2 && activeAudioRef.current === 1) {
+        handleAudioEnd(1);
+      }
+    });
+
+    audio2.addEventListener('timeupdate', () => {
+      if (audio2.currentTime >= audio2.duration - 0.2 && activeAudioRef.current === 2) {
+        handleAudioEnd(2);
+      }
+    });
+
+    return () => {
+      audio1.pause();
+      audio2.pause();
+      audio1.currentTime = 0;
+      audio2.currentTime = 0;
+    };
+  }, [soundEnabled]);
+
+  // Fade audio helper function
+  const fadeAudio = (audioElement, direction) => {
+    const fadePoints = 20;
+    const fadeInterval = 10; // milliseconds
+    let currentPoint = direction === 'in' ? 0 : fadePoints;
+
+    const fade = setInterval(() => {
+      if (direction === 'in' && currentPoint < fadePoints) {
+        currentPoint++;
+        audioElement.volume = Math.min(1, speed / 200) * (currentPoint / fadePoints);
+      } else if (direction === 'out' && currentPoint > 0) {
+        currentPoint--;
+        audioElement.volume = Math.min(1, speed / 200) * (currentPoint / fadePoints);
+      } else {
+        clearInterval(fade);
+        if (direction === 'out') {
+          audioElement.pause();
+        }
+      }
+    }, fadeInterval);
+  };
 
   // Handle audio playback and speed
   useEffect(() => {
-    const audio = audioRef.current;
+    const audio1 = audioRef1.current;
+    const audio2 = audioRef2.current;
     
+    const updateAudioSpeed = (audio) => {
+      const playbackRate = speed <= 100 
+        ? 0.5 + (speed / 100) * 0.5
+        : 1.0 + ((speed - 100) / 400) * 2;
+      audio.playbackRate = Math.min(3, Math.max(0.5, playbackRate));
+    };
+
     if (speed > 0 && soundEnabled) {
-      const playAudio = async () => {
-        try {
-          await audio.play();
-          // Map 0-500 speed range to 0.5-3 playback rate
-          // Slower at low speeds, much faster at high speeds
-          const playbackRate = speed <= 100 
-            ? 0.5 + (speed / 100) * 0.5  // 0.5 to 1.0 for 0-100%
-            : 1.0 + ((speed - 100) / 400) * 2; // 1.0 to 3.0 for 100-500%
-          
-          audio.playbackRate = Math.min(3, Math.max(0.5, playbackRate));
-          audio.volume = Math.min(1, speed / 200); // Full volume at 200%
-        } catch (err) {
-          console.log('Audio playback failed:', err);
-        }
-      };
-      playAudio();
+      // Start initial playback if needed
+      if (audio1.paused && audio2.paused) {
+        audio1.volume = Math.min(1, speed / 200);
+        audio1.play().catch(console.error);
+        activeAudioRef.current = 1;
+      }
+      
+      // Update speed for both audio players
+      updateAudioSpeed(audio1);
+      updateAudioSpeed(audio2);
     } else {
-      audio.pause();
+      audio1.pause();
+      audio2.pause();
     }
   }, [speed, soundEnabled]);
 
-  // Convert speed value (0 to 500) to animation duration
   const getAnimationStyle = () => {
     if (speed === 0) {
       return {
         animation: 'none',
         transform: innerRef.current?.style.transform || 'perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0)'
-      } as CustomCSSProperties;
+      };
     }
-
-    // Exponential speed increase for more dramatic fast speeds
     const duration = 20 / Math.pow(speed / 50, 1.2);
-    
     return {
       animation: `rotating ${duration}s linear infinite`
-    } as CustomCSSProperties;
+    };
   };
 
   const handleSliderChange = (e) => {
@@ -91,6 +147,7 @@ const ServiceCards = () => {
     setSoundEnabled(!soundEnabled);
   };
 
+  // Rest of the component remains the same
   return (
     <div className="flex flex-col items-center">
       <div className="wrapper h-[300px] sm:h-[400px] md:h-[500px] mt-2 sm:mt-3 md:mt-4 mb-6">
@@ -105,7 +162,7 @@ const ServiceCards = () => {
             '--rotateX': '-11deg',
             '--perspective': '1000px',
             ...getAnimationStyle()
-          } as CustomCSSProperties}
+          } as React.CSSProperties}
         >
           {services.map((service, index) => (
             <Link
