@@ -94,17 +94,15 @@ const CalorieBurner = () => {
   };
 
   return (
-    <div className="w-full px-5 sm:px-7">
-      <Card className="p-4 sm:p-6">
-        <h2 className="text-xl sm:text-2xl font-heading font-bold text-center mb-4 sm:mb-6">
+    <div className="w-full max-w-4xl mx-auto p-6">
+      <Card className="p-6">
+        <h2 className="text-2xl font-heading font-bold text-center mb-6">
           How To Burn {calories || '___'} Calories
         </h2>
 
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-4">
           <div>
-            <Label htmlFor="calories" className="text-sm sm:text-base">
-              Enter the number of calories you want to burn:
-            </Label>
+            <Label htmlFor="calories">Enter the number of calories you want to burn:</Label>
             <Input
               id="calories"
               type="number"
@@ -115,9 +113,7 @@ const CalorieBurner = () => {
           </div>
 
           <div>
-            <Label htmlFor="intensity" className="text-sm sm:text-base">
-              Choose the intensity level:
-            </Label>
+            <Label htmlFor="intensity">Choose the intensity level:</Label>
             <Select value={intensity} onValueChange={setIntensity}>
               <SelectTrigger className="w-full mt-1">
                 <SelectValue placeholder="Select intensity" />
@@ -131,9 +127,7 @@ const CalorieBurner = () => {
           </div>
 
           <div>
-            <Label htmlFor="time" className="text-sm sm:text-base">
-              Or enter the time in minutes:
-            </Label>
+            <Label htmlFor="time">Or enter the time in minutes:</Label>
             <Input
               id="time"
               type="number"
@@ -143,20 +137,18 @@ const CalorieBurner = () => {
             />
           </div>
 
-          <Button onClick={calculateResults} className="w-full mt-4">
+          <Button onClick={calculateResults} className="w-full">
             Calculate
           </Button>
         </div>
 
         {results.length > 0 && (
-          <div className="mt-6 overflow-x-auto">
-            <table className="w-full border-collapse min-w-[300px]">
+          <div className="mt-6">
+            <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="border border-border bg-secondary p-2 text-left text-sm sm:text-base">
-                    Activity
-                  </th>
-                  <th className="border border-border bg-secondary p-2 text-left text-sm sm:text-base">
+                  <th className="border border-border bg-secondary p-2 text-left">Activity</th>
+                  <th className="border border-border bg-secondary p-2 text-left">
                     {time ? 'Intensity' : 'Time (minutes)'}
                   </th>
                 </tr>
@@ -164,8 +156,8 @@ const CalorieBurner = () => {
               <tbody>
                 {results.map(({ activity, value }, index) => (
                   <tr key={index}>
-                    <td className="border border-border p-2 text-sm sm:text-base">{activity}</td>
-                    <td className="border border-border p-2 text-sm sm:text-base">{value}</td>
+                    <td className="border border-border p-2">{activity}</td>
+                    <td className="border border-border p-2">{value}</td>
                   </tr>
                 ))}
               </tbody>
@@ -178,6 +170,3 @@ const CalorieBurner = () => {
 };
 
 export default CalorieBurner;
-Last edited 11 minutes ago
-
-
