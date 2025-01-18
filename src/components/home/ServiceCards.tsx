@@ -13,121 +13,151 @@ const services = [
   { title: 'Consulting', link: '/consulting', color: '44, 62, 80' }
 ];
 
+interface Ball {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+}
+
 const ServiceCards = () => {
   const [speed, setSpeed] = useState(9);
   const [soundEnabled, setSoundEnabled] = useState(false);
-  const innerRef = useRef(null);
+  const [balls, setBalls] = useState<Ball[]>([]);
+  const [releaseBalls, setReleaseBalls] = useState(false);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const ballIdCounter = useRef(0);
   
-  const audioRef1 = useRef(new Audio('/audio/helicopter.mp3'));
-  const audioRef2 = useRef(new Audio('/audio/helicopter.mp3'));
-  const activeAudioRef = useRef(1);
-  const fadeIntervalRef = useRef(null);
-
-  // Setup audio players
+  // Audio setup with seamless loop
+  const audioRef = useRef(new Audio('/audio/helicopter.mp3'));
+  
   useEffect(() => {
-    const audio1 = audioRef1.current;
-    const audio2 = audioRef2.current;
-
-    // Start crossfade earlier to prevent gaps
-    const handleAudioEnd = (audioNumber) => {
-      if (!soundEnabled) return;
-      
-      const startNextAudio = (nextAudio, currentAudio) => {
-        nextAudio.currentTime = 0;
-        nextAudio.volume = 0;
-        nextAudio.play().catch(console.error);
-        fadeAudio(nextAudio, currentAudio);
-      };
-
-      if (audioNumber === 1) {
-        startNextAudio(audio2, audio1);
-        activeAudioRef.current = 2;
-      } else {
-        startNextAudio(audio1, audio2);
-        activeAudioRef.current = 1;
+    const audio = audioRef.current;
+    
+    const handleEnded = () => {
+      if (soundEnabled) {
+        audio.currentTime = 0;
+        audio.play().catch(console.error);
       }
     };
 
-    const setupAudioListener = (audio, audioNumber) => {
-      audio.addEventListener('timeupdate', () => {
-        // Start transition when 0.5 seconds remain
-        if (audio.currentTime >= audio.duration - 0.5 && 
-            activeAudioRef.current === audioNumber) {
-          handleAudioEnd(audioNumber);
-        }
-      });
-    };
-
-    setupAudioListener(audio1, 1);
-    setupAudioListener(audio2, 2);
-
+    audio.addEventListener('ended', handleEnded);
+    audio.loop = true;  // Enable native audio looping
+    
     return () => {
-      audio1.pause();
-      audio2.pause();
-      audio1.currentTime = 0;
-      audio2.currentTime = 0;
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
-      }
+      audio.removeEventListener('ended', handleEnded);
+      audio.pause();
+      audio.currentTime = 0;
     };
   }, [soundEnabled]);
 
-  // Enhanced fade audio function
-  const fadeAudio = (inAudio, outAudio) => {
-    if (fadeIntervalRef.current) {
-      clearInterval(fadeIntervalRef.current);
-    }
-
-    const fadePoints = 40; // Increased for smoother transition
-    const fadeInterval = 25; // Slower fade for smoother transition
-    let currentPoint = 0;
-
-    // Calculate base volume based on speed
-    const baseVolume = Math.min(1.5, speed / 100); // Increased maximum volume
-
-    fadeIntervalRef.current = setInterval(() => {
-      if (currentPoint < fadePoints) {
-        currentPoint++;
-        const fadeRatio = currentPoint / fadePoints;
-        inAudio.volume = baseVolume * fadeRatio;
-        outAudio.volume = baseVolume * (1 - fadeRatio);
-      } else {
-        clearInterval(fadeIntervalRef.current);
-        outAudio.pause();
-      }
-    }, fadeInterval);
-  };
-
-  // Enhanced speed effect on audio
+  // Handle audio speed and volume
   useEffect(() => {
-    const audio1 = audioRef1.current;
-    const audio2 = audioRef2.current;
+    const audio = audioRef.current;
     
-    const updateAudioSpeed = (audio) => {
-      // Enhanced speed scaling
+    const updateAudio = () => {
+      // Increased base volume (2.0 instead of 1.5)
+      const baseVolume = Math.min(2.0, speed / 100);
+      audio.volume = baseVolume;
+      
       const playbackRate = speed <= 100 
-        ? 0.5 + (speed / 100) * 0.5  // Slower speeds: 0.5x to 1.0x
-        : 1.0 + ((speed - 100) / 900) * 4;  // Faster speeds: 1.0x to 5.0x
+        ? 0.5 + (speed / 100) * 0.5
+        : 1.0 + ((speed - 100) / 900) * 4;
       audio.playbackRate = Math.min(5.0, Math.max(0.5, playbackRate));
     };
 
     if (speed > 0 && soundEnabled) {
-      // Calculate volume based on speed
-      const baseVolume = Math.min(1.5, speed / 100);
-      
-      if (audio1.paused && audio2.paused) {
-        audio1.volume = baseVolume;
-        audio1.play().catch(console.error);
-        activeAudioRef.current = 1;
+      updateAudio();
+      if (audio.paused) {
+        audio.play().catch(console.error);
       }
-      
-      updateAudioSpeed(audio1);
-      updateAudioSpeed(audio2);
     } else {
-      audio1.pause();
-      audio2.pause();
+      audio.pause();
     }
   }, [speed, soundEnabled]);
+
+  // Ball physics animation
+  useEffect(() => {
+    if (balls.length === 0) return;
+
+    let animationFrameId: number;
+    const gravity = releaseBalls ? 0.5 : 0;
+    const bounce = 0.7;
+    const friction = 0.99;
+
+    const animate = () => {
+      setBalls(currentBalls => {
+        return currentBalls.map(ball => {
+          let newVx = ball.vx * friction;
+          let newVy = ball.vy * friction + gravity;
+          let newX = ball.x + newVx;
+          let newY = ball.y + newVy;
+
+          // Bounce off container walls
+          const container = containerRef.current?.getBoundingClientRect();
+          if (container) {
+            if (newX - ball.radius < 0) {
+              newX = ball.radius;
+              newVx = -newVx * bounce;
+            } else if (newX + ball.radius > container.width) {
+              newX = container.width - ball.radius;
+              newVx = -newVx * bounce;
+            }
+
+            if (!releaseBalls) {
+              // Bounce within container
+              if (newY - ball.radius < 0) {
+                newY = ball.radius;
+                newVy = -newVy * bounce;
+              } else if (newY + ball.radius > container.height) {
+                newY = container.height - ball.radius;
+                newVy = -newVy * bounce;
+              }
+            } else if (newY - ball.radius > window.innerHeight) {
+              // Remove balls that fall below screen
+              return null;
+            }
+          }
+
+          return {
+            ...ball,
+            x: newX,
+            y: newY,
+            vx: newVx,
+            vy: newVy
+          };
+        }).filter((ball): ball is Ball => ball !== null);
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [balls, releaseBalls]);
+
+  const addBall = () => {
+    if (!containerRef.current) return;
+    
+    const container = containerRef.current.getBoundingClientRect();
+    const radius = 10;
+    const newBall: Ball = {
+      id: ballIdCounter.current++,
+      x: container.width / 2,
+      y: container.height / 2,
+      vx: (Math.random() - 0.5) * 10,
+      vy: (Math.random() - 0.5) * 10,
+      radius
+    };
+    setBalls(current => [...current, newBall]);
+  };
+
+  const handleRelease = () => {
+    setReleaseBalls(true);
+  };
 
   const getAnimationStyle = () => {
     if (speed === 0) {
@@ -152,8 +182,8 @@ const ServiceCards = () => {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="wrapper h-[300px] sm:h-[400px] md:h-[500px] mt-2 sm:mt-3 md:mt-4 mb-6">
+    <div className="flex flex-col items-center" ref={containerRef}>
+      <div className="wrapper h-[300px] sm:h-[400px] md:h-[500px] mt-2 sm:mt-3 md:mt-4 mb-6 relative">
         <div 
           ref={innerRef}
           className="inner" 
@@ -185,18 +215,51 @@ const ServiceCards = () => {
             </Link>
           ))}
         </div>
+        
+        {/* Chrome Balls */}
+        {balls.map(ball => (
+          <div
+            key={ball.id}
+            className="absolute rounded-full"
+            style={{
+              width: ball.radius * 2,
+              height: ball.radius * 2,
+              left: ball.x - ball.radius,
+              top: ball.y - ball.radius,
+              background: 'linear-gradient(135deg, #ffffff 0%, #b7b7b7 50%, #ffffff 100%)',
+              boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+              transform: 'translateZ(0)',
+            }}
+          />
+        ))}
       </div>
       
       <div className="w-full max-w-md mb-12 px-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="font-medium">Speed: {speed}%</span>
-          <button
-            onClick={toggleSound}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-            aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
-          >
-            {soundEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={addBall}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Add Ball
+            </button>
+            <button
+              onClick={handleRelease}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+            >
+              Release
+            </button>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="font-medium">Speed: {speed}%</span>
+            <button
+              onClick={toggleSound}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
+            >
+              {soundEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
+            </button>
+          </div>
         </div>
         <input
           type="range"
