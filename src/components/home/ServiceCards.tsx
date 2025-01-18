@@ -14,17 +14,25 @@ const services = [
 
 const ServiceCards = () => {
   return (
-    <div className="wrapper h-[500px] my-12">
-      <div className="inner" style={{ '--quantity': services.length } as React.CSSProperties}>
+    <div className="wrapper h-[300px] sm:h-[400px] md:h-[500px] my-6 sm:my-8 md:my-12">
+      <div 
+        className="inner" 
+        style={{ '--quantity': services.length } as React.CSSProperties}
+      >
         {services.map((service, index) => (
           <Link
             key={service.title}
             to={service.link}
-            className="card"
-            style={{ '--index': index, '--color-card': service.color } as React.CSSProperties}
+            className="card text-center"
+            style={{ 
+              '--index': index, 
+              '--color-card': service.color 
+            } as React.CSSProperties}
           >
-            <div className="img flex items-center justify-center">
-              <h3 className="text-xl font-bold text-foreground">{service.title}</h3>
+            <div className="img flex items-center justify-center p-2">
+              <h3 className="text-sm sm:text-base md:text-xl font-bold text-foreground">
+                {service.title}
+              </h3>
             </div>
           </Link>
         ))}
