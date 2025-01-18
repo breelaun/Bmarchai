@@ -12,6 +12,7 @@ interface CartItem {
     name: string;
     price: number;
     image_url: string | null;
+    vendor_id: string;
   };
 }
 

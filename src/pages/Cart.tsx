@@ -13,6 +13,9 @@ const Cart = () => {
     return sum + (item.product.price * item.quantity);
   }, 0);
 
+  // Get the vendor_id from the first item's product if it exists
+  const vendorId = items[0]?.product?.vendor_id;
+
   if (!items || items.length === 0) {
     return (
       <div className="container mx-auto py-8">
@@ -92,7 +95,7 @@ const Cart = () => {
             <div className="text-lg font-semibold">
               Total: ${total.toFixed(2)}
             </div>
-            <PaymentButton amount={total} vendorId={items[0]?.product?.vendor_id} />
+            <PaymentButton amount={total} vendorId={vendorId} />
           </div>
         </CardContent>
       </Card>

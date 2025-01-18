@@ -7,10 +7,11 @@ import type { ProfileData } from "./types";
 interface ProfileFormProps {
   initialProfile: ProfileData;
   userId: string;
+  isVendor?: boolean;
   onSuccess?: () => void;
 }
 
-const ProfileForm = ({ initialProfile, userId, onSuccess }: ProfileFormProps) => {
+const ProfileForm = ({ initialProfile, userId, isVendor, onSuccess }: ProfileFormProps) => {
   const { profile, setProfile, handleUpdateProfile } = useProfileUpdate(userId, initialProfile, onSuccess);
 
   return (
@@ -18,6 +19,7 @@ const ProfileForm = ({ initialProfile, userId, onSuccess }: ProfileFormProps) =>
       <ProfileFormFields 
         profile={profile}
         setProfile={setProfile}
+        isVendor={isVendor}
       />
       
       <VendorToggle 
