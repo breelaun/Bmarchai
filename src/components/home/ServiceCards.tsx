@@ -17,10 +17,11 @@ interface Ball {
   id: number;
   x: number;
   y: number;
+  z: number;
   vx: number;
   vy: number;
+  vz: number;
   radius: number;
-  lastCardHit: number;
 }
 
 const ServiceCards = () => {
@@ -37,77 +38,83 @@ const ServiceCards = () => {
   
   useEffect(() => {
     const audio = audioRef.current;
+    
+    const handleEnded = () => {
+      if (soundEnabled) {
+        audio.currentTime = 0;
+        audio.play().catch(console.error);
+      }
+    };
+
+    audio.addEventListener('ended', handleEnded);
     audio.loop = true;
     
     return () => {
+      audio.removeEventListener('ended', handleEnded);
       audio.pause();
       audio.currentTime = 0;
     };
-  }, []);
+  }, [soundEnabled]);
 
+  // Fixed volume handling
   useEffect(() => {
     const audio = audioRef.current;
     
+    const updateAudio = () => {
+      // Clamp volume between 0 and 1
+      const baseVolume = Math.min(1.0, Math.max(0, speed / 200));
+      audio.volume = baseVolume;
+      
+      const playbackRate = speed <= 100 
+        ? 0.5 + (speed / 100) * 0.5
+        : 1.0 + ((speed - 100) / 900) * 4;
+      audio.playbackRate = Math.min(5.0, Math.max(0.5, playbackRate));
+    };
+
     if (speed > 0 && soundEnabled) {
-      audio.volume = Math.min(1.0, Math.max(0, speed / 150));
-      audio.playbackRate = Math.min(5.0, Math.max(0.5, speed / 100));
-      audio.play().catch(console.error);
+      updateAudio();
+      if (audio.paused) {
+        audio.play().catch(console.error);
+      }
     } else {
       audio.pause();
     }
   }, [speed, soundEnabled]);
 
+  // Ball physics with card collisions
   useEffect(() => {
     if (balls.length === 0) return;
 
     let animationFrameId: number;
     const gravity = releaseBalls ? 0.5 : 0;
-    const bounce = 0.85;
-    const friction = 0.98;
-    const spinForce = speed / 50;
+    const bounce = 0.8;
+    const friction = 0.99;
 
     const checkCardCollision = (ball: Ball) => {
-      const currentTime = Date.now();
-      if (!containerRef.current || currentTime - ball.lastCardHit < 100) return;
-
-      const container = containerRef.current.getBoundingClientRect();
-      const centerX = container.left + container.width / 2;
-      const centerY = container.top + container.height / 2;
-      const rotationAngle = (currentTime / (20000 / speed)) % (2 * Math.PI);
-
       cardsRef.current.forEach((card, index) => {
         if (!card) return;
         
-        const cardAngle = (index / services.length) * 2 * Math.PI + rotationAngle;
-        const radius = 200;
+        const rect = card.getBoundingClientRect();
+        const cardCenter = {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2
+        };
+
+        // Calculate rotation based on card position
+        const angle = (index / services.length) * 2 * Math.PI + (Date.now() / (20000 / speed));
         
-        const cardX = centerX + radius * Math.cos(cardAngle);
-        const cardY = centerY + radius * Math.sin(cardAngle);
-        
-        const dx = ball.x - cardX;
-        const dy = ball.y - cardY;
+        // Simple collision check with cards
+        const dx = ball.x - cardCenter.x;
+        const dy = ball.y - cardCenter.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < ball.radius + 50) {
-          const cardVx = -Math.sin(cardAngle) * spinForce;
-          const cardVy = Math.cos(cardAngle) * spinForce;
+        if (distance < ball.radius + Math.max(rect.width, rect.height) / 2) {
+          // Calculate bounce direction based on card rotation
+          const bounceAngle = Math.atan2(dy, dx) + angle;
+          const bounceSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * bounce;
           
-          ball.vx = (ball.vx * 0.2 + cardVx * 2.5) * bounce;
-          ball.vy = (ball.vy * 0.2 + cardVy * 2.5) * bounce;
-          
-          ball.vx += (Math.random() - 0.5) * spinForce;
-          ball.vy += (Math.random() - 0.5) * spinForce;
-          
-          const toCenterX = centerX - ball.x;
-          const toCenterY = centerY - ball.y;
-          const toCenterDist = Math.sqrt(toCenterX * toCenterX + toCenterY * toCenterY);
-          
-          if (!releaseBalls) {
-            ball.vx += (toCenterX / toCenterDist) * spinForce * 0.5;
-            ball.vy += (toCenterY / toCenterDist) * spinForce * 0.5;
-          }
-          
-          ball.lastCardHit = currentTime;
+          ball.vx = Math.cos(bounceAngle) * bounceSpeed * 1.5;
+          ball.vy = Math.sin(bounceAngle) * bounceSpeed * 1.5;
         }
       });
     };
@@ -120,29 +127,28 @@ const ServiceCards = () => {
           let newX = ball.x + newVx;
           let newY = ball.y + newVy;
 
+          // Check collisions with cards
           const newBall = { ...ball, x: newX, y: newY, vx: newVx, vy: newVy };
-          
-          if (!releaseBalls) {
-            checkCardCollision(newBall);
-          }
+          checkCardCollision(newBall);
 
+          // Bounce off container walls
           const container = containerRef.current?.getBoundingClientRect();
           if (container) {
             if (newX - ball.radius < 0) {
               newX = ball.radius;
-              newVx = Math.abs(newVx) * bounce;
+              newVx = -newVx * bounce;
             } else if (newX + ball.radius > container.width) {
               newX = container.width - ball.radius;
-              newVx = -Math.abs(newVx) * bounce;
+              newVx = -newVx * bounce;
             }
 
             if (!releaseBalls) {
               if (newY - ball.radius < 0) {
                 newY = ball.radius;
-                newVy = Math.abs(newVy) * bounce;
+                newVy = -newVy * bounce;
               } else if (newY + ball.radius > container.height) {
                 newY = container.height - ball.radius;
-                newVy = -Math.abs(newVy) * bounce;
+                newVy = -newVy * bounce;
               }
             } else if (newY - ball.radius > window.innerHeight) {
               return null;
@@ -164,15 +170,16 @@ const ServiceCards = () => {
     if (!containerRef.current) return;
     
     const container = containerRef.current.getBoundingClientRect();
-    const radius = 25;
+    const radius = 20; // Increased ball size
     const newBall: Ball = {
       id: ballIdCounter.current++,
       x: container.width / 2,
       y: container.height / 2,
-      vx: (Math.random() - 0.5) * 10,
-      vy: (Math.random() - 0.5) * 10,
-      radius,
-      lastCardHit: 0
+      z: 0,
+      vx: (Math.random() - 0.5) * 15,
+      vy: (Math.random() - 0.5) * 15,
+      vz: 0,
+      radius
     };
     setBalls(current => [...current, newBall]);
   };
@@ -232,6 +239,7 @@ const ServiceCards = () => {
           ))}
         </div>
         
+        {/* Chrome Balls */}
         {balls.map(ball => (
           <div
             key={ball.id}
@@ -241,15 +249,8 @@ const ServiceCards = () => {
               height: ball.radius * 2,
               left: ball.x - ball.radius,
               top: ball.y - ball.radius,
-              background: `radial-gradient(circle at 30% 30%, 
-                rgba(255,255,255,0.8) 0%, 
-                rgba(255,255,255,0.2) 50%, 
-                rgba(183,183,183,0.8) 100%)`,
-              boxShadow: `
-                inset -4px -4px 8px rgba(0,0,0,0.2),
-                inset 4px 4px 8px rgba(255,255,255,0.8),
-                0 0 20px rgba(0,0,0,0.3)
-              `,
+              background: 'linear-gradient(135deg, #ffffff 0%, #b7b7b7 50%, #ffffff 100%)',
+              boxShadow: '0 0 15px rgba(0,0,0,0.3)',
               transform: 'translateZ(0)',
             }}
           />
@@ -257,4 +258,47 @@ const ServiceCards = () => {
       </div>
       
       <div className="w-full max-w-md mb-12 px-4">
-        <div classN
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex gap-2">
+            <button
+              onClick={addBall}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Add Ball
+            </button>
+            <button
+              onClick={handleRelease}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+            >
+              Release
+            </button>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="font-medium">Speed: {speed}%</span>
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
+            >
+              {soundEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
+            </button>
+          </div>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="1000"
+          value={speed}
+          onChange={e => setSpeed(parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between text-sm mt-1">
+          <span>Stop</span>
+          <span>Max Speed (1000%)</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ServiceCards;
