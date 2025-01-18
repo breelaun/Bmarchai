@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactCrop, { Crop } from 'react-image-crop';
+import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,7 @@ const ImageCropper = ({
       const croppedImage = getCroppedImg(imageRef.current, crop);
       if (croppedImage) {
         onCropComplete(croppedImage);
+        onClose();
       }
     }
   };

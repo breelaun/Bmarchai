@@ -13,8 +13,17 @@ const services = [
   { title: 'Consulting', link: '/consulting', color: '44, 62, 80' }
 ];
 
+interface CustomCSSProperties extends React.CSSProperties {
+  '--quantity': number;
+  '--w': string;
+  '--h': string;
+  '--translateZ': string;
+  '--rotateX': string;
+  '--perspective': string;
+}
+
 const ServiceCards = () => {
-  const [speed, setSpeed] = useState(9); // Starting at 9%
+  const [speed, setSpeed] = useState(9);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const innerRef = useRef(null);
   const audioRef = useRef(new Audio('/audio/helicopter.mp3'));
@@ -62,7 +71,7 @@ const ServiceCards = () => {
       return {
         animation: 'none',
         transform: innerRef.current?.style.transform || 'perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0)'
-      };
+      } as CustomCSSProperties;
     }
 
     // Exponential speed increase for more dramatic fast speeds
@@ -70,7 +79,7 @@ const ServiceCards = () => {
     
     return {
       animation: `rotating ${duration}s linear infinite`
-    };
+    } as CustomCSSProperties;
   };
 
   const handleSliderChange = (e) => {
@@ -96,7 +105,7 @@ const ServiceCards = () => {
             '--rotateX': '-11deg',
             '--perspective': '1000px',
             ...getAnimationStyle()
-          } as React.CSSProperties}
+          } as CustomCSSProperties}
         >
           {services.map((service, index) => (
             <Link
