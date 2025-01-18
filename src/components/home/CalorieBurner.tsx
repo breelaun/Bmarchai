@@ -95,7 +95,7 @@ const CalorieBurner = () => {
 
   return (
     <div className="w-full max-w-5xl mx-auto p-7">
-      <Card className="p-6">
+      <Card className="p-7">
         <h2 className="text-2xl font-heading font-bold text-center mb-6">
           How To Burn {calories || '___'} Calories
         </h2>
