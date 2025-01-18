@@ -1,89 +1,94 @@
-import { useState, useCallback } from 'react';
-import Cropper from 'react-easy-crop';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import React from 'react';
+import ReactCrop, { Crop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface ImageCropperProps {
   image: string;
-  onCropComplete: (croppedImage: string) => void;
   aspectRatio?: number;
   isOpen: boolean;
   onClose: () => void;
+  onCropComplete: (croppedImage: string) => void;
 }
 
-const ImageCropper = ({ image, onCropComplete, aspectRatio = 16 / 9, isOpen, onClose }: ImageCropperProps) => {
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+const ImageCropper = ({ 
+  image, 
+  aspectRatio = 21/9, 
+  isOpen, 
+  onClose, 
+  onCropComplete 
+}: ImageCropperProps) => {
+  const [crop, setCrop] = React.useState<Crop>({
+    unit: '%',
+    width: 100,
+    height: 100,
+    x: 0,
+    y: 0
+  });
+  const imageRef = React.useRef<HTMLImageElement>(null);
 
-  const onCropChange = useCallback((location: { x: number; y: number }) => {
-    setCrop(location);
-  }, []);
+  const getCroppedImg = (image: HTMLImageElement, crop: Crop) => {
+    const canvas = document.createElement('canvas');
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  const onZoomChange = useCallback((zoom: number) => {
-    setZoom(zoom);
-  }, []);
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
 
-  const onCropAreaChange = useCallback((croppedArea: any, croppedAreaPixels: any) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
+    return canvas.toDataURL('image/jpeg', 0.9);
+  };
 
-  const getCroppedImage = useCallback(async () => {
-    try {
-      const canvas = document.createElement('canvas');
-      const img = new Image();
-      img.src = image;
-      
-      await new Promise((resolve) => {
-        img.onload = resolve;
-      });
-      
-      canvas.width = croppedAreaPixels.width;
-      canvas.height = croppedAreaPixels.height;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      ctx.drawImage(
-        img,
-        croppedAreaPixels.x,
-        croppedAreaPixels.y,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height,
-        0,
-        0,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height
-      );
-
-      const croppedImageUrl = canvas.toDataURL('image/jpeg');
-      onCropComplete(croppedImageUrl);
-      onClose();
-    } catch (e) {
-      console.error(e);
+  const handleComplete = () => {
+    if (imageRef.current && crop.width && crop.height) {
+      const croppedImage = getCroppedImg(imageRef.current, crop);
+      if (croppedImage) {
+        onCropComplete(croppedImage);
+      }
     }
-  }, [croppedAreaPixels, image, onCropComplete, onClose]);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px]">
-        <DialogHeader>
-          <DialogTitle>Crop Image</DialogTitle>
-        </DialogHeader>
-        <div className="relative h-[400px] w-full">
-          <Cropper
-            image={image}
+      <DialogContent className="max-w-4xl">
+        <div className="space-y-4">
+          <ReactCrop
             crop={crop}
-            zoom={zoom}
+            onChange={c => setCrop(c)}
             aspect={aspectRatio}
-            onCropChange={onCropChange}
-            onZoomChange={onZoomChange}
-            onCropComplete={onCropAreaChange}
-          />
-        </div>
-        <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={getCroppedImage}>Save</Button>
+            className="max-h-[70vh]"
+          >
+            <img 
+              ref={imageRef}
+              src={image} 
+              alt="Crop Preview"
+              className="max-w-full max-h-[70vh] object-contain"
+            />
+          </ReactCrop>
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleComplete}>
+              Save Crop
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
