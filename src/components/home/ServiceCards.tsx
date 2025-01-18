@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const services = [
@@ -13,10 +13,42 @@ const services = [
 ];
 
 const ServiceCards = () => {
-  const [speed, setSpeed] = useState(0); // 0 is stopped, negative is left, positive is right
+  const [speed, setSpeed] = useState(9); // Starting at 9%
   const innerRef = useRef(null);
+  const audioRef = useRef(new Audio('/helicopter.mp3')); // Make sure to add this audio file to your public folder
 
-  // Convert speed value (-100 to 100) to animation duration and direction
+  // Setup audio
+  useEffect(() => {
+    const audio = audioRef.current;
+    audio.loop = true;
+    
+    // Cleanup
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, []);
+
+  // Handle audio playback and speed
+  useEffect(() => {
+    const audio = audioRef.current;
+    
+    if (speed > 0) {
+      if (audio.paused) {
+        audio.play().catch(err => console.log('Audio playback failed:', err));
+      }
+      // Adjust playback rate based on speed
+      // Map 0-200 speed range to 0.5-2.5 playback rate
+      const playbackRate = 0.5 + (speed / 100) * 1;
+      audio.playbackRate = Math.min(2.5, Math.max(0.5, playbackRate));
+      audio.volume = Math.min(1, speed / 100); // Increase volume with speed
+    } else {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }, [speed]);
+
+  // Convert speed value (0 to 200) to animation duration
   const getAnimationStyle = () => {
     if (speed === 0) {
       return {
@@ -25,26 +57,16 @@ const ServiceCards = () => {
       };
     }
 
-    const duration = Math.abs(20 / (speed / 25)); // Converts speed to duration (faster speed = lower duration)
-    const direction = speed < 0 ? 'reverse' : 'normal';
+    const duration = 20 / (speed / 50); // Converts speed to duration (faster speed = lower duration)
     
     return {
-      animation: `rotating ${duration}s linear infinite`,
-      animationDirection: direction
+      animation: `rotating ${duration}s linear infinite`
     };
   };
 
   const handleSliderChange = (e) => {
     const newSpeed = parseInt(e.target.value);
     setSpeed(newSpeed);
-  };
-
-  // Format speed label
-  const getSpeedLabel = () => {
-    if (speed === 0) return "Stopped";
-    const direction = speed < 0 ? "Left" : "Right";
-    const magnitude = Math.abs(speed);
-    return `${direction} ${magnitude}%`;
   };
 
   return (
@@ -85,19 +107,18 @@ const ServiceCards = () => {
       
       {/* Speed Control Slider */}
       <div className="w-full max-w-md mb-12 px-4">
-        <div className="mb-2 text-center font-medium">{getSpeedLabel()}</div>
+        <div className="mb-2 text-center font-medium">Speed: {speed}%</div>
         <input
           type="range"
-          min="-100"
-          max="100"
+          min="0"
+          max="200"
           value={speed}
           onChange={handleSliderChange}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
         />
         <div className="flex justify-between text-sm mt-1">
-          <span>Fast Left</span>
           <span>Stop</span>
-          <span>Fast Right</span>
+          <span>Max Speed</span>
         </div>
       </div>
     </div>
