@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 const services = [
@@ -13,11 +13,51 @@ const services = [
 ];
 
 const ServiceCards = () => {
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [rotationSpeed, setRotationSpeed] = useState(1);
+  const innerRef = useRef(null);
+
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchStartX) return;
+
+    const touchEndX = e.touches[0].clientX;
+    const difference = touchEndX - touchStartX;
+    
+    // Adjust speed based on swipe distance
+    const newSpeed = Math.max(0.5, Math.min(3, 1 + difference / 200));
+    setRotationSpeed(newSpeed);
+    
+    // Update the CSS animation
+    if (innerRef.current) {
+      innerRef.current.style.animationDuration = `${20 / newSpeed}s`;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStartX(null);
+  };
+
   return (
-    <div className="wrapper h-[300px] sm:h-[400px] md:h-[500px] my-6 sm:my-8 md:my-12">
+    <div className="wrapper h-[300px] sm:h-[400px] md:h-[500px] mt-2 sm:mt-3 md:mt-4 mb-12 sm:mb-16 md:mb-20">
       <div 
+        ref={innerRef}
         className="inner" 
-        style={{ '--quantity': services.length } as React.CSSProperties}
+        style={{ 
+          '--quantity': services.length,
+          '--w': '250px',
+          '--h': '150px',
+          '--translateZ': 'calc((var(--w) + var(--h)) + 0px)',
+          '--rotateX': '-11deg',
+          '--perspective': '1000px',
+          animationDuration: `${20 / rotationSpeed}s`
+        } as React.CSSProperties}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {services.map((service, index) => (
           <Link
