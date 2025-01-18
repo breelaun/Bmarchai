@@ -14,7 +14,7 @@ interface ImageCropperProps {
 const ImageCropper = ({ image, onCropComplete, aspectRatio = 16 / 9, isOpen, onClose }: ImageCropperProps) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
 
   const onCropChange = useCallback((location: { x: number; y: number }) => {
     setCrop(location);
@@ -31,16 +31,21 @@ const ImageCropper = ({ image, onCropComplete, aspectRatio = 16 / 9, isOpen, onC
   const getCroppedImage = useCallback(async () => {
     try {
       const canvas = document.createElement('canvas');
-      const image = new Image();
-      image.src = image;
+      const img = new Image();
+      img.src = image;
+      
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
       
       canvas.width = croppedAreaPixels.width;
       canvas.height = croppedAreaPixels.height;
       
       const ctx = canvas.getContext('2d');
+      if (!ctx) return;
       
       ctx.drawImage(
-        image,
+        img,
         croppedAreaPixels.x,
         croppedAreaPixels.y,
         croppedAreaPixels.width,

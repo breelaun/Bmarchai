@@ -8,9 +8,10 @@ import type { ProfileData } from "./types";
 interface ProfileEditModalProps {
   profile: ProfileData;
   userId: string;
+  isVendor?: boolean;
 }
 
-const ProfileEditModal = ({ profile, userId }: ProfileEditModalProps) => {
+const ProfileEditModal = ({ profile, userId, isVendor }: ProfileEditModalProps) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,6 +33,7 @@ const ProfileEditModal = ({ profile, userId }: ProfileEditModalProps) => {
           <ProfileForm 
             initialProfile={profile} 
             userId={userId}
+            isVendor={isVendor}
             onSuccess={() => {
               setOpen(false);
               window.location.reload();

@@ -9,9 +9,10 @@ import ImageCropper from "../shared/ImageCropper";
 interface ProfileBannerProps {
   defaultBannerUrl?: string;
   userId?: string;
+  isVendor?: boolean;
 }
 
-const ProfileBanner = ({ defaultBannerUrl, userId }: ProfileBannerProps) => {
+const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProps) => {
   const session = useSession();
   const { toast } = useToast();
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
@@ -32,11 +33,13 @@ const ProfileBanner = ({ defaultBannerUrl, userId }: ProfileBannerProps) => {
       return;
     }
 
-    // Create a temporary URL for the cropper
     const reader = new FileReader();
     reader.onload = (e) => {
-      setCropperImage(e.target?.result as string);
-      setIsCropperOpen(true);
+      const result = e.target?.result;
+      if (typeof result === 'string') {
+        setCropperImage(result);
+        setIsCropperOpen(true);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -46,7 +49,6 @@ const ProfileBanner = ({ defaultBannerUrl, userId }: ProfileBannerProps) => {
     setIsUploading(true);
 
     try {
-      // Convert base64 to blob
       const response = await fetch(croppedImage);
       const blob = await response.blob();
       const file = new File([blob], 'banner.jpg', { type: 'image/jpeg' });
@@ -67,8 +69,8 @@ const ProfileBanner = ({ defaultBannerUrl, userId }: ProfileBannerProps) => {
       setBannerUrl(publicUrl);
       
       const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ default_banner_url: publicUrl })
+        .from(isVendor ? 'vendor_profiles' : 'profiles')
+        .update(isVendor ? { banner_data: { url: publicUrl } } : { default_banner_url: publicUrl })
         .eq('id', userId || session.user.id);
 
       if (updateError) throw updateError;
