@@ -82,7 +82,7 @@ const Shop = () => {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-4">
@@ -126,7 +126,7 @@ const Shop = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Shop</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {products.map((product) => (
           <Card 
             key={product.id}
@@ -145,7 +145,7 @@ const Shop = () => {
                   <Package className="h-12 w-12 text-muted-foreground" />
                 </div>
               )}
-              <h3 className="font-semibold mb-2">{product.name}</h3>
+              <h3 className="font-semibold mb-2 line-clamp-1">{product.name}</h3>
               <p className="text-muted-foreground text-sm mb-2 line-clamp-2">
                 {product.description}
               </p>
@@ -172,6 +172,7 @@ const Shop = () => {
                 addToCart(product.id);
               }}
               disabled={product.inventory_count === 0}
+              className="w-full rounded-t-none"
             >
               Add to Cart
             </Button>
