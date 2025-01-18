@@ -25,6 +25,8 @@ export const useProfileUpdate = (
           country: profile.country,
           gender: profile.gender,
           phone_number: profile.phone_number,
+          default_banner_url: profile.default_banner_url, // Added this line
+          // Add any other banner-related fields you might have
         })
         .eq("id", userId);
 
