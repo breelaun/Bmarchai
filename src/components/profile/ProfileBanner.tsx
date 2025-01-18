@@ -110,7 +110,7 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
               disabled={isUploading}
             >
               <Upload className="w-4 h-4 mr-2" />
-              {isUploading ? "Uploading..." : "Upload Banner"}
+              {isUploading ? "Uploading..." : "Edit Banner"}
               <input
                 type="file"
                 className="absolute inset-0 opacity-0 cursor-pointer"

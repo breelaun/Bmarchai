@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 interface ProfileFormFieldsProps {
   profile: ProfileData;
   setProfile: (profile: ProfileData) => void;
+  isVendor?: boolean;
 }
 
 const ProfileFormFields = ({ profile, setProfile }: ProfileFormFieldsProps) => {
