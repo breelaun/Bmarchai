@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Volume2, VolumeX } from 'lucide-react';
 
 const services = [
   { title: 'Online Coaching', link: '/coaching', color: '255, 195, 0' },
@@ -14,15 +15,15 @@ const services = [
 
 const ServiceCards = () => {
   const [speed, setSpeed] = useState(9); // Starting at 9%
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const innerRef = useRef(null);
-  const audioRef = useRef(new Audio('/helicopter.mp3')); // Make sure to add this audio file to your public folder
+  const audioRef = useRef(new Audio('/audio/helicopter.mp3'));
 
   // Setup audio
   useEffect(() => {
     const audio = audioRef.current;
     audio.loop = true;
     
-    // Cleanup
     return () => {
       audio.pause();
       audio.currentTime = 0;
@@ -33,22 +34,29 @@ const ServiceCards = () => {
   useEffect(() => {
     const audio = audioRef.current;
     
-    if (speed > 0) {
-      if (audio.paused) {
-        audio.play().catch(err => console.log('Audio playback failed:', err));
-      }
-      // Adjust playback rate based on speed
-      // Map 0-200 speed range to 0.5-2.5 playback rate
-      const playbackRate = 0.5 + (speed / 100) * 1;
-      audio.playbackRate = Math.min(2.5, Math.max(0.5, playbackRate));
-      audio.volume = Math.min(1, speed / 100); // Increase volume with speed
+    if (speed > 0 && soundEnabled) {
+      const playAudio = async () => {
+        try {
+          await audio.play();
+          // Map 0-500 speed range to 0.5-3 playback rate
+          // Slower at low speeds, much faster at high speeds
+          const playbackRate = speed <= 100 
+            ? 0.5 + (speed / 100) * 0.5  // 0.5 to 1.0 for 0-100%
+            : 1.0 + ((speed - 100) / 400) * 2; // 1.0 to 3.0 for 100-500%
+          
+          audio.playbackRate = Math.min(3, Math.max(0.5, playbackRate));
+          audio.volume = Math.min(1, speed / 200); // Full volume at 200%
+        } catch (err) {
+          console.log('Audio playback failed:', err);
+        }
+      };
+      playAudio();
     } else {
       audio.pause();
-      audio.currentTime = 0;
     }
-  }, [speed]);
+  }, [speed, soundEnabled]);
 
-  // Convert speed value (0 to 200) to animation duration
+  // Convert speed value (0 to 500) to animation duration
   const getAnimationStyle = () => {
     if (speed === 0) {
       return {
@@ -57,7 +65,8 @@ const ServiceCards = () => {
       };
     }
 
-    const duration = 20 / (speed / 50); // Converts speed to duration (faster speed = lower duration)
+    // Exponential speed increase for more dramatic fast speeds
+    const duration = 20 / Math.pow(speed / 50, 1.2);
     
     return {
       animation: `rotating ${duration}s linear infinite`
@@ -67,6 +76,10 @@ const ServiceCards = () => {
   const handleSliderChange = (e) => {
     const newSpeed = parseInt(e.target.value);
     setSpeed(newSpeed);
+  };
+
+  const toggleSound = () => {
+    setSoundEnabled(!soundEnabled);
   };
 
   return (
@@ -105,20 +118,29 @@ const ServiceCards = () => {
         </div>
       </div>
       
-      {/* Speed Control Slider */}
+      {/* Controls */}
       <div className="w-full max-w-md mb-12 px-4">
-        <div className="mb-2 text-center font-medium">Speed: {speed}%</div>
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-medium">Speed: {speed}%</span>
+          <button
+            onClick={toggleSound}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
+          >
+            {soundEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
+          </button>
+        </div>
         <input
           type="range"
           min="0"
-          max="200"
+          max="500"
           value={speed}
           onChange={handleSliderChange}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
         />
         <div className="flex justify-between text-sm mt-1">
           <span>Stop</span>
-          <span>Max Speed</span>
+          <span>Max Speed (500%)</span>
         </div>
       </div>
     </div>
