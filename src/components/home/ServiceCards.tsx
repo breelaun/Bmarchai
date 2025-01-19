@@ -13,6 +13,17 @@ const services = [
   { title: 'Consulting', link: '/consulting', color: '44, 62, 80' }
 ];
 
+interface CustomCSSProperties extends React.CSSProperties {
+  '--quantity'?: number;
+  '--w'?: string;
+  '--h'?: string;
+  '--translateZ'?: string;
+  '--rotateX'?: string;
+  '--perspective'?: string;
+  '--index'?: number;
+  '--color-card'?: string;
+}
+
 const ServiceCards = () => {
   const [speed, setSpeed] = useState(9);
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -26,18 +37,15 @@ const ServiceCards = () => {
     const audio1 = audioRef1.current;
     const audio2 = audioRef2.current;
 
-    // Setup loop functionality for both audio elements
     const setupAudioLoop = (audio, otherAudio, isFirstClip) => {
       audio.addEventListener('ended', () => {
         if (soundEnabled) {
           audio.currentTime = 0;
           audio.play().catch(console.error);
 
-          // Calculate when to start the other clip based on current playback rate
           const normalizedRate = audio.playbackRate;
           const startDelay = (isFirstClip ? 15000 : -15000) / normalizedRate;
 
-          // Only start the other clip if it's not already playing
           if (otherAudio.paused) {
             if (timeoutRef.current) {
               clearTimeout(timeoutRef.current);
@@ -66,26 +74,21 @@ const ServiceCards = () => {
         return;
       }
 
-      // Calculate playback rate based on speed
       const playbackRate = speed <= 100 
         ? 0.5 + (speed / 100) * 0.5
         : 1.0 + ((speed - 100) / 900) * 4;
       
       const normalizedRate = Math.min(5.0, Math.max(0.5, playbackRate));
       
-      // Set playback rate for both audio elements
       audio1.playbackRate = normalizedRate;
       audio2.playbackRate = normalizedRate;
 
-      // Calculate the adjusted start time for the second clip
       const secondClipStartTime = 15 / normalizedRate;
 
-      // Start first audio clip if it's not already playing
       if (audio1.paused) {
         audio1.currentTime = 0;
         audio1.play().catch(console.error);
 
-        // Schedule second audio clip
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
@@ -100,7 +103,6 @@ const ServiceCards = () => {
 
     setupAudio();
 
-    // Cleanup function
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -117,12 +119,12 @@ const ServiceCards = () => {
       return {
         animation: 'none',
         transform: innerRef.current?.style.transform || 'perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0)'
-      };
+      } as CustomCSSProperties;
     }
     const duration = 20 / Math.pow(speed / 50, 1.2);
     return {
       animation: `rotating ${duration}s linear infinite`
-    };
+    } as CustomCSSProperties;
   };
 
   const handleSliderChange = (e) => {
@@ -148,7 +150,7 @@ const ServiceCards = () => {
             '--rotateX': '-11deg',
             '--perspective': '1000px',
             ...getAnimationStyle()
-          } as React.CSSProperties}
+          } as CustomCSSProperties}
         >
           {services.map((service, index) => (
             <Link
@@ -158,7 +160,7 @@ const ServiceCards = () => {
               style={{ 
                 '--index': index, 
                 '--color-card': service.color 
-              } as React.CSSProperties}
+              } as CustomCSSProperties}
             >
               <div className="img flex items-center justify-center p-2">
                 <h3 className="text-sm sm:text-base md:text-xl font-bold text-foreground">

@@ -7,7 +7,6 @@ import { Store, Package, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import ProductUploadForm from "./products/ProductUploadForm";
-import { sidebarItems } from './VendorSidebar';
 
 interface Product {
   id: number;
@@ -239,3 +238,4 @@ const VendorStore = ({ vendorId }: { vendorId?: string }) => {
 };
 
 export default VendorStore;
+
