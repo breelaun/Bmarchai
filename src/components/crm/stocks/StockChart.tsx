@@ -12,7 +12,7 @@ import {
   Scatter,
   Bar,
 } from "recharts";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 
 interface StockChartProps {
   symbol: string;
@@ -23,7 +23,6 @@ interface NewsItem {
   date: string;
   title: string;
   url: string;
-  summary: string;
 }
 
 interface PriceData {
@@ -48,24 +47,17 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch both price and news data in parallel
-        const [priceResponse, newsResponse] = await Promise.all([
-          fetch(
-            `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${import.meta.env.KUH2RAIUOSQITTNR}`
-          ),
-          fetch(
-            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${symbol}&apikey=${import.meta.env.KUH2RAIUOSQITTNR}`
-          )
-        ]);
+        // Fetch stock data
+        const priceResponse = await fetch(
+          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${import.meta.env.KUH2RAIUOSQITTNR}`
+        );
+        const priceData = await priceResponse.json();
 
-        const [priceData, newsData] = await Promise.all([
-          priceResponse.json(),
-          newsResponse.json()
-        ]);
-
-        if (priceData["Error Message"]) {
-          throw new Error(priceData["Error Message"]);
-        }
+        // Fetch news data
+        const newsResponse = await fetch(
+          `https://api.marketaux.com/v1/news/all?symbol=${symbol}&apikey=${import.meta.env.bGTRE8pnGJnyPqsqbgmZXHwEfTNeW6BGacIQCYkI}`
+        );
+        const newsData = await newsResponse.json();
 
         // Process price data
         const timeSeriesData = priceData["Time Series (Daily)"];
@@ -78,13 +70,12 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
           volume: parseFloat(values["5. volume"]),
         })).reverse();
 
-        // Process news data
-        const newsItems = newsData.feed?.map((item: any) => ({
-          date: format(parseISO(item.time_published), "yyyy-MM-dd"),
+        // Process news data and merge with price data
+        const newsItems = newsData.data.map((item: any) => ({
+          date: format(new Date(item.published_at), "yyyy-MM-dd"),
           title: item.title,
           url: item.url,
-          summary: item.summary
-        })) || [];
+        }));
 
         // Add news indicators to price data
         const enrichedData = processedPriceData.map(pricePoint => {
@@ -113,45 +104,32 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
     if (active && payload && payload.length) {
       const priceData = payload[0].payload;
       const newsForDay = news.filter(n => n.date === priceData.date);
-      const isGreen = priceData.close > priceData.open;
       
       return (
-        <Card className="bg-gray-900/95 backdrop-blur-sm border border-gray-800 shadow-lg max-w-md">
+        <Card className="bg-gray-900/95 backdrop-blur-sm border border-gray-800 shadow-lg">
           <CardContent className="p-3 space-y-2">
             <p className="font-semibold text-gray-300">
               {format(new Date(priceData.date), "PPP")}
             </p>
             <div className="space-y-1 text-sm">
-              <p className="text-white">
-                Open: <span className="text-gray-300">${priceData.open.toFixed(2)}</span>
-              </p>
-              <p className="text-white">
-                Close: <span className={`${isGreen ? 'text-[#26a69a]' : 'text-[#ef5350]'}`}>
-                  ${priceData.close.toFixed(2)}
-                </span>
-              </p>
-              <p className="text-white">
-                High: <span className="text-gray-300">${priceData.high.toFixed(2)}</span>
-              </p>
-              <p className="text-white">
-                Low: <span className="text-gray-300">${priceData.low.toFixed(2)}</span>
-              </p>
+              <p className="text-white">Open: <span className="text-gray-300">${priceData.open.toFixed(2)}</span></p>
+              <p className="text-white">High: <span className="text-gray-300">${priceData.high.toFixed(2)}</span></p>
+              <p className="text-white">Low: <span className="text-gray-300">${priceData.low.toFixed(2)}</span></p>
+              <p className="text-white">Close: <span className="text-gray-300">${priceData.close.toFixed(2)}</span></p>
             </div>
             {newsForDay.length > 0 && (
               <div className="border-t border-gray-700 mt-2 pt-2">
                 <p className="text-[#f7bd00] font-semibold mb-1">News:</p>
                 {newsForDay.map((item, i) => (
-                  <div key={i} className="mb-2">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-sm text-gray-300 hover:text-[#f7bd00] font-medium"
-                    >
-                      {item.title}
-                    </a>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">{item.summary}</p>
-                  </div>
+                  <a
+                    key={i}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm text-gray-300 hover:text-[#f7bd00] truncate"
+                  >
+                    {item.title}
+                  </a>
                 ))}
               </div>
             )}
@@ -203,11 +181,7 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-white">
           <span>{symbol}</span>
-          <span className={`text-sm ${
-            data[data.length - 1]?.close > data[data.length - 1]?.open
-              ? 'text-[#26a69a]'
-              : 'text-[#ef5350]'
-          }`}>
+          <span className="text-sm text-[#f7bd00]">
             ${data[data.length - 1]?.close.toFixed(2)}
           </span>
         </CardTitle>
@@ -247,7 +221,6 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
                       cy={cy - 15}
                       r={4}
                       fill="#f7bd00"
-                      opacity={0.8}
                     />
                   ) : null;
                 }}
