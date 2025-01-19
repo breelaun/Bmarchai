@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ExternalLink } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface NewsItem {
   title: string;
@@ -27,7 +27,6 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
       setLoading(true);
       setError(null);
       try {
-        // Using Alpha Vantage News API
         const response = await fetch(
           `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${symbol}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
         );
@@ -52,6 +51,24 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
 
     fetchNews();
   }, [symbol]);
+
+  const formatPublishedDate = (dateString: string) => {
+    try {
+      // Alpha Vantage format: YYYYMMDDTHHMMSS
+      const year = dateString.slice(0, 4);
+      const month = dateString.slice(4, 6);
+      const day = dateString.slice(6, 8);
+      const hour = dateString.slice(9, 11);
+      const minute = dateString.slice(11, 13);
+      const second = dateString.slice(13, 15);
+      
+      const isoString = `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
+      return format(new Date(isoString), "MMM d, yyyy");
+    } catch (err) {
+      console.error("Error formatting date:", err);
+      return "Date unavailable";
+    }
+  };
 
   if (loading) {
     return (
@@ -97,7 +114,7 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
                     <ExternalLink className="h-4 w-4" />
                   </a>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {item.source.name} • {format(new Date(item.publishedAt), "MMM d, yyyy")}
+                    {item.source.name} • {formatPublishedDate(item.publishedAt)}
                   </p>
                   <p className="mt-2 text-sm line-clamp-2">{item.summary}</p>
                 </div>
