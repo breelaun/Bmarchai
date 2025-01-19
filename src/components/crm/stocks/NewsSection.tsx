@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ExternalLink } from "lucide-react";
-import { format, parseISO } from "date-fns";
 
 interface NewsItem {
   title: string;
@@ -40,6 +39,8 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
             source: { name: item.source },
             summary: item.summary
           })));
+        } else {
+          setError("No news available for this symbol");
         }
       } catch (err) {
         setError("Failed to fetch news");
@@ -63,7 +64,11 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
       const second = dateString.slice(13, 15);
       
       const isoString = `${year}-${month}-${day}T${hour}:${minute}:${second}Z`;
-      return format(new Date(isoString), "MMM d, yyyy");
+      return new Date(isoString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
     } catch (err) {
       console.error("Error formatting date:", err);
       return "Date unavailable";
