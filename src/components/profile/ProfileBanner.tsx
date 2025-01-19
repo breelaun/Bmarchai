@@ -19,108 +19,94 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
   const [isUploading, setIsUploading] = useState(false);
   const [cropperImage, setCropperImage] = useState<string | null>(null);
   const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !session?.user.id) return;
 
-    // Validate file size (5MB limit)
-    if (file.size > 5000000) {
+    // Validate file size (10MB limit)
+    if (file.size > 10000000) {
       toast({
         title: "Error",
-        description: "Image size must be less than 5MB",
+        description: "File size must be less than 10MB",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
+    // Determine media type
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+
+    if (!isVideo && !isImage) {
       toast({
         title: "Error",
-        description: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        description: "Please upload a valid image or video file",
         variant: "destructive",
       });
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result;
-      if (typeof result === 'string') {
-        console.log('Image loaded into cropper');
-        setCropperImage(result);
-        setIsCropperOpen(true);
-      }
-    };
-    reader.readAsDataURL(file);
+    setMediaType(isVideo ? 'video' : 'image');
+
+    if (isImage) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          setCropperImage(result);
+          setIsCropperOpen(true);
+        }
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Direct upload for video
+      await handleFileUpload(file);
+    }
   };
 
-  const handleCropComplete = async (croppedImage: string) => {
-    if (!session?.user.id) return;
+  const handleFileUpload = async (file: File) => {
     setIsUploading(true);
-    console.log('Starting crop completion process');
-
     try {
-      // Convert base64 to blob
-      const response = await fetch(croppedImage);
-      const blob = await response.blob();
-      
-      // Create unique filename using timestamp
       const timestamp = new Date().getTime();
-      const fileExt = 'jpg';
-      const filePath = `banners/${session.user.id}_${timestamp}.${fileExt}`;
+      const fileExt = file.name.split('.').pop();
+      const filePath = `banners/${session!.user.id}_${timestamp}.${fileExt}`;
       
-      console.log('Uploading to path:', filePath);
-
-      // Upload to Supabase Storage
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('profiles')
-        .upload(filePath, blob, {
-          contentType: 'image/jpeg',
-          upsert: false // Use unique filenames instead of overwriting
+        .upload(filePath, file, {
+          contentType: file.type,
+          upsert: false
         });
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      console.log('Upload successful:', uploadData);
-
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('profiles')
         .getPublicUrl(filePath);
 
-      console.log('Generated public URL:', publicUrl);
       setBannerUrl(publicUrl);
 
-      // Update profile in database
       const { error: updateError } = await supabase
         .from(isVendor ? 'vendor_profiles' : 'profiles')
         .update({
           default_banner_url: publicUrl,
-          banner_media_type: 'image',
+          banner_media_type: mediaType,
           updated_at: new Date().toISOString()
         })
-        .eq('id', userId || session.user.id);
+        .eq('id', userId || session!.user.id);
 
-      if (updateError) {
-        console.error('Profile update error:', updateError);
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
       toast({
         title: "Success",
         description: "Banner updated successfully",
       });
 
-      // Force reload to show new banner
       window.location.reload();
     } catch (error: any) {
-      console.error('Error in handleCropComplete:', error);
+      console.error('Error in handleFileUpload:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update banner",
@@ -128,41 +114,74 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleCropComplete = async (croppedImage: string) => {
+    if (!session?.user.id) return;
+    
+    try {
+      const response = await fetch(croppedImage);
+      const blob = await response.blob();
+      await handleFileUpload(new File([blob], 'cropped-banner.jpg', { type: 'image/jpeg' }));
+    } catch (error: any) {
+      console.error('Error in handleCropComplete:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process image",
+        variant: "destructive",
+      });
+    } finally {
       setIsCropperOpen(false);
       setCropperImage(null);
     }
   };
 
   const displayBannerUrl = bannerUrl || defaultBannerUrl || '/default-banner.png';
-  console.log('Current banner URL:', displayBannerUrl);
+  const isBannerVideo = displayBannerUrl?.match(/\.(mp4|webm|ogg)$/i);
 
   return (
     <>
       <div className="relative w-full h-[400px] overflow-hidden">
-        <img 
-          src={displayBannerUrl}
-          alt="Profile Banner"
-          className="w-full h-full object-cover"
-        />
+        {isBannerVideo ? (
+          <video 
+            src={displayBannerUrl}
+            className="w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <img 
+            src={displayBannerUrl}
+            alt="Profile Banner"
+            className="w-full h-full object-cover"
+          />
+        )}
         
         {session && (userId === undefined || userId === session.user.id) && (
-          <label className="absolute bottom-4 right-4 flex gap-2">
-            <Button 
-              variant="secondary" 
-              className="relative overflow-hidden backdrop-blur-sm hover:bg-primary/10"
-              disabled={isUploading}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {isUploading ? "Uploading..." : "Edit Banner"}
-              <input
-                type="file"
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                accept="image/*"
-                onChange={handleBannerUpload}
-                disabled={isUploading}
-              />
-            </Button>
-          </label>
+          <div className="absolute bottom-0 left-0 right-0 p-6">
+            <div className="container mx-auto flex justify-end">
+              <label className="relative">
+                <Button 
+                  variant="secondary" 
+                  className="relative overflow-hidden backdrop-blur-sm hover:bg-primary/10"
+                  disabled={isUploading}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {isUploading ? "Uploading..." : "Edit Banner"}
+                  <input
+                    type="file"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    accept="image/*,video/*"
+                    onChange={handleBannerUpload}
+                    disabled={isUploading}
+                  />
+                </Button>
+              </label>
+            </div>
+          </div>
         )}
       </div>
 
