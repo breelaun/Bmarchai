@@ -142,7 +142,7 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
 
   return (
     <>
-      <div className="relative w-full h-[400px] overflow-hidden">
+      <div className="relative w-full h-[200px] md:h-[400px] overflow-hidden">
         {isBannerVideo ? (
           <video 
             src={displayBannerUrl}
@@ -161,26 +161,24 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
         )}
         
         {session && (userId === undefined || userId === session.user.id) && (
-          <div className="absolute bottom-0 left-0 right-0 p-6">
-            <div className="container mx-auto flex justify-end">
-              <label className="relative">
-                <Button 
-                  variant="secondary" 
-                  className="relative overflow-hidden backdrop-blur-sm hover:bg-primary/10"
+          <div className="absolute bottom-4 right-4 z-10">
+            <label className="relative">
+              <Button 
+                variant="secondary" 
+                className="relative overflow-hidden backdrop-blur-sm hover:bg-primary/10"
+                disabled={isUploading}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {isUploading ? "Uploading..." : "Edit Banner"}
+                <input
+                  type="file"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  accept="image/*,video/*"
+                  onChange={handleBannerUpload}
                   disabled={isUploading}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {isUploading ? "Uploading..." : "Edit Banner"}
-                  <input
-                    type="file"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    accept="image/*,video/*"
-                    onChange={handleBannerUpload}
-                    disabled={isUploading}
-                  />
-                </Button>
-              </label>
-            </div>
+                />
+              </Button>
+            </label>
           </div>
         )}
       </div>
