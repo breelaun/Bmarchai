@@ -7,6 +7,7 @@ import ClientList from "@/components/crm/ClientList";
 import TaskList from "@/components/crm/TaskList";
 import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
 import { StockMarketSection } from "@/components/crm/stocks/StockMarketSection";
+import DocumentEditor from "@/components/crm/DocumentEditor";
 
 const CRMPage = () => {
   const session = useSession();
@@ -29,6 +30,7 @@ const CRMPage = () => {
           <TabsTrigger value="clients">Clients</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="stocks">Stocks</TabsTrigger>
+          <TabsTrigger value="docs">Docs</TabsTrigger>
         </TabsList>
         <ScrollArea className="h-full rounded-md">
           <TabsContent value="analytics" className="mt-0 p-4">
@@ -42,6 +44,9 @@ const CRMPage = () => {
           </TabsContent>
           <TabsContent value="stocks" className="mt-0 p-4">
             <StockMarketSection />
+          </TabsContent>
+          <TabsContent value="docs" className="mt-0 p-4">
+            <DocumentEditor />
           </TabsContent>
         </ScrollArea>
       </Tabs>
