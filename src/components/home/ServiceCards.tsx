@@ -20,113 +20,56 @@ const ServiceCards = () => {
   
   const audioRef1 = useRef(new Audio('/audio/helicopter.mp3'));
   const audioRef2 = useRef(new Audio('/audio/helicopter.mp3'));
-  const activeAudioRef = useRef(1);
-  const fadeIntervalRef = useRef(null);
+  const startTimeRef = useRef(0);
 
-  // Setup audio players
   useEffect(() => {
     const audio1 = audioRef1.current;
     const audio2 = audioRef2.current;
 
-    // Start crossfade earlier to prevent gaps
-    const handleAudioEnd = (audioNumber) => {
-      if (!soundEnabled) return;
-      
-      const startNextAudio = (nextAudio, currentAudio) => {
-        nextAudio.currentTime = 0;
-        nextAudio.volume = 0;
-        nextAudio.play().catch(console.error);
-        fadeAudio(nextAudio, currentAudio);
-      };
-
-      if (audioNumber === 1) {
-        startNextAudio(audio2, audio1);
-        activeAudioRef.current = 2;
-      } else {
-        startNextAudio(audio1, audio2);
-        activeAudioRef.current = 1;
+    const setupAudio = () => {
+      if (!soundEnabled) {
+        audio1.pause();
+        audio2.pause();
+        return;
       }
-    };
 
-    const setupAudioListener = (audio, audioNumber) => {
-      audio.addEventListener('timeupdate', () => {
-        // Start transition when 0.5 seconds remain
-        if (audio.currentTime >= audio.duration - 0.5 && 
-            activeAudioRef.current === audioNumber) {
-          handleAudioEnd(audioNumber);
+      // Calculate playback rate based on speed
+      const playbackRate = speed <= 100 
+        ? 0.5 + (speed / 100) * 0.5
+        : 1.0 + ((speed - 100) / 900) * 4;
+      
+      const normalizedRate = Math.min(5.0, Math.max(0.5, playbackRate));
+      
+      // Set playback rate for both audio elements
+      audio1.playbackRate = normalizedRate;
+      audio2.playbackRate = normalizedRate;
+
+      // Calculate the adjusted start time for the second clip
+      // If speed is doubled (2x), start time should be halved (15s -> 7.5s)
+      const secondClipStartTime = 15 / normalizedRate;
+
+      // Start first audio clip
+      audio1.currentTime = 0;
+      audio1.play().catch(console.error);
+
+      // Schedule second audio clip
+      setTimeout(() => {
+        if (soundEnabled) {
+          audio2.currentTime = 0;
+          audio2.play().catch(console.error);
         }
-      });
+      }, secondClipStartTime * 1000);
     };
 
-    setupAudioListener(audio1, 1);
-    setupAudioListener(audio2, 2);
+    setupAudio();
 
+    // Cleanup function
     return () => {
       audio1.pause();
       audio2.pause();
       audio1.currentTime = 0;
       audio2.currentTime = 0;
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
-      }
     };
-  }, [soundEnabled]);
-
-  // Enhanced fade audio function
-  const fadeAudio = (inAudio, outAudio) => {
-    if (fadeIntervalRef.current) {
-      clearInterval(fadeIntervalRef.current);
-    }
-
-    const fadePoints = 40; // Increased for smoother transition
-    const fadeInterval = 25; // Slower fade for smoother transition
-    let currentPoint = 0;
-
-    // Calculate base volume based on speed
-    const baseVolume = Math.min(1.5, speed / 100); // Increased maximum volume
-
-    fadeIntervalRef.current = setInterval(() => {
-      if (currentPoint < fadePoints) {
-        currentPoint++;
-        const fadeRatio = currentPoint / fadePoints;
-        inAudio.volume = baseVolume * fadeRatio;
-        outAudio.volume = baseVolume * (1 - fadeRatio);
-      } else {
-        clearInterval(fadeIntervalRef.current);
-        outAudio.pause();
-      }
-    }, fadeInterval);
-  };
-
-  // Enhanced speed effect on audio
-  useEffect(() => {
-    const audio1 = audioRef1.current;
-    const audio2 = audioRef2.current;
-    
-    const updateAudioSpeed = (audio) => {
-      // Enhanced speed scaling
-      const playbackRate = speed <= 100 
-        ? 0.5 + (speed / 100) * 0.5  // Slower speeds: 0.5x to 1.0x
-        : 1.0 + ((speed - 100) / 900) * 4;  // Faster speeds: 1.0x to 5.0x
-      audio.playbackRate = Math.min(5.0, Math.max(0.5, playbackRate));
-    };
-
-    if (speed > 0 && soundEnabled) {
-      // Calculate volume based on speed
-      const baseVolume = Math.min(1.5, speed / 100);
-      
-      if (audio1.paused && audio2.paused) {
-        audio1.volume = baseVolume;
-        audio1.play().catch(console.error);
-        activeAudioRef.current = 1;
-      }
-      
-      updateAudioSpeed(audio1);
-      updateAudioSpeed(audio2);
-    } else {
-      audio1.pause();
-      audio2.pause();
-    }
   }, [speed, soundEnabled]);
 
   const getAnimationStyle = () => {
