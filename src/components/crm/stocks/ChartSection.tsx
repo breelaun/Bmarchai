@@ -20,6 +20,7 @@ export const ChartSection = ({
         symbol={symbol}
         timeRange={selectedTimeRange}
       />
+      <NewsSection symbol={symbol} />
       <TimeRangeSelector
         selectedTimeRange={selectedTimeRange}
         onTimeRangeChange={onTimeRangeChange}
