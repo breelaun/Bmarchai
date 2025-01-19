@@ -25,7 +25,6 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
     const file = e.target.files?.[0];
     if (!file || !session?.user.id) return;
 
-    // Validate file size (10MB limit)
     if (file.size > 10000000) {
       toast({
         title: "Error",
@@ -35,7 +34,6 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
       return;
     }
 
-    // Determine media type
     const isVideo = file.type.startsWith('video/');
     const isImage = file.type.startsWith('image/');
 
@@ -61,7 +59,6 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
       };
       reader.readAsDataURL(file);
     } else {
-      // Direct upload for video
       await handleFileUpload(file);
     }
   };
@@ -71,7 +68,8 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
     try {
       const timestamp = new Date().getTime();
       const fileExt = file.name.split('.').pop();
-      const filePath = `banners/${session!.user.id}_${timestamp}.${fileExt}`;
+      // Update the file path to include user ID in the structure
+      const filePath = `banners/${session!.user.id}/${timestamp}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('profiles')
