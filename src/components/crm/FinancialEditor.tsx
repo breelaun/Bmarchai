@@ -16,11 +16,12 @@ import {
 } from 'recharts';
 
 const FinancialEditor = () => {
-  // ... Previous state variables ...
+  const [selectedTemplate, setSelectedTemplate] = useState('standard');
   const [chartTheme, setChartTheme] = useState('darkBlue');
   const [exportFormat, setExportFormat] = useState('json');
+  const [selectedChart, setSelectedChart] = useState('line');
+  const [entries, setEntries] = useState([]);
   
-  // Extended templates
   const templates = {
     standard: { /* Previous standard template */ },
     business: { /* Previous business template */ },
@@ -74,7 +75,6 @@ const FinancialEditor = () => {
     }
   };
 
-  // Color themes for charts
   const chartThemes = {
     darkBlue: {
       income: ['#0ea5e9', '#38bdf8', '#7dd3fc'],
@@ -102,7 +102,6 @@ const FinancialEditor = () => {
     }
   };
 
-  // Export functionality for different formats
   const exportData = (format) => {
     let exportContent;
     let mimeType;
@@ -139,7 +138,6 @@ const FinancialEditor = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Chart rendering functions for different types
   const renderChartByType = () => {
     const theme = chartThemes[chartTheme];
     const data = prepareChartData();
@@ -192,9 +190,108 @@ const FinancialEditor = () => {
             />
           </ResponsiveContainer>
         );
-      
-      // ... Additional chart types (radial, composed, etc.) ...
     }
+  };
+
+  const renderTemplateSelector = () => {
+    return (
+      <div className="flex items-center space-x-2">
+        <label className="text-sm font-medium">Template:</label>
+        <Select
+          value={selectedTemplate}
+          onValueChange={(value) => setSelectedTemplate(value)}
+        >
+          <option value="standard">Standard</option>
+          <option value="business">Business</option>
+          <option value="personal">Personal</option>
+          <option value="startup">Startup</option>
+          <option value="nonprofit">Nonprofit</option>
+          <option value="retail">Retail</option>
+        </Select>
+      </div>
+    );
+  };
+
+  const renderChartThemeSelector = () => {
+    return (
+      <div className="flex items-center space-x-2">
+        <label className="text-sm font-medium">Chart Theme:</label>
+        <Select
+          value={chartTheme}
+          onValueChange={(value) => setChartTheme(value)}
+        >
+          <option value="darkBlue">Dark Blue</option>
+          <option value="forest">Forest</option>
+          <option value="purple">Purple</option>
+          <option value="sunset">Sunset</option>
+        </Select>
+      </div>
+    );
+  };
+
+  const renderExportFormatSelector = () => {
+    return (
+      <div className="flex items-center space-x-2">
+        <label className="text-sm font-medium">Export Format:</label>
+        <Select
+          value={exportFormat}
+          onValueChange={(value) => setExportFormat(value)}
+        >
+          <option value="json">JSON</option>
+          <option value="csv">CSV</option>
+          <option value="excel">Excel</option>
+          <option value="pdf">PDF</option>
+        </Select>
+      </div>
+    );
+  };
+
+  const renderChartSelector = () => {
+    return (
+      <div className="flex items-center space-x-2">
+        <label className="text-sm font-medium">Chart Type:</label>
+        <Select
+          value={selectedChart}
+          onValueChange={(value) => setSelectedChart(value)}
+        >
+          <option value="line">Line Chart</option>
+          <option value="bar">Bar Chart</option>
+          <option value="pie">Pie Chart</option>
+          <option value="area">Area Chart</option>
+          <option value="scatter">Scatter Plot</option>
+          <option value="radar">Radar Chart</option>
+        </Select>
+      </div>
+    );
+  };
+
+  const renderTable = () => {
+    return (
+      <div className="mt-4">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="border p-2">Date</th>
+              <th className="border p-2">Type</th>
+              <th className="border p-2">Title</th>
+              <th className="border p-2">Amount</th>
+              <th className="border p-2">Category</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry, index) => (
+              <tr key={index}>
+                <td className="border p-2">{entry.date}</td>
+                <td className="border p-2">{entry.type}</td>
+                <td className="border p-2">{entry.title}</td>
+                <td className="border p-2">{entry.amount}</td>
+                <td className="border p-2">{entry.category}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   return (
@@ -206,10 +303,8 @@ const FinancialEditor = () => {
           {renderChartThemeSelector()}
           {renderExportFormatSelector()}
         </div>
-        {/* ... Previous buttons ... */}
       </CardHeader>
       <CardContent>
-        {/* ... Previous alerts ... */}
         <div className="space-y-4">
           {renderChartSelector()}
           {renderChartByType()}
