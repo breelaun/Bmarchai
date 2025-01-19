@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import {
-  AreaChart,
+  ComposedChart,
   Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
+  Scatter,
+  Bar,
 } from "recharts";
 import { format } from "date-fns";
 
@@ -18,122 +19,120 @@ interface StockChartProps {
   timeRange: string;
 }
 
-const getTimeSeriesFunction = (timeRange: string) => {
-  switch (timeRange) {
-    case "1D":
-      return "TIME_SERIES_INTRADAY";
-    case "1W":
-    case "1M":
-      return "TIME_SERIES_DAILY";
-    default:
-      return "TIME_SERIES_WEEKLY";
-  }
-};
+interface NewsItem {
+  date: string;
+  title: string;
+  url: string;
+}
 
-const getInterval = (timeRange: string) => {
-  if (timeRange === "1D") return "&interval=5min";
-  return "";
-};
-
-const getDataKey = (timeRange: string) => {
-  switch (timeRange) {
-    case "1D":
-      return "Time Series (5min)";
-    case "1W":
-    case "1M":
-      return "Time Series (Daily)";
-    default:
-      return "Weekly Time Series";
-  }
-};
-
-const filterDataByTimeRange = (data: any[], timeRange: string) => {
-  const now = new Date();
-  const filtered = data.filter(item => {
-    const itemDate = new Date(item.date);
-    switch (timeRange) {
-      case "1D":
-        return itemDate >= new Date(now.setDate(now.getDate() - 1));
-      case "1W":
-        return itemDate >= new Date(now.setDate(now.getDate() - 7));
-      case "1M":
-        return itemDate >= new Date(now.setMonth(now.getMonth() - 1));
-      case "1Y":
-        return itemDate >= new Date(now.setFullYear(now.getFullYear() - 1));
-      case "3Y":
-        return itemDate >= new Date(now.setFullYear(now.getFullYear() - 3));
-      case "5Y":
-        return itemDate >= new Date(now.setFullYear(now.getFullYear() - 5));
-      case "10Y":
-        return itemDate >= new Date(now.setFullYear(now.getFullYear() - 10));
-      default:
-        return true;
-    }
-  });
-  return filtered;
-};
+interface PriceData {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  hasNews?: boolean;
+  newsCount?: number;
+}
 
 const StockChart = ({ symbol, timeRange }: StockChartProps) => {
-  const [data, setData] = useState<{ date: string; price: number; }[]>([]);
-  const [averagePrice, setAveragePrice] = useState<number>(0);
+  const [data, setData] = useState<PriceData[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStockData = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const function_name = getTimeSeriesFunction(timeRange);
-        const interval = getInterval(timeRange);
-        const response = await fetch(
-          `https://www.alphavantage.co/query?function=${function_name}&symbol=${symbol}${interval}&apikey=${import.meta.env.KUH2RAIUOSQITTNR}`
+        // Fetch stock data
+        const priceResponse = await fetch(
+          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${import.meta.env.KUH2RAIUOSQITTNR}`
         );
-        const result = await response.json();
+        const priceData = await priceResponse.json();
 
-        if (result["Error Message"]) {
-          throw new Error(result["Error Message"]);
-        }
+        // Fetch news data
+        const newsResponse = await fetch(
+          `https://api.newdata.io/v1/news/company?symbol=${symbol}&apikey=${import.meta.env.pub_65893031f0b7b52587ee043e4a9359e7cf604}`
+        );
+        const newsData = await newsResponse.json();
 
-        const timeSeriesData = result[getDataKey(timeRange)];
-        if (!timeSeriesData) {
-          throw new Error("No data available");
-        }
-
-        const processedData = Object.entries(timeSeriesData).map(([date, values]: [string, any]) => ({
+        // Process price data
+        const timeSeriesData = priceData["Time Series (Daily)"];
+        const processedPriceData = Object.entries(timeSeriesData).map(([date, values]: [string, any]) => ({
           date,
-          price: parseFloat(values["4. close"])
+          open: parseFloat(values["1. open"]),
+          high: parseFloat(values["2. high"]),
+          low: parseFloat(values["3. low"]),
+          close: parseFloat(values["4. close"]),
+          volume: parseFloat(values["5. volume"]),
         })).reverse();
 
-        const filteredData = filterDataByTimeRange(processedData, timeRange);
-        setData(filteredData);
+        // Process news data and merge with price data
+        const newsItems = newsData.data.map((item: any) => ({
+          date: format(new Date(item.published_at), "yyyy-MM-dd"),
+          title: item.title,
+          url: item.url,
+        }));
+
+        // Add news indicators to price data
+        const enrichedData = processedPriceData.map(pricePoint => {
+          const dayNews = newsItems.filter(news => news.date === pricePoint.date);
+          return {
+            ...pricePoint,
+            hasNews: dayNews.length > 0,
+            newsCount: dayNews.length,
+          };
+        });
+
+        setData(enrichedData);
+        setNews(newsItems);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch stock data");
-        console.error("Error fetching stock data:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch data");
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStockData();
+    fetchData();
   }, [symbol, timeRange]);
 
-  useEffect(() => {
-    if (data.length > 0) {
-      const avg = data.reduce((sum, item) => sum + item.price, 0) / data.length;
-      setAveragePrice(Number(avg.toFixed(2)));
-    }
-  }, [data]);
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const priceData = payload[0].payload;
+      const newsForDay = news.filter(n => n.date === priceData.date);
+      
       return (
-        <Card className="bg-white/95 backdrop-blur-sm border shadow-lg dark:bg-gray-900/95">
-          <CardContent className="p-3">
-            <p className="font-semibold">{format(new Date(label), "PPP")}</p>
-            <p className="text-[#f7bd00] font-bold">
-              ${Number(payload[0].value).toFixed(2)}
+        <Card className="bg-gray-900/95 backdrop-blur-sm border border-gray-800 shadow-lg">
+          <CardContent className="p-3 space-y-2">
+            <p className="font-semibold text-gray-300">
+              {format(new Date(priceData.date), "PPP")}
             </p>
+            <div className="space-y-1 text-sm">
+              <p className="text-white">Open: <span className="text-gray-300">${priceData.open.toFixed(2)}</span></p>
+              <p className="text-white">High: <span className="text-gray-300">${priceData.high.toFixed(2)}</span></p>
+              <p className="text-white">Low: <span className="text-gray-300">${priceData.low.toFixed(2)}</span></p>
+              <p className="text-white">Close: <span className="text-gray-300">${priceData.close.toFixed(2)}</span></p>
+            </div>
+            {newsForDay.length > 0 && (
+              <div className="border-t border-gray-700 mt-2 pt-2">
+                <p className="text-[#f7bd00] font-semibold mb-1">News:</p>
+                {newsForDay.map((item, i) => (
+                  <a
+                    key={i}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm text-gray-300 hover:text-[#f7bd00] truncate"
+                  >
+                    {item.title}
+                  </a>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       );
@@ -141,9 +140,25 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
     return null;
   };
 
+  const renderBar = (props: any) => {
+    const { fill, x, y, width, height } = props;
+    const isGreen = props.close > props.open;
+    return (
+      <g>
+        <rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill={isGreen ? "#26a69a" : "#ef5350"}
+        />
+      </g>
+    );
+  };
+
   if (loading) {
     return (
-      <Card className="bg-white dark:bg-gray-900">
+      <Card className="bg-gray-900 border-gray-800">
         <CardContent className="flex items-center justify-center h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-[#f7bd00]" />
         </CardContent>
@@ -153,7 +168,7 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
 
   if (error) {
     return (
-      <Card className="bg-white dark:bg-gray-900">
+      <Card className="bg-gray-900 border-gray-800">
         <CardContent className="flex items-center justify-center h-[400px] text-red-500">
           {error}
         </CardContent>
@@ -162,72 +177,55 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   }
 
   return (
-    <Card className="bg-white dark:bg-gray-900">
+    <Card className="bg-gray-900 border-gray-800">
       <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>{symbol} Price History</span>
-          <span className="text-sm text-[#f7bd00] font-bold">
-            Avg: ${averagePrice}
+        <CardTitle className="flex justify-between items-center text-white">
+          <span>{symbol}</span>
+          <span className="text-sm text-[#f7bd00]">
+            ${data[data.length - 1]?.close.toFixed(2)}
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={data}
-              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="#ffffff"
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="#ffffff"
-                    stopOpacity={0}
-                  />
-                </linearGradient>
-              </defs>
+            <ComposedChart data={data}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                className="stroke-gray-200 dark:stroke-gray-700"
+                stroke="#2e2e2e"
               />
               <XAxis
                 dataKey="date"
                 tickFormatter={(date) => format(new Date(date), "MMM d")}
-                className="text-xs"
                 stroke="#666666"
               />
               <YAxis
-                domain={["dataMin - 1", "dataMax + 1"]}
-                className="text-xs"
-                tickFormatter={(value) => `$${value}`}
+                domain={["dataMin", "dataMax"]}
                 stroke="#666666"
+                tickFormatter={(value) => `$${value}`}
               />
               <Tooltip content={<CustomTooltip />} />
-              <ReferenceLine
-                y={averagePrice}
-                stroke="#f7bd00"
-                strokeDasharray="3 3"
-                label={{
-                  value: "Average",
-                  position: "right",
-                  className: "text-xs fill-[#f7bd00]",
+              <Bar
+                dataKey="close"
+                fill="#26a69a"
+                shape={renderBar}
+              />
+              {/* News indicators */}
+              <Scatter
+                dataKey="high"
+                shape={(props: any) => {
+                  const { cx, cy } = props;
+                  return props.payload.hasNews ? (
+                    <circle
+                      cx={cx}
+                      cy={cy - 15}
+                      r={4}
+                      fill="#f7bd00"
+                    />
+                  ) : null;
                 }}
               />
-              <Area
-                type="monotone"
-                dataKey="price"
-                stroke="#f7bd00"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorPrice)"
-              />
-            </AreaChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
