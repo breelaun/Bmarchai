@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import {
@@ -12,103 +12,30 @@ import {
   Scatter,
   Bar,
 } from "recharts";
-import { format, fromUnixTime } from "date-fns";
+import { format } from "date-fns";
 
 interface StockChartProps {
   symbol: string;
   timeRange: string;
 }
 
-interface NewsItem {
-  datetime: number;
-  headline: string;
-  url: string;
-  summary: string;
-}
-
-interface PriceData {
-  date: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-  hasNews?: boolean;
-  newsCount?: number;
-}
-
 const StockChart = ({ symbol, timeRange }: StockChartProps) => {
-  const [data, setData] = useState<PriceData[]>([]);
-  const [news, setNews] = useState<NewsItem[]>([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const connectWebSocket = () => {
-      // Close existing connection if any
-      if (ws.current) {
-        ws.current.close();
-      }
-
-      // Create new WebSocket connection
-      ws.current = new WebSocket('wss://ws.finnhub.io?token=' + import.meta.env.VITE_FINNHUB_API_KEY);
-
-      ws.current.onopen = () => {
-        console.log('WebSocket Connected');
-        // Subscribe to the symbol
-        if (ws.current) {
-          ws.current.send(JSON.stringify({
-            'type': 'subscribe',
-            'symbol': symbol
-          }));
-        }
-      };
-
-      ws.current.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        
-        if (message.type === 'trade') {
-          // Update the latest price data
-          const trade = message.data[0];
-          setData(prevData => {
-            const newData = [...prevData];
-            const lastIndex = newData.length - 1;
-            
-            if (lastIndex >= 0) {
-              newData[lastIndex] = {
-                ...newData[lastIndex],
-                close: trade.p,
-                high: Math.max(newData[lastIndex].high, trade.p),
-                low: Math.min(newData[lastIndex].low, trade.p),
-                volume: newData[lastIndex].volume + trade.v
-              };
-            }
-            
-            return newData;
-          });
-        }
-      };
-
-      ws.current.onerror = (error) => {
-        console.error('WebSocket Error:', error);
-        setError('WebSocket connection error');
-      };
-
-      ws.current.onclose = () => {
-        console.log('WebSocket Disconnected');
-      };
-    };
-
     const fetchInitialData = async () => {
       setLoading(true);
       setError(null);
+      
       try {
-        const now = Math.floor(Date.now() / 1000);
-        const oneMonthAgo = now - (30 * 24 * 60 * 60);
+        // Calculate correct timestamps (30 days ago to now)
+        const toDate = Math.floor(Date.now() / 1000);
+        const fromDate = toDate - (30 * 24 * 60 * 60); // 30 days ago
 
         const response = await fetch(
-          `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${oneMonthAgo}&to=${now}`,
+          `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${fromDate}&to=${toDate}`,
           {
             headers: {
               'X-Finnhub-Token': import.meta.env.VITE_FINNHUB_API_KEY
@@ -117,45 +44,37 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch data: ${response.statusText}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-
-        if (data.s === 'no_data') {
+        const result = await response.json();
+        
+        if (result.s === 'no_data') {
           throw new Error('No data available for this symbol');
         }
 
-        const processedData = data.t.map((timestamp: number, index: number) => ({
-          date: format(fromUnixTime(timestamp), 'yyyy-MM-dd'),
-          open: data.o[index],
-          high: data.h[index],
-          low: data.l[index],
-          close: data.c[index],
-          volume: data.v[index],
+        // Process the data
+        const processedData = result.t.map((timestamp: number, index: number) => ({
+          date: format(new Date(timestamp * 1000), 'yyyy-MM-dd'),
+          open: result.o[index],
+          high: result.h[index],
+          low: result.l[index],
+          close: result.c[index],
+          volume: result.v[index],
         }));
 
         setData(processedData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch data");
-        console.error("Error fetching data:", err);
+        console.error('Fetch error:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchInitialData();
-    connectWebSocket();
+  }, [symbol, timeRange]);
 
-    // Cleanup function
-    return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
-  }, [symbol]);
-
-  // Rest of your component remains the same (CustomTooltip, renderBar, etc.)
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const priceData = payload[0].payload;
@@ -191,7 +110,7 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   };
 
   const renderBar = (props: any) => {
-    const { fill, x, y, width, height } = props;
+    const { x, y, width, height } = props;
     const isGreen = props.close > props.open;
     return (
       <g>
@@ -244,10 +163,7 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#2e2e2e"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2e" />
               <XAxis
                 dataKey="date"
                 tickFormatter={(date) => format(new Date(date), "MMM d")}
