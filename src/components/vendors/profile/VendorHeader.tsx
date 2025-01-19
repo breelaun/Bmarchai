@@ -10,9 +10,9 @@ interface VendorHeaderProps {
 
 const VendorHeader = ({ profile, aboutMe }: VendorHeaderProps) => {
   return (
-    <div className="relative mb-5"> {/* Added margin bottom */}
+    <div className="relative">
       <ProfileBanner defaultBannerUrl={profile?.default_banner_url} />
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background/75 via-background/50 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background to-transparent">
         <div className="container mx-auto flex items-end gap-6">
           <ProfileAvatar 
             avatarUrl={profile?.avatar_url}
