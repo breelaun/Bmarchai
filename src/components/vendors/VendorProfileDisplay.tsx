@@ -137,7 +137,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         aboutMe={currentVendorData.aboutMe}
       />
       
-      <div className="container mx-auto mt-5"> {/* Added margin top to create a 5px gap */}
+      <div className="container mx-auto mt-50"> {/* Added margin top to create a 5px gap */}
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-3">
             <VendorSidebar />
