@@ -68,21 +68,27 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
     try {
       const timestamp = new Date().getTime();
       const fileExt = file.name.split('.').pop();
-      // Update the file path to include user ID in the structure
-      const filePath = `banners/${session!.user.id}/${timestamp}.${fileExt}`;
+      const fileName = `${session!.user.id}_${timestamp}.${fileExt}`;
+      const filePath = `banners/${session!.user.id}/${fileName}`;
       
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading file to path:', filePath); // Debug log
+      
+      const { error: uploadError, data } = await supabase.storage
         .from('profiles')
         .upload(filePath, file, {
           contentType: file.type,
-          upsert: false
+          upsert: true
         });
 
       if (uploadError) throw uploadError;
 
+      console.log('Upload successful, data:', data); // Debug log
+
       const { data: { publicUrl } } = supabase.storage
         .from('profiles')
         .getPublicUrl(filePath);
+
+      console.log('Generated public URL:', publicUrl); // Debug log
 
       setBannerUrl(publicUrl);
 
@@ -101,8 +107,6 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
         title: "Success",
         description: "Banner updated successfully",
       });
-
-      window.location.reload();
     } catch (error: any) {
       console.error('Error in handleFileUpload:', error);
       toast({
@@ -135,6 +139,7 @@ const ProfileBanner = ({ defaultBannerUrl, userId, isVendor }: ProfileBannerProp
     }
   };
 
+  // Use the most recent banner URL, falling back to the default
   const displayBannerUrl = bannerUrl || defaultBannerUrl || '/default-banner.png';
   const isBannerVideo = displayBannerUrl?.match(/\.(mp4|webm|ogg)$/i);
 
