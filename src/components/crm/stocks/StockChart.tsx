@@ -128,10 +128,10 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <Card className="bg-background/95 backdrop-blur-sm border shadow-lg">
+        <Card className="bg-white/95 backdrop-blur-sm border shadow-lg dark:bg-gray-900/95">
           <CardContent className="p-3">
             <p className="font-semibold">{format(new Date(label), "PPP")}</p>
-            <p className="text-primary">
+            <p className="text-[#f7bd00] font-bold">
               ${Number(payload[0].value).toFixed(2)}
             </p>
           </CardContent>
@@ -143,9 +143,9 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="bg-white dark:bg-gray-900">
         <CardContent className="flex items-center justify-center h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#f7bd00]" />
         </CardContent>
       </Card>
     );
@@ -153,8 +153,8 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center h-[400px] text-destructive">
+      <Card className="bg-white dark:bg-gray-900">
+        <CardContent className="flex items-center justify-center h-[400px] text-red-500">
           {error}
         </CardContent>
       </Card>
@@ -162,11 +162,11 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   }
 
   return (
-    <Card>
+    <Card className="bg-white dark:bg-gray-900">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span>{symbol} Price History</span>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-[#f7bd00] font-bold">
             Avg: ${averagePrice}
           </span>
         </CardTitle>
@@ -182,45 +182,48 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="5%"
-                    stopColor="hsl(var(--primary))"
+                    stopColor="#ffffff"
                     stopOpacity={0.3}
                   />
                   <stop
                     offset="95%"
-                    stopColor="hsl(var(--primary))"
+                    stopColor="#ffffff"
                     stopOpacity={0}
                   />
                 </linearGradient>
               </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
-                className="stroke-muted/30"
+                className="stroke-gray-200 dark:stroke-gray-700"
               />
               <XAxis
                 dataKey="date"
                 tickFormatter={(date) => format(new Date(date), "MMM d")}
                 className="text-xs"
+                stroke="#666666"
               />
               <YAxis
                 domain={["dataMin - 1", "dataMax + 1"]}
                 className="text-xs"
                 tickFormatter={(value) => `$${value}`}
+                stroke="#666666"
               />
               <Tooltip content={<CustomTooltip />} />
               <ReferenceLine
                 y={averagePrice}
-                stroke="hsl(var(--primary))"
+                stroke="#f7bd00"
                 strokeDasharray="3 3"
                 label={{
                   value: "Average",
                   position: "right",
-                  className: "text-xs text-primary fill-primary",
+                  className: "text-xs fill-[#f7bd00]",
                 }}
               />
               <Area
                 type="monotone"
                 dataKey="price"
-                stroke="hsl(var(--primary))"
+                stroke="#f7bd00"
+                strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorPrice)"
               />
