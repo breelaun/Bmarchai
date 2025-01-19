@@ -20,16 +20,49 @@ const ServiceCards = () => {
   
   const audioRef1 = useRef(new Audio('/audio/helicopter.mp3'));
   const audioRef2 = useRef(new Audio('/audio/helicopter.mp3'));
-  const startTimeRef = useRef(0);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     const audio1 = audioRef1.current;
     const audio2 = audioRef2.current;
 
+    // Setup loop functionality for both audio elements
+    const setupAudioLoop = (audio, otherAudio, isFirstClip) => {
+      audio.addEventListener('ended', () => {
+        if (soundEnabled) {
+          audio.currentTime = 0;
+          audio.play().catch(console.error);
+
+          // Calculate when to start the other clip based on current playback rate
+          const normalizedRate = audio.playbackRate;
+          const startDelay = (isFirstClip ? 15000 : -15000) / normalizedRate;
+
+          // Only start the other clip if it's not already playing
+          if (otherAudio.paused) {
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+            timeoutRef.current = setTimeout(() => {
+              if (soundEnabled) {
+                otherAudio.currentTime = 0;
+                otherAudio.play().catch(console.error);
+              }
+            }, Math.max(0, startDelay));
+          }
+        }
+      });
+    };
+
+    setupAudioLoop(audio1, audio2, true);
+    setupAudioLoop(audio2, audio1, false);
+
     const setupAudio = () => {
       if (!soundEnabled) {
         audio1.pause();
         audio2.pause();
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
         return;
       }
 
@@ -45,26 +78,33 @@ const ServiceCards = () => {
       audio2.playbackRate = normalizedRate;
 
       // Calculate the adjusted start time for the second clip
-      // If speed is doubled (2x), start time should be halved (15s -> 7.5s)
       const secondClipStartTime = 15 / normalizedRate;
 
-      // Start first audio clip
-      audio1.currentTime = 0;
-      audio1.play().catch(console.error);
+      // Start first audio clip if it's not already playing
+      if (audio1.paused) {
+        audio1.currentTime = 0;
+        audio1.play().catch(console.error);
 
-      // Schedule second audio clip
-      setTimeout(() => {
-        if (soundEnabled) {
-          audio2.currentTime = 0;
-          audio2.play().catch(console.error);
+        // Schedule second audio clip
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
         }
-      }, secondClipStartTime * 1000);
+        timeoutRef.current = setTimeout(() => {
+          if (soundEnabled) {
+            audio2.currentTime = 0;
+            audio2.play().catch(console.error);
+          }
+        }, secondClipStartTime * 1000);
+      }
     };
 
     setupAudio();
 
     // Cleanup function
     return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       audio1.pause();
       audio2.pause();
       audio1.currentTime = 0;
