@@ -12,11 +12,18 @@ import {
   Scatter,
   Bar,
 } from "recharts";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface StockChartProps {
   symbol: string;
   timeRange: string;
+}
+
+interface NewsItem {
+  date: string;
+  title: string;
+  url: string;
+  summary: string;
 }
 
 interface PriceData {
@@ -26,10 +33,13 @@ interface PriceData {
   low: number;
   close: number;
   volume: number;
+  hasNews?: boolean;
+  newsCount?: number;
 }
 
 const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   const [data, setData] = useState<PriceData[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,28 +48,56 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(
-          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
-        );
-        const priceData = await response.json();
+        // Fetch both price and news data in parallel
+        const [priceResponse, newsResponse] = await Promise.all([
+          fetch(
+            `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
+          ),
+          fetch(
+            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${symbol}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
+          )
+        ]);
 
-        if (priceData["Time Series (Daily)"]) {
-          const timeSeriesData = priceData["Time Series (Daily)"];
-          const processedData = Object.entries(timeSeriesData)
-            .map(([date, values]: [string, any]) => ({
-              date,
-              open: parseFloat(values["1. open"]),
-              high: parseFloat(values["2. high"]),
-              low: parseFloat(values["3. low"]),
-              close: parseFloat(values["4. close"]),
-              volume: parseFloat(values["5. volume"]),
-            }))
-            .reverse();
+        const [priceData, newsData] = await Promise.all([
+          priceResponse.json(),
+          newsResponse.json()
+        ]);
 
-          setData(processedData);
-        } else {
-          setError("No data available for this symbol");
+        if (priceData["Error Message"]) {
+          throw new Error(priceData["Error Message"]);
         }
+
+        // Process price data
+        const timeSeriesData = priceData["Time Series (Daily)"];
+        const processedPriceData = Object.entries(timeSeriesData).map(([date, values]: [string, any]) => ({
+          date,
+          open: parseFloat(values["1. open"]),
+          high: parseFloat(values["2. high"]),
+          low: parseFloat(values["3. low"]),
+          close: parseFloat(values["4. close"]),
+          volume: parseFloat(values["5. volume"]),
+        })).reverse();
+
+        // Process news data
+        const newsItems = newsData.feed?.map((item: any) => ({
+          date: format(parseISO(item.time_published), "yyyy-MM-dd"),
+          title: item.title,
+          url: item.url,
+          summary: item.summary
+        })) || [];
+
+        // Add news indicators to price data
+        const enrichedData = processedPriceData.map(pricePoint => {
+          const dayNews = newsItems.filter(news => news.date === pricePoint.date);
+          return {
+            ...pricePoint,
+            hasNews: dayNews.length > 0,
+            newsCount: dayNews.length,
+          };
+        });
+
+        setData(enrichedData);
+        setNews(newsItems);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
         console.error("Error fetching data:", err);
@@ -74,19 +112,49 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const priceData = payload[0].payload;
+      const newsForDay = news.filter(n => n.date === priceData.date);
+      const isGreen = priceData.close > priceData.open;
       
       return (
-        <Card className="bg-gray-900/95 backdrop-blur-sm border border-gray-800 shadow-lg">
+        <Card className="bg-gray-900/95 backdrop-blur-sm border border-gray-800 shadow-lg max-w-md">
           <CardContent className="p-3 space-y-2">
             <p className="font-semibold text-gray-300">
               {format(new Date(priceData.date), "PPP")}
             </p>
             <div className="space-y-1 text-sm">
-              <p className="text-white">Open: <span className="text-gray-300">${priceData.open.toFixed(2)}</span></p>
-              <p className="text-white">High: <span className="text-gray-300">${priceData.high.toFixed(2)}</span></p>
-              <p className="text-white">Low: <span className="text-gray-300">${priceData.low.toFixed(2)}</span></p>
-              <p className="text-white">Close: <span className="text-gray-300">${priceData.close.toFixed(2)}</span></p>
+              <p className="text-white">
+                Open: <span className="text-gray-300">${priceData.open.toFixed(2)}</span>
+              </p>
+              <p className="text-white">
+                Close: <span className={`${isGreen ? 'text-[#26a69a]' : 'text-[#ef5350]'}`}>
+                  ${priceData.close.toFixed(2)}
+                </span>
+              </p>
+              <p className="text-white">
+                High: <span className="text-gray-300">${priceData.high.toFixed(2)}</span>
+              </p>
+              <p className="text-white">
+                Low: <span className="text-gray-300">${priceData.low.toFixed(2)}</span>
+              </p>
             </div>
+            {newsForDay.length > 0 && (
+              <div className="border-t border-gray-700 mt-2 pt-2">
+                <p className="text-[#f7bd00] font-semibold mb-1">News:</p>
+                {newsForDay.map((item, i) => (
+                  <div key={i} className="mb-2">
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-sm text-gray-300 hover:text-[#f7bd00] font-medium"
+                    >
+                      {item.title}
+                    </a>
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">{item.summary}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       );
@@ -135,7 +203,11 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-white">
           <span>{symbol}</span>
-          <span className="text-sm text-[#f7bd00]">
+          <span className={`text-sm ${
+            data[data.length - 1]?.close > data[data.length - 1]?.open
+              ? 'text-[#26a69a]'
+              : 'text-[#ef5350]'
+          }`}>
             ${data[data.length - 1]?.close.toFixed(2)}
           </span>
         </CardTitle>
@@ -163,6 +235,22 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
                 dataKey="close"
                 fill="#26a69a"
                 shape={renderBar}
+              />
+              {/* News indicators */}
+              <Scatter
+                dataKey="high"
+                shape={(props: any) => {
+                  const { cx, cy } = props;
+                  return props.payload.hasNews ? (
+                    <circle
+                      cx={cx}
+                      cy={cy - 15}
+                      r={4}
+                      fill="#f7bd00"
+                      opacity={0.8}
+                    />
+                  ) : null;
+                }}
               />
             </ComposedChart>
           </ResponsiveContainer>
