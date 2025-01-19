@@ -7,12 +7,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select } from '@/components/ui/select';
 import {
   PlusCircle, Save, Download, Upload, FileText,
-  Settings, Table, Image, BarChart2, PieChart, BarChart
+  Settings, Table, Image, BarChart2, PieChart, BarChart,
+  LineChart as LineChartIcon, Activity
 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  AreaChart, Area, ResponsiveContainer, BarChart as RechartBarChart, Bar, PieChart as RechartsPieChart,
-  Pie, Cell
+  AreaChart, Area, ResponsiveContainer, BarChart as RechartBarChart, Bar, 
+  PieChart as RechartsPieChart, Pie, Cell, RadarChart, Radar, PolarGrid,
+  PolarAngleAxis, PolarRadiusAxis, ScatterChart, Scatter
 } from 'recharts';
 
 // Type definitions
@@ -98,10 +100,39 @@ const CHART_TYPES: Record<ChartTypes, ChartType> = {
   [ChartTypes.LINE]: {
     structure: ['x', 'y'],
     label: 'Line Chart',
+    icon: <LineChartIcon className="w-4 h-4" />,
+    validateData: (data: ChartData[]) => data.every(d => 'x' in d && 'y' in d)
+  },
+  [ChartTypes.BAR]: {
+    structure: ['x', 'y'],
+    label: 'Bar Chart',
+    icon: <BarChart className="w-4 h-4" />,
+    validateData: (data: ChartData[]) => data.every(d => 'x' in d && 'y' in d)
+  },
+  [ChartTypes.PIE]: {
+    structure: ['name', 'value'],
+    label: 'Pie Chart',
+    icon: <PieChart className="w-4 h-4" />,
+    validateData: (data: ChartData[]) => data.every(d => 'name' in d && 'value' in d)
+  },
+  [ChartTypes.AREA]: {
+    structure: ['x', 'y'],
+    label: 'Area Chart',
     icon: <BarChart2 className="w-4 h-4" />,
     validateData: (data: ChartData[]) => data.every(d => 'x' in d && 'y' in d)
   },
-  // ... other chart types
+  [ChartTypes.SCATTER]: {
+    structure: ['x', 'y'],
+    label: 'Scatter Plot',
+    icon: <Activity className="w-4 h-4" />,
+    validateData: (data: ChartData[]) => data.every(d => 'x' in d && 'y' in d)
+  },
+  [ChartTypes.RADAR]: {
+    structure: ['subject', 'value'],
+    label: 'Radar Chart',
+    icon: <Activity className="w-4 h-4" />,
+    validateData: (data: ChartData[]) => data.every(d => 'subject' in d && 'value' in d)
+  }
 };
 
 const CHART_THEMES: Record<string, ChartTheme> = {
@@ -224,3 +255,4 @@ const DocumentEditor: React.FC = () => {
 };
 
 export default DocumentEditor;
+
