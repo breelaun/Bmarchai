@@ -15,13 +15,52 @@ import {
   PolarRadiusAxis, ComposedChart, Treemap, RadialBarChart, RadialBar
 } from 'recharts';
 
+// Helper functions for data conversion
+const convertToCSV = (data: any[]) => {
+  if (data.length === 0) return '';
+  const headers = Object.keys(data[0]).join(',');
+  const rows = data.map(item => Object.values(item).join(','));
+  return [headers, ...rows].join('\n');
+};
+
+const convertToExcel = (data: any[]) => {
+  // For now, return CSV format as Excel requires additional libraries
+  return convertToCSV(data);
+};
+
+const convertToPDF = (data: any[]) => {
+  // For now, return CSV format as PDF requires additional libraries
+  return convertToCSV(data);
+};
+
+// Chart data preparation functions
+const prepareChartData = () => {
+  return [
+    { name: 'Jan', income: 4000, expense: 2400 },
+    { name: 'Feb', income: 3000, expense: 1398 },
+    { name: 'Mar', income: 2000, expense: 9800 },
+    { name: 'Apr', income: 2780, expense: 3908 },
+    { name: 'May', income: 1890, expense: 4800 },
+    { name: 'Jun', income: 2390, expense: 3800 },
+  ];
+};
+
+const prepareTreemapData = () => {
+  return [
+    { name: 'Sales', value: 1200 },
+    { name: 'Marketing', value: 800 },
+    { name: 'Development', value: 1600 },
+    { name: 'Operations', value: 900 },
+  ];
+};
+
 const FinancialEditor = () => {
   const [selectedTemplate, setSelectedTemplate] = useState('standard');
   const [chartTheme, setChartTheme] = useState('darkBlue');
   const [exportFormat, setExportFormat] = useState('json');
   const [selectedChart, setSelectedChart] = useState('line');
   const [entries, setEntries] = useState([]);
-  
+
   const templates = {
     standard: { /* Previous standard template */ },
     business: { /* Previous business template */ },
@@ -147,7 +186,12 @@ const FinancialEditor = () => {
         return (
           <ResponsiveContainer width="100%" height={400}>
             <AreaChart data={data}>
-              {/* ... Previous area chart implementation with theme ... */}
+              <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} />
+              <XAxis dataKey="name" stroke={theme.grid} />
+              <YAxis stroke={theme.grid} />
+              <Tooltip contentStyle={{ backgroundColor: theme.background }} />
+              <Area type="monotone" dataKey="income" stroke={theme.income[0]} fill={theme.income[0]} />
+              <Area type="monotone" dataKey="expense" stroke={theme.expense[0]} fill={theme.expense[0]} />
             </AreaChart>
           </ResponsiveContainer>
         );
