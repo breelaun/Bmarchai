@@ -1,5 +1,3 @@
-// DocumentEditor.tsx
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,11 +7,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select } from '@/components/ui/select';
 import {
   PlusCircle, Save, Download, Upload, FileText,
-  Settings, Table, Image, ChartSquare, PieChart, BarChart2
+  Settings, Table, Image, BarChart2, PieChart, BarChart
 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  AreaChart, Area, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart,
+  AreaChart, Area, ResponsiveContainer, BarChart as RechartBarChart, Bar, PieChart as RechartsPieChart,
   Pie, Cell
 } from 'recharts';
 
@@ -100,7 +98,7 @@ const CHART_TYPES: Record<ChartTypes, ChartType> = {
   [ChartTypes.LINE]: {
     structure: ['x', 'y'],
     label: 'Line Chart',
-    icon: <ChartSquare className="w-4 h-4" />,
+    icon: <BarChart2 className="w-4 h-4" />,
     validateData: (data: ChartData[]) => data.every(d => 'x' in d && 'y' in d)
   },
   // ... other chart types
