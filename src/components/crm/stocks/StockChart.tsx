@@ -55,10 +55,10 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
 
         const [priceResponse, newsResponse] = await Promise.all([
           fetch(
-            `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/${format(startDate, 'yyyy-MM-dd')}/${format(endDate, 'yyyy-MM-dd')}?adjusted=true&sort=asc&apiKey=${import.meta.env.0WScaBkGdu3zN_9W6rNLYA1UgWcZ9cvN}`
+            `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
           ),
           fetch(
-            `https://api.polygon.io/v2/reference/news?ticker=${symbol}&limit=10&order=descending&sort=published_utc&apiKey=${import.meta.env.0WScaBkGdu3zN_9W6rNLYA1UgWcZ9cvN}`
+            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&symbol=${symbol}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
           )
         ]);
 
@@ -67,26 +67,26 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
           newsResponse.json()
         ]);
 
-        if (!priceData.results) {
+        if (!priceData['Time Series (Daily)']) {
           throw new Error("No price data available");
         }
 
         // Process price data
-        const processedPriceData = priceData.results.map((item: any) => ({
-          date: format(item.t, 'yyyy-MM-dd'),
-          open: item.o,
-          high: item.h,
-          low: item.l,
-          close: item.c,
-          volume: item.v,
+        const processedPriceData = Object.entries(priceData['Time Series (Daily)']).map(([date, values]: [string, any]) => ({
+          date,
+          open: parseFloat(values['1. open']),
+          high: parseFloat(values['2. high']),
+          low: parseFloat(values['3. low']),
+          close: parseFloat(values['4. close']),
+          volume: parseFloat(values['5. volume']),
         }));
 
         // Process news data
-        const newsItems = newsData.results?.map((item: any) => ({
-          published_utc: format(parseISO(item.published_utc), 'yyyy-MM-dd'),
+        const newsItems = newsData.feed?.slice(0, 10).map((item: any) => ({
+          published_utc: format(new Date(item.time_published), 'yyyy-MM-dd'),
           title: item.title,
-          article_url: item.article_url,
-          description: item.description
+          article_url: item.url,
+          description: item.summary
         })) || [];
 
         // Add news indicators to price data
