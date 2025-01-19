@@ -12,7 +12,7 @@ import {
   Scatter,
   Bar,
 } from "recharts";
-import { format, parseISO } from "date-fns";
+import { format, fromUnixTime } from "date-fns";
 
 interface StockChartProps {
   symbol: string;
@@ -20,10 +20,10 @@ interface StockChartProps {
 }
 
 interface NewsItem {
-  published_utc: string;
-  title: string;
-  article_url: string;
-  description: string;
+  datetime: number;
+  headline: string;
+  url: string;
+  summary: string;
 }
 
 interface PriceData {
@@ -48,17 +48,17 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
       setLoading(true);
       setError(null);
       try {
-        // Get date range for the API
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setMonth(startDate.getMonth() - 1); // Default to 1 month of data
+        // Calculate date range
+        const now = Math.floor(Date.now() / 1000);
+        const oneMonthAgo = now - (30 * 24 * 60 * 60);
 
+        // Fetch both price and news data in parallel
         const [priceResponse, newsResponse] = await Promise.all([
           fetch(
-            `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/${format(startDate, 'yyyy-MM-dd')}/${format(endDate, 'yyyy-MM-dd')}?adjusted=true&sort=asc&apiKey=${import.meta.env.VITE_POLYGON_API_KEY}`
+            `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${oneMonthAgo}&to=${now}&token=${import.meta.env.VITE_FINNHUB_API_KEY}`
           ),
           fetch(
-            `https://api.polygon.io/v2/reference/news?ticker=${symbol}&limit=10&order=descending&sort=published_utc&apiKey=${import.meta.env.VITE_POLYGON_API_KEY}`
+            `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${format(fromUnixTime(oneMonthAgo), 'yyyy-MM-dd')}&to=${format(fromUnixTime(now), 'yyyy-MM-dd')}&token=${import.meta.env.VITE_FINNHUB_API_KEY}`
           )
         ]);
 
@@ -67,31 +67,33 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
           newsResponse.json()
         ]);
 
-        if (!priceData.results) {
-          throw new Error("No price data available");
+        if (priceData.error) {
+          throw new Error(priceData.error);
         }
 
         // Process price data
-        const processedPriceData = priceData.results.map((item: any) => ({
-          date: format(item.t, 'yyyy-MM-dd'),
-          open: item.o,
-          high: item.h,
-          low: item.l,
-          close: item.c,
-          volume: item.v,
+        const processedPriceData = priceData.t.map((timestamp: number, index: number) => ({
+          date: format(fromUnixTime(timestamp), 'yyyy-MM-dd'),
+          open: priceData.o[index],
+          high: priceData.h[index],
+          low: priceData.l[index],
+          close: priceData.c[index],
+          volume: priceData.v[index],
         }));
 
         // Process news data
-        const newsItems = newsData.results?.map((item: any) => ({
-          published_utc: format(parseISO(item.published_utc), 'yyyy-MM-dd'),
-          title: item.title,
-          article_url: item.article_url,
-          description: item.description
-        })) || [];
+        const newsItems = newsData.map((item: any) => ({
+          datetime: item.datetime,
+          headline: item.headline,
+          url: item.url,
+          summary: item.summary
+        }));
 
         // Add news indicators to price data
         const enrichedData = processedPriceData.map(pricePoint => {
-          const dayNews = newsItems.filter(news => news.published_utc === pricePoint.date);
+          const dayNews = newsItems.filter(news => 
+            format(fromUnixTime(news.datetime), 'yyyy-MM-dd') === pricePoint.date
+          );
           return {
             ...pricePoint,
             hasNews: dayNews.length > 0,
@@ -115,7 +117,9 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const priceData = payload[0].payload;
-      const newsForDay = news.filter(n => n.published_utc === priceData.date);
+      const newsForDay = news.filter(n => 
+        format(fromUnixTime(n.datetime), 'yyyy-MM-dd') === priceData.date
+      );
       const isGreen = priceData.close > priceData.open;
       
       return (
@@ -146,14 +150,14 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
                 {newsForDay.map((item, i) => (
                   <div key={i} className="mb-2">
                     <a
-                      href={item.article_url}
+                      href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-sm text-gray-300 hover:text-[#f7bd00] font-medium"
                     >
-                      {item.title}
+                      {item.headline}
                     </a>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">{item.description}</p>
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">{item.summary}</p>
                   </div>
                 ))}
               </div>
@@ -239,7 +243,6 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
                 fill="#26a69a"
                 shape={renderBar}
               />
-              {/* News indicators */}
               <Scatter
                 dataKey="high"
                 shape={(props: any) => {
