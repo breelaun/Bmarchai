@@ -9,6 +9,7 @@ import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
 import { StockMarketSection } from "@/components/crm/stocks/StockMarketSection";
 import DocumentEditor from "@/components/crm/DocumentEditor";
 import FinancialEditor from "@/components/crm/FinancialEditor";
+import StockMarketSection from '@/components/crm/stocks/StockMarketSection';
 
 const CRMPage = () => {
   const session = useSession();
