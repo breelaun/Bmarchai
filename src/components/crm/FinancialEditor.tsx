@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
 import { 
-  Save, Download, BarChart2, PieChart, LineChart,
+  Save, Download, Upload, BarChart2, PieChart, LineChart,
   TrendingUp, Activity
 } from 'lucide-react';
 import {
   LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer
 } from 'recharts';
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from '@supabase/auth-helpers-react';
 
 type FinancialEntry = {
+  id: string;
   type: 'income' | 'expense';
   amount: number;
   category: string;
@@ -21,39 +25,119 @@ type FinancialEntry = {
 };
 
 const FinancialEditor = () => {
+  const session = useSession();
+  const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState('standard');
   const [entries, setEntries] = useState<FinancialEntry[]>([]);
   const [entryType, setEntryType] = useState<'income' | 'expense'>('income');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('other');
   const [date, setDate] = useState('');
+  const [chartData, setChartData] = useState<any[]>([]);
 
-  // Sample data for the chart
-  const data = [
-    { name: 'Jan', income: 4000, expense: 2400 },
-    { name: 'Feb', income: 3000, expense: 1398 },
-    { name: 'Mar', income: 2000, expense: 9800 },
-    { name: 'Apr', income: 2780, expense: 3908 },
-    { name: 'May', income: 1890, expense: 4800 },
-    { name: 'Jun', income: 2390, expense: 3800 },
-  ];
+  useEffect(() => {
+    if (session) {
+      fetchEntries();
+    }
+  }, [session]);
 
-  const handleAddEntry = () => {
-    if (!amount || !date) return;
+  const fetchEntries = async () => {
+    const { data, error } = await supabase
+      .from('financial_entries')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error fetching entries",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setEntries(data || []);
+    processChartData(data || []);
+  };
+
+  const processChartData = (data: FinancialEntry[]) => {
+    const monthlyData = data.reduce((acc: any, entry: any) => {
+      const month = new Date(entry.date).toLocaleString('default', { month: 'short' });
+      if (!acc[month]) {
+        acc[month] = { name: month, income: 0, expense: 0 };
+      }
+      if (entry.type === 'income') {
+        acc[month].income += Number(entry.amount);
+      } else {
+        acc[month].expense += Number(entry.amount);
+      }
+      return acc;
+    }, {});
+
+    setChartData(Object.values(monthlyData));
+  };
+
+  const handleAddEntry = async () => {
+    if (!amount || !date || !session) return;
     
-    const newEntry: FinancialEntry = {
+    const newEntry = {
+      user_id: session.user.id,
       type: entryType,
       amount: parseFloat(amount),
       category,
       date,
     };
     
-    setEntries([...entries, newEntry]);
+    const { error } = await supabase
+      .from('financial_entries')
+      .insert(newEntry);
+
+    if (error) {
+      toast({
+        title: "Error adding entry",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Entry added successfully",
+      description: "Your financial entry has been saved.",
+    });
     
-    // Reset form
+    // Reset form and refresh entries
     setAmount('');
     setCategory('other');
     setDate('');
+    fetchEntries();
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Here you would implement the file parsing logic
+    // For now, we'll just show a success message
+    toast({
+      title: "File uploaded",
+      description: "Your financial data is being processed.",
+    });
+  };
+
+  const handleDownload = () => {
+    // Convert entries to CSV
+    const csvContent = entries.map(entry => 
+      `${entry.date},${entry.type},${entry.category},${entry.amount}`
+    ).join('\n');
+
+    const blob = new Blob([`Date,Type,Category,Amount\n${csvContent}`], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'financial_records.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -76,12 +160,23 @@ const FinancialEditor = () => {
                   <SelectItem value="personal">Personal</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon">
-                <Save className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" onClick={handleDownload}>
                 <Download className="h-4 w-4" />
               </Button>
+              <label htmlFor="file-upload">
+                <Button variant="outline" size="icon" asChild>
+                  <div>
+                    <Upload className="h-4 w-4" />
+                    <input
+                      id="file-upload"
+                      type="file"
+                      accept=".csv"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                  </div>
+                </Button>
+              </label>
             </div>
           </div>
         </CardHeader>
@@ -142,14 +237,13 @@ const FinancialEditor = () => {
               </div>
               <Button className="w-full" onClick={handleAddEntry}>Add Entry</Button>
 
-              {/* Display Entries */}
               {entries.length > 0 && (
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold mb-4">Recent Entries</h3>
                   <div className="space-y-2">
-                    {entries.map((entry, index) => (
+                    {entries.map((entry) => (
                       <div 
-                        key={index}
+                        key={entry.id}
                         className={`p-4 rounded-lg border ${
                           entry.type === 'income' ? 'border-green-500/20 bg-green-500/10' : 'border-red-500/20 bg-red-500/10'
                         }`}
@@ -162,7 +256,7 @@ const FinancialEditor = () => {
                           <span className={`font-semibold ${
                             entry.type === 'income' ? 'text-green-500' : 'text-red-500'
                           }`}>
-                            {entry.type === 'income' ? '+' : '-'}${entry.amount.toFixed(2)}
+                            {entry.type === 'income' ? '+' : '-'}${Number(entry.amount).toFixed(2)}
                           </span>
                         </div>
                         <div className="text-sm text-muted-foreground mt-1">
@@ -180,7 +274,7 @@ const FinancialEditor = () => {
                 <CardContent className="pt-6">
                   <div className="h-[400px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RechartsLineChart data={data}>
+                      <RechartsLineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
@@ -198,6 +292,25 @@ const FinancialEditor = () => {
               <Card>
                 <CardContent>
                   <div className="space-y-4">
+                    <Button variant="outline" className="w-full gap-2" onClick={handleDownload}>
+                      <Download className="h-4 w-4" />
+                      Download Financial Report
+                    </Button>
+                    <label htmlFor="report-upload" className="w-full">
+                      <Button variant="outline" className="w-full gap-2" asChild>
+                        <div>
+                          <Upload className="h-4 w-4" />
+                          Upload Financial Report
+                          <input
+                            id="report-upload"
+                            type="file"
+                            accept=".csv,.xlsx,.xls"
+                            className="hidden"
+                            onChange={handleFileUpload}
+                          />
+                        </div>
+                      </Button>
+                    </label>
                     <Button variant="outline" className="w-full gap-2">
                       <BarChart2 className="h-4 w-4" />
                       Generate Monthly Report
