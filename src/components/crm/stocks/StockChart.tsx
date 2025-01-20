@@ -32,6 +32,8 @@ const StockChart = ({ symbol }: StockChartProps) => {
       setError(null);
       try {
         const apiKey = import.meta.env.VITE_ALPHAVANTAGE_API_KEY;
+        const priceResponse = await axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}`);
+        
         
         // Fetch daily time series data
         const priceResponse = await axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}`);
