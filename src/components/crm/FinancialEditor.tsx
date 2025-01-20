@@ -1,41 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 
-  Mic, Save, Download, Upload, Volume2, BarChart2, PieChart, LineChart,
-  TrendingUp, Activity, Target, Circle, Network, Layout, Grid
+  Save, Download, BarChart2, PieChart, LineChart,
+  TrendingUp, Activity
 } from 'lucide-react';
 import {
   LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  AreaChart, Area, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart,
-  Pie, Cell, ScatterChart, Scatter, RadarChart, Radar, PolarGrid, PolarAngleAxis,
-  PolarRadiusAxis, ComposedChart, Treemap, RadialBarChart, RadialBar
+  ResponsiveContainer
 } from 'recharts';
 
-// Helper functions for data conversion
-const convertToCSV = (data: any[]) => {
-  if (data.length === 0) return '';
-  const headers = Object.keys(data[0]).join(',');
-  const rows = data.map(item => Object.values(item).join(','));
-  return [headers, ...rows].join('\n');
-};
+const FinancialEditor = () => {
+  const [selectedTemplate, setSelectedTemplate] = useState('standard');
+  const [entries, setEntries] = useState([]);
 
-const convertToExcel = (data: any[]) => {
-  // For now, return CSV format as Excel requires additional libraries
-  return convertToCSV(data);
-};
-
-const convertToPDF = (data: any[]) => {
-  // For now, return CSV format as PDF requires additional libraries
-  return convertToCSV(data);
-};
-
-// Chart data preparation functions
-const prepareChartData = () => {
-  return [
+  // Sample data for the chart
+  const data = [
     { name: 'Jan', income: 4000, expense: 2400 },
     { name: 'Feb', income: 3000, expense: 1398 },
     { name: 'Mar', income: 2000, expense: 9800 },
@@ -43,319 +26,126 @@ const prepareChartData = () => {
     { name: 'May', income: 1890, expense: 4800 },
     { name: 'Jun', income: 2390, expense: 3800 },
   ];
-};
-
-const prepareTreemapData = () => {
-  return [
-    { name: 'Sales', value: 1200 },
-    { name: 'Marketing', value: 800 },
-    { name: 'Development', value: 1600 },
-    { name: 'Operations', value: 900 },
-  ];
-};
-
-const FinancialEditor = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState('standard');
-  const [chartTheme, setChartTheme] = useState('darkBlue');
-  const [exportFormat, setExportFormat] = useState('json');
-  const [selectedChart, setSelectedChart] = useState('line');
-  const [entries, setEntries] = useState([]);
-
-  const templates = {
-    standard: { /* Previous standard template */ },
-    business: { /* Previous business template */ },
-    personal: { /* Previous personal template */ },
-    startup: {
-      columns: ['date', 'type', 'title', 'amount', 'category', 'funding_round', 'investor'],
-      charts: ['area', 'radar', 'treemap'],
-      categories: {
-        income: {
-          'Funding': ['Seed', 'Series A', 'Series B', 'Angel'],
-          'Revenue': ['Product Sales', 'Services', 'Subscriptions'],
-          'Other': ['Grants', 'Awards', 'Partnerships']
-        },
-        expense: {
-          'Development': ['R&D', 'Engineering', 'Testing'],
-          'Marketing': ['Advertising', 'PR', 'Events'],
-          'Operations': ['Salaries', 'Office', 'Equipment']
-        }
-      }
-    },
-    nonprofit: {
-      columns: ['date', 'type', 'title', 'amount', 'category', 'donor', 'program'],
-      charts: ['pie', 'bar', 'composed'],
-      categories: {
-        income: {
-          'Donations': ['Individual', 'Corporate', 'Foundation'],
-          'Grants': ['Government', 'Private', 'Research'],
-          'Events': ['Fundraisers', 'Auctions', 'Sponsorships']
-        },
-        expense: {
-          'Programs': ['Direct Service', 'Education', 'Outreach'],
-          'Administrative': ['Staff', 'Office', 'Insurance'],
-          'Fundraising': ['Events', 'Marketing', 'Development']
-        }
-      }
-    },
-    retail: {
-      columns: ['date', 'type', 'title', 'amount', 'category', 'store', 'product'],
-      charts: ['bar', 'line', 'scatter'],
-      categories: {
-        income: {
-          'Sales': ['In-Store', 'Online', 'Wholesale'],
-          'Other': ['Returns', 'Gift Cards', 'Services']
-        },
-        expense: {
-          'Inventory': ['Products', 'Shipping', 'Storage'],
-          'Operations': ['Staff', 'Rent', 'Utilities'],
-          'Marketing': ['Advertising', 'Promotions', 'Display']
-        }
-      }
-    }
-  };
-
-  const chartThemes = {
-    darkBlue: {
-      income: ['#0ea5e9', '#38bdf8', '#7dd3fc'],
-      expense: ['#ef4444', '#f87171', '#fca5a5'],
-      background: '#1f2937',
-      grid: '#374151'
-    },
-    forest: {
-      income: ['#22c55e', '#4ade80', '#86efac'],
-      expense: ['#b91c1c', '#dc2626', '#ef4444'],
-      background: '#1a2e1a',
-      grid: '#2d4a2d'
-    },
-    purple: {
-      income: ['#a855f7', '#c084fc', '#d8b4fe'],
-      expense: ['#ec4899', '#f472b6', '#f9a8d4'],
-      background: '#2e1065',
-      grid: '#4c1d95'
-    },
-    sunset: {
-      income: ['#f59e0b', '#fbbf24', '#fcd34d'],
-      expense: ['#dc2626', '#ef4444', '#f87171'],
-      background: '#27272a',
-      grid: '#3f3f46'
-    }
-  };
-
-  const exportData = (format) => {
-    let exportContent;
-    let mimeType;
-    let fileExtension;
-
-    switch (format) {
-      case 'csv':
-        exportContent = convertToCSV(entries);
-        mimeType = 'text/csv';
-        fileExtension = 'csv';
-        break;
-      case 'excel':
-        exportContent = convertToExcel(entries);
-        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        fileExtension = 'xlsx';
-        break;
-      case 'pdf':
-        exportContent = convertToPDF(entries);
-        mimeType = 'application/pdf';
-        fileExtension = 'pdf';
-        break;
-      default:
-        exportContent = JSON.stringify(entries, null, 2);
-        mimeType = 'application/json';
-        fileExtension = 'json';
-    }
-
-    const blob = new Blob([exportContent], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `financial_records.${fileExtension}`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const renderChartByType = () => {
-    const theme = chartThemes[chartTheme];
-    const data = prepareChartData();
-
-    switch (selectedChart) {
-      case 'area':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} />
-              <XAxis dataKey="name" stroke={theme.grid} />
-              <YAxis stroke={theme.grid} />
-              <Tooltip contentStyle={{ backgroundColor: theme.background }} />
-              <Area type="monotone" dataKey="income" stroke={theme.income[0]} fill={theme.income[0]} />
-              <Area type="monotone" dataKey="expense" stroke={theme.expense[0]} fill={theme.expense[0]} />
-            </AreaChart>
-          </ResponsiveContainer>
-        );
-      
-      case 'radar':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <RadarChart data={data}>
-              <PolarGrid stroke={theme.grid} />
-              <PolarAngleAxis dataKey="category" />
-              <PolarRadiusAxis />
-              <Radar name="Income" dataKey="income" stroke={theme.income[0]} fill={theme.income[0]} fillOpacity={0.6} />
-              <Radar name="Expense" dataKey="expense" stroke={theme.expense[0]} fill={theme.expense[0]} fillOpacity={0.6} />
-            </RadarChart>
-          </ResponsiveContainer>
-        );
-      
-      case 'scatter':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <ScatterChart>
-              <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} />
-              <XAxis dataKey="date" stroke={theme.grid} />
-              <YAxis stroke={theme.grid} />
-              <Tooltip contentStyle={{ backgroundColor: theme.background }} />
-              <Scatter name="Income" data={data} fill={theme.income[0]} />
-              <Scatter name="Expense" data={data} fill={theme.expense[0]} />
-            </ScatterChart>
-          </ResponsiveContainer>
-        );
-      
-      case 'treemap':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <Treemap
-              data={prepareTreemapData()}
-              dataKey="value"
-              stroke={theme.grid}
-              fill={theme.income[0]}
-            />
-          </ResponsiveContainer>
-        );
-    }
-  };
-
-  const renderTemplateSelector = () => {
-    return (
-      <div className="flex items-center space-x-2">
-        <label className="text-sm font-medium">Template:</label>
-        <Select
-          value={selectedTemplate}
-          onValueChange={(value) => setSelectedTemplate(value)}
-        >
-          <option value="standard">Standard</option>
-          <option value="business">Business</option>
-          <option value="personal">Personal</option>
-          <option value="startup">Startup</option>
-          <option value="nonprofit">Nonprofit</option>
-          <option value="retail">Retail</option>
-        </Select>
-      </div>
-    );
-  };
-
-  const renderChartThemeSelector = () => {
-    return (
-      <div className="flex items-center space-x-2">
-        <label className="text-sm font-medium">Chart Theme:</label>
-        <Select
-          value={chartTheme}
-          onValueChange={(value) => setChartTheme(value)}
-        >
-          <option value="darkBlue">Dark Blue</option>
-          <option value="forest">Forest</option>
-          <option value="purple">Purple</option>
-          <option value="sunset">Sunset</option>
-        </Select>
-      </div>
-    );
-  };
-
-  const renderExportFormatSelector = () => {
-    return (
-      <div className="flex items-center space-x-2">
-        <label className="text-sm font-medium">Export Format:</label>
-        <Select
-          value={exportFormat}
-          onValueChange={(value) => setExportFormat(value)}
-        >
-          <option value="json">JSON</option>
-          <option value="csv">CSV</option>
-          <option value="excel">Excel</option>
-          <option value="pdf">PDF</option>
-        </Select>
-      </div>
-    );
-  };
-
-  const renderChartSelector = () => {
-    return (
-      <div className="flex items-center space-x-2">
-        <label className="text-sm font-medium">Chart Type:</label>
-        <Select
-          value={selectedChart}
-          onValueChange={(value) => setSelectedChart(value)}
-        >
-          <option value="line">Line Chart</option>
-          <option value="bar">Bar Chart</option>
-          <option value="pie">Pie Chart</option>
-          <option value="area">Area Chart</option>
-          <option value="scatter">Scatter Plot</option>
-          <option value="radar">Radar Chart</option>
-        </Select>
-      </div>
-    );
-  };
-
-  const renderTable = () => {
-    return (
-      <div className="mt-4">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              <th className="border p-2">Date</th>
-              <th className="border p-2">Type</th>
-              <th className="border p-2">Title</th>
-              <th className="border p-2">Amount</th>
-              <th className="border p-2">Category</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((entry, index) => (
-              <tr key={index}>
-                <td className="border p-2">{entry.date}</td>
-                <td className="border p-2">{entry.type}</td>
-                <td className="border p-2">{entry.title}</td>
-                <td className="border p-2">{entry.amount}</td>
-                <td className="border p-2">{entry.category}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
 
   return (
-    <Card className="w-full max-w-4xl bg-gray-900 text-gray-100">
-      <CardHeader>
-        <CardTitle>Financial Record Editor</CardTitle>
-        <div className="flex flex-wrap gap-4">
-          {renderTemplateSelector()}
-          {renderChartThemeSelector()}
-          {renderExportFormatSelector()}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {renderChartSelector()}
-          {renderChartByType()}
-          {renderTable()}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
+      <Card className="bg-background border-border">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Financial Records</CardTitle>
+            <div className="flex gap-2">
+              <Select
+                value={selectedTemplate}
+                onValueChange={setSelectedTemplate}
+              >
+                <SelectTrigger className="w-[200px] bg-secondary">
+                  <SelectValue placeholder="Select Template" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                  <SelectItem value="personal">Personal</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="icon">
+                <Save className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon">
+                <Download className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="entry" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="entry">New Entry</TabsTrigger>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="reports">Reports</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="entry" className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Type</label>
+                  <Select defaultValue="income">
+                    <SelectTrigger className="bg-secondary">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="income">Income</SelectItem>
+                      <SelectItem value="expense">Expense</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Amount</label>
+                  <Input type="number" placeholder="0.00" className="bg-secondary" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Category</label>
+                  <Select defaultValue="other">
+                    <SelectTrigger className="bg-secondary">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="salary">Salary</SelectItem>
+                      <SelectItem value="investment">Investment</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Date</label>
+                  <Input type="date" className="bg-secondary" />
+                </div>
+              </div>
+              <Button className="w-full">Add Entry</Button>
+            </TabsContent>
+
+            <TabsContent value="overview">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsLineChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="income" stroke="#4ade80" name="Income" />
+                        <Line type="monotone" dataKey="expense" stroke="#ef4444" name="Expense" />
+                      </RechartsLineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="reports">
+              <Card>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Button variant="outline" className="w-full gap-2">
+                      <BarChart2 className="h-4 w-4" />
+                      Generate Monthly Report
+                    </Button>
+                    <Button variant="outline" className="w-full gap-2">
+                      <PieChart className="h-4 w-4" />
+                      Generate Category Report
+                    </Button>
+                    <Button variant="outline" className="w-full gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Generate Trend Analysis
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
