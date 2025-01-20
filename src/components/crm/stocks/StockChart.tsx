@@ -48,7 +48,7 @@ const getDataKey = (timeRange: string) => {
 };
 
 const StockChart = ({ symbol, timeRange }: StockChartProps) => {
-  const [data, setData] = useState<{ date: string; price: number; }[]>([]);
+  const [data, setData] = useState<{ date: string; price: number }[]>([]);
   const [averagePrice, setAveragePrice] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,15 +56,15 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   useEffect(() => {
     const fetchStockData = async () => {
       if (!symbol) return;
-      
+
       setLoading(true);
       setError(null);
-      
+
       try {
         const functionName = getTimeSeriesFunction(timeRange);
         const interval = getInterval(timeRange);
         const apiKey = import.meta.env.VITE_ALPHA_VANTAGE_API_KEY;
-        
+
         if (!apiKey) {
           throw new Error("API key not configured");
         }
@@ -72,11 +72,11 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
         const response = await fetch(
           `https://www.alphavantage.co/query?function=${functionName}&symbol=${symbol}${interval}&apikey=${apiKey}`
         );
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const result = await response.json();
 
         if (result["Error Message"]) {
@@ -95,9 +95,9 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
         const processedData = Object.entries(timeSeriesData)
           .map(([date, values]: [string, any]) => ({
             date,
-            price: parseFloat(values["4. close"])
+            price: parseFloat(values["4. close"]),
           }))
-          .filter(item => !isNaN(item.price))
+          .filter((item) => !isNaN(item.price))
           .reverse();
 
         if (processedData.length === 0) {
@@ -105,7 +105,9 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
         }
 
         setData(processedData);
-        const avg = processedData.reduce((sum, item) => sum + item.price, 0) / processedData.length;
+        const avg =
+          processedData.reduce((sum, item) => sum + item.price, 0) /
+          processedData.length;
         setAveragePrice(Number(avg.toFixed(2)));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch stock data");
@@ -155,9 +157,7 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span>{symbol} Price History</span>
-          <span className="text-sm text-muted-foreground">
-            Avg: ${averagePrice}
-          </span>
+          <span className="text-sm text-muted-foreground">Avg: ${averagePrice}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
