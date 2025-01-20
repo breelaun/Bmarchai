@@ -56,8 +56,17 @@ const FinancialEditor = () => {
       return;
     }
 
-    setEntries(data || []);
-    processChartData(data || []);
+    // Transform the data to ensure type safety
+    const transformedData = (data || []).map(entry => ({
+      id: entry.id,
+      type: entry.type as 'income' | 'expense',
+      amount: entry.amount,
+      category: entry.category,
+      date: entry.date
+    }));
+
+    setEntries(transformedData);
+    processChartData(transformedData);
   };
 
   const processChartData = (data: FinancialEntry[]) => {
