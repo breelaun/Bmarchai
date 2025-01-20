@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { 
   ComposedChart,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -13,6 +12,7 @@ import {
   Bar,
 } from 'recharts';
 import axios from 'axios';
+import { useToast } from '@/components/ui/use-toast';
 
 interface StockChartProps {
   symbol: string;
@@ -41,6 +41,7 @@ const StockChart = ({ symbol }: StockChartProps) => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,8 +52,13 @@ const StockChart = ({ symbol }: StockChartProps) => {
         const now = Math.floor(Date.now() / 1000);
         const oneMonthAgo = now - (30 * 24 * 60 * 60);
 
+        const apiKey = import.meta.env.VITE_FINNHUB_API_KEY;
+        if (!apiKey) {
+          throw new Error('API key is not configured');
+        }
+
         const headers = {
-          'X-Finnhub-Token': import.meta.env.VITE_FINNHUB_API_KEY
+          'X-Finnhub-Token': apiKey
         };
 
         // Fetch both price and news data in parallel
@@ -111,7 +117,13 @@ const StockChart = ({ symbol }: StockChartProps) => {
         setData(enrichedData);
         setNews(newsItems);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch data");
+        const errorMessage = err instanceof Error ? err.message : "Failed to fetch data";
+        setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: errorMessage,
+        });
         console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
@@ -119,7 +131,7 @@ const StockChart = ({ symbol }: StockChartProps) => {
     };
 
     fetchData();
-  }, [symbol]);
+  }, [symbol, toast]);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -269,6 +281,7 @@ const StockChart = ({ symbol }: StockChartProps) => {
       </CardContent>
     </Card>
   );
+
 };
 
 export default StockChart;
