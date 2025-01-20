@@ -8,6 +8,7 @@ import TaskList from "@/components/crm/TaskList";
 import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
 import DocumentEditor from "@/components/crm/DocumentEditor";
 import FinancialEditor from "@/components/crm/FinancialEditor";
+import Shares from "@/components/crm/Shares";
 import { Loader2 } from "lucide-react";
 import { Chart, Line } from "react-chartjs-2";
 import "chart.js/auto";
@@ -82,6 +83,7 @@ const CRMPage = () => {
           <TabsTrigger value="stocks">Stocks</TabsTrigger>
           <TabsTrigger value="docs">Docs</TabsTrigger>
           <TabsTrigger value="finance">Finance</TabsTrigger>
+          <TabsTrigger value="shares">Shares</TabsTrigger>
         </TabsList>
         <ScrollArea className="h-full rounded-md">
           <TabsContent value="analytics" className="mt-0 p-4">
@@ -94,6 +96,9 @@ const CRMPage = () => {
             <TaskList />
           </TabsContent>
           <TabsContent value="stocks" className="mt-0 p-4">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+          <TabsContent value="shares" className="mt-0 p-4">
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <input
