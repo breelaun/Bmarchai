@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import ClientList from "@/components/crm/ClientList";
 import TaskList from "@/components/crm/TaskList";
 import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
-import { StockMarketSection } from "@/components/crm/stocks/StockMarketSection";
+import StockMarketSection from "@/components/crm/stocks/StockMarketSection";
 import DocumentEditor from "@/components/crm/DocumentEditor";
 import FinancialEditor from "@/components/crm/FinancialEditor";
 
