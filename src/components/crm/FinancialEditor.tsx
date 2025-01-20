@@ -13,9 +13,20 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
+type FinancialEntry = {
+  type: 'income' | 'expense';
+  amount: number;
+  category: string;
+  date: string;
+};
+
 const FinancialEditor = () => {
   const [selectedTemplate, setSelectedTemplate] = useState('standard');
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState<FinancialEntry[]>([]);
+  const [entryType, setEntryType] = useState<'income' | 'expense'>('income');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('other');
+  const [date, setDate] = useState('');
 
   // Sample data for the chart
   const data = [
@@ -26,6 +37,24 @@ const FinancialEditor = () => {
     { name: 'May', income: 1890, expense: 4800 },
     { name: 'Jun', income: 2390, expense: 3800 },
   ];
+
+  const handleAddEntry = () => {
+    if (!amount || !date) return;
+    
+    const newEntry: FinancialEntry = {
+      type: entryType,
+      amount: parseFloat(amount),
+      category,
+      date,
+    };
+    
+    setEntries([...entries, newEntry]);
+    
+    // Reset form
+    setAmount('');
+    setCategory('other');
+    setDate('');
+  };
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
@@ -68,7 +97,7 @@ const FinancialEditor = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Type</label>
-                  <Select defaultValue="income">
+                  <Select value={entryType} onValueChange={(value: 'income' | 'expense') => setEntryType(value)}>
                     <SelectTrigger className="bg-secondary">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -80,11 +109,17 @@ const FinancialEditor = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Amount</label>
-                  <Input type="number" placeholder="0.00" className="bg-secondary" />
+                  <Input 
+                    type="number" 
+                    placeholder="0.00" 
+                    className="bg-secondary"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Category</label>
-                  <Select defaultValue="other">
+                  <Select value={category} onValueChange={setCategory}>
                     <SelectTrigger className="bg-secondary">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -97,10 +132,47 @@ const FinancialEditor = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Date</label>
-                  <Input type="date" className="bg-secondary" />
+                  <Input 
+                    type="date" 
+                    className="bg-secondary"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
                 </div>
               </div>
-              <Button className="w-full">Add Entry</Button>
+              <Button className="w-full" onClick={handleAddEntry}>Add Entry</Button>
+
+              {/* Display Entries */}
+              {entries.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-4">Recent Entries</h3>
+                  <div className="space-y-2">
+                    {entries.map((entry, index) => (
+                      <div 
+                        key={index}
+                        className={`p-4 rounded-lg border ${
+                          entry.type === 'income' ? 'border-green-500/20 bg-green-500/10' : 'border-red-500/20 bg-red-500/10'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <span className="font-medium capitalize">{entry.type}</span>
+                            <span className="text-sm text-muted-foreground ml-2">({entry.category})</span>
+                          </div>
+                          <span className={`font-semibold ${
+                            entry.type === 'income' ? 'text-green-500' : 'text-red-500'
+                          }`}>
+                            {entry.type === 'income' ? '+' : '-'}${entry.amount.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {new Date(entry.date).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="overview">
