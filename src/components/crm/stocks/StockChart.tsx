@@ -52,25 +52,25 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
         const now = Math.floor(Date.now() / 1000);
         const oneMonthAgo = now - (30 * 24 * 60 * 60);
 
+        const headers = {
+          'X-Finnhub-Token': import.meta.env.VITE_FINNHUB_API_KEY
+        };
+
         // Fetch both price and news data in parallel
         const [priceResponse, newsResponse] = await Promise.all([
           fetch(
             `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${oneMonthAgo}&to=${now}`,
-            {
-              headers: {
-                'X-Finnhub-Token': import.meta.env.VITE_FINNHUB_API_KEY
-              }
-            }
+            { headers }
           ),
           fetch(
             `https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${format(fromUnixTime(oneMonthAgo), 'yyyy-MM-dd')}&to=${format(fromUnixTime(now), 'yyyy-MM-dd')}`,
-            {
-              headers: {
-                'X-Finnhub-Token': import.meta.env.VITE_FINNHUB_API_KEY
-              }
-            }
+            { headers }
           )
         ]);
+
+        if (!priceResponse.ok || !newsResponse.ok) {
+          throw new Error("API request failed");
+        }
 
         const [priceData, newsData] = await Promise.all([
           priceResponse.json(),
