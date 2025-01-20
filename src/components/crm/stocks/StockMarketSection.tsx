@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { SearchBar } from "./SearchBar";
 import { ChartSection } from "./ChartSection";
 import { TrendingStocks } from "./TrendingStocks";
@@ -9,14 +12,30 @@ import { NewsSection } from "./NewsSection";
 
 type TimeRange = "1D" | "1W" | "1M" | "1Y" | "3Y" | "5Y" | "10Y";
 
-export const StockMarketSection = () => {
+// Make sure to export the component as default
+const StockMarketSection = () => {
   const session = useSession();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("1M");
-  const [selectedStock, setSelectedStock] = useState<string | null>(null);
+  const [selectedStock, setSelectedStock] = useState<string>("AAPL"); // Set default value
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
-  // ... rest of your existing state management code ...
+  const { data: favoriteStocks, refetch: refetchFavorites } = useQuery({
+    queryKey: ["favorite-stocks", session?.user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("favorite_stocks")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  // ... rest of your existing functions (handleSearch, addToFavorites, removeFromFavorites) ...
 
   return (
     <div className="space-y-4 lg:space-y-6">
@@ -35,7 +54,7 @@ export const StockMarketSection = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2 space-y-4">
                 <ChartSection
-                  symbol={selectedStock || (favoriteStocks?.[0]?.symbol ?? "AAPL")}
+                  symbol={selectedStock}
                   selectedTimeRange={selectedTimeRange}
                   onTimeRangeChange={setSelectedTimeRange}
                 />
@@ -58,9 +77,11 @@ export const StockMarketSection = () => {
         </CardContent>
       </Card>
       
-      <NewsSection 
-        symbol={selectedStock || (favoriteStocks?.[0]?.symbol ?? "AAPL")} 
-      />
+      <NewsSection symbol={selectedStock} />
     </div>
   );
 };
+
+// Add both default and named exports
+export default StockMarketSection;
+export { StockMarketSection };
