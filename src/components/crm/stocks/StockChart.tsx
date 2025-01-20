@@ -52,7 +52,7 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   const [averagePrice, setAveragePrice] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-};
+
   useEffect(() => {
     const fetchStockData = async () => {
       if (!symbol) return;
