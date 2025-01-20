@@ -1,189 +1,261 @@
-import { useState, useEffect } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { SearchBar } from "./SearchBar";
-import { ChartSection } from "./ChartSection";
-import { TrendingStocks } from "./TrendingStocks";
-import { SearchResults } from "./SearchResults";
-
-type TimeRange = "1D" | "1W" | "1M" | "1Y" | "3Y" | "5Y" | "10Y";
+// src/components/crm/stocks/StockMarketSection.tsx
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import SearchBar from './SearchBar';
+import SearchResults from './SearchResults';
+import StockChart from './StockChart';
+import TimeRangeSelector from './TimeRangeSelector';
+import FavoriteStocks from './FavoriteStocks';
+import TrendingStocks from './TrendingStocks';
+import NewsSection from './NewsSection';
 
 export const StockMarketSection = () => {
-  const session = useSession();
-  const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("1M");
-  const [selectedStock, setSelectedStock] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedStock, setSelectedStock] = useState<string>('AAPL');
+  const [timeRange, setTimeRange] = useState<string>('1Y');
 
-  const { data: favoriteStocks, refetch: refetchFavorites } = useQuery({
-    queryKey: ["favorite-stocks", session?.user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("favorite_stocks")
-        .select("*")
-        .order("created_at", { ascending: true });
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Stock Market Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SearchBar onStockSelect={setSelectedStock} />
+            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+            <StockChart symbol={selectedStock} timeRange={timeRange} />
+          </CardContent>
+        </Card>
+        <NewsSection symbol={selectedStock} />
+      </div>
+      <div className="space-y-6">
+        <FavoriteStocks onSelect={setSelectedStock} />
+        <TrendingStocks onSelect={setSelectedStock} />
+        <SearchResults onSelect={setSelectedStock} />
+      </div>
+    </div>
+  );
+};
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!session?.user?.id,
-  });
+// src/components/crm/stocks/SearchBar.tsx
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 
-  useEffect(() => {
-    if (!session?.user?.id) return;
+interface SearchBarProps {
+  onStockSelect: (symbol: string) => void;
+}
 
-    const channel = supabase
-      .channel('favorite-stocks-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'favorite_stocks',
-          filter: `user_id=eq.${session.user.id}`,
-        },
-        () => {
-          refetchFavorites();
-        }
-      )
-      .subscribe();
+const SearchBar = ({ onStockSelect }: SearchBarProps) => {
+  const [query, setQuery] = useState('');
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [session?.user?.id, refetchFavorites]);
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    
-    try {
-      const response = await fetch(
-        `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${searchQuery}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
-      );
-      const data = await response.json();
-      
-      if (data.bestMatches) {
-        setSearchResults(data.bestMatches);
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to search stocks. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const addToFavorites = async (symbol: string, companyName: string) => {
-    if (!session?.user?.id) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to add stocks to favorites.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase.from("favorite_stocks").insert({
-        user_id: session.user.id,
-        symbol,
-        company_name: companyName,
-      });
-
-      if (error) {
-        if (error.message.includes('User cannot have more than 10 favorite stocks')) {
-          toast({
-            title: "Limit Reached",
-            description: "You can only add up to 10 favorite stocks.",
-            variant: "destructive",
-          });
-        } else {
-          throw error;
-        }
-        return;
-      }
-
-      toast({
-        title: "Success",
-        description: "Stock added to favorites.",
-      });
-      
-      refetchFavorites();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add stock to favorites.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const removeFromFavorites = async (stockId: string) => {
-    try {
-      const { error } = await supabase
-        .from("favorite_stocks")
-        .delete()
-        .eq("id", stockId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Stock removed from favorites.",
-      });
-      
-      refetchFavorites();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to remove stock from favorites.",
-        variant: "destructive",
-      });
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query) onStockSelect(query.toUpperCase());
   };
 
   return (
-    <Card className="mt-6">
+    <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
+      <Input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Enter stock symbol (e.g. AAPL)"
+        className="flex-1"
+      />
+      <Button type="submit">
+        <Search className="h-4 w-4 mr-2" />
+        Search
+      </Button>
+    </form>
+  );
+};
+
+export default SearchBar;
+
+// src/components/crm/stocks/TimeRangeSelector.tsx
+import { Button } from '@/components/ui/button';
+
+interface TimeRangeSelectorProps {
+  value: string;
+  onChange: (range: string) => void;
+}
+
+const TimeRangeSelector = ({ value, onChange }: TimeRangeSelectorProps) => {
+  const ranges = [
+    { label: '1D', value: '1D' },
+    { label: '1W', value: '1W' },
+    { label: '1M', value: '1M' },
+    { label: '3M', value: '3M' },
+    { label: '1Y', value: '1Y' },
+    { label: '5Y', value: '5Y' },
+  ];
+
+  return (
+    <div className="flex gap-2 mb-4">
+      {ranges.map((range) => (
+        <Button
+          key={range.value}
+          variant={value === range.value ? 'default' : 'outline'}
+          onClick={() => onChange(range.value)}
+          size="sm"
+        >
+          {range.label}
+        </Button>
+      ))}
+    </div>
+  );
+};
+
+export default TimeRangeSelector;
+
+// src/components/crm/stocks/FavoriteStocks.tsx
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface FavoriteStocksProps {
+  onSelect: (symbol: string) => void;
+}
+
+const FavoriteStocks = ({ onSelect }: FavoriteStocksProps) => {
+  const favorites = [
+    { symbol: 'AAPL', name: 'Apple Inc.' },
+    { symbol: 'MSFT', name: 'Microsoft Corporation' },
+    { symbol: 'GOOGL', name: 'Alphabet Inc.' },
+    { symbol: 'AMZN', name: 'Amazon.com Inc.' },
+  ];
+
+  return (
+    <Card>
       <CardHeader>
-        <CardTitle>Stock Market</CardTitle>
+        <CardTitle>Favorites</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <SearchBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onSearch={handleSearch}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <ChartSection
-                symbol={selectedStock || (favoriteStocks?.[0]?.symbol ?? "AAPL")}
-                selectedTimeRange={selectedTimeRange}
-                onTimeRangeChange={setSelectedTimeRange}
-              />
-            </div>
-            <div className="space-y-4">
-              <TrendingStocks 
-                onSelect={setSelectedStock}
-                favorites={favoriteStocks || []}
-                onAddToFavorites={addToFavorites}
-                onRemoveFromFavorites={removeFromFavorites}
-              />
-              <SearchResults
-                results={searchResults}
-                onAddToFavorites={addToFavorites}
-                favorites={favoriteStocks || []}
-              />
-            </div>
-          </div>
+        <div className="space-y-2">
+          {favorites.map((stock) => (
+            <button
+              key={stock.symbol}
+              onClick={() => onSelect(stock.symbol)}
+              className="w-full text-left p-2 hover:bg-muted rounded-md transition-colors"
+            >
+              <div className="font-medium">{stock.symbol}</div>
+              <div className="text-sm text-muted-foreground">{stock.name}</div>
+            </button>
+          ))}
         </div>
       </CardContent>
     </Card>
   );
 };
+
+export default FavoriteStocks;
+
+// src/components/crm/stocks/TrendingStocks.tsx
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, TrendingDown } from 'lucide-react';
+
+interface TrendingStocksProps {
+  onSelect: (symbol: string) => void;
+}
+
+const TrendingStocks = ({ onSelect }: TrendingStocksProps) => {
+  const trending = [
+    { symbol: 'NVDA', name: 'NVIDIA Corporation', change: 2.5 },
+    { symbol: 'TSLA', name: 'Tesla, Inc.', change: -1.8 },
+    { symbol: 'META', name: 'Meta Platforms Inc.', change: 1.2 },
+    { symbol: 'AMD', name: 'Advanced Micro Devices', change: -0.8 },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Trending</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {trending.map((stock) => (
+            <button
+              key={stock.symbol}
+              onClick={() => onSelect(stock.symbol)}
+              className="w-full text-left p-2 hover:bg-muted rounded-md transition-colors"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="font-medium">{stock.symbol}</div>
+                  <div className="text-sm text-muted-foreground">{stock.name}</div>
+                </div>
+                <div className={`flex items-center ${stock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {stock.change >= 0 ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
+                  {Math.abs(stock.change)}%
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default TrendingStocks;
+
+// src/components/crm/stocks/NewsSection.tsx
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ExternalLink } from 'lucide-react';
+
+interface NewsSectionProps {
+  symbol: string;
+}
+
+const NewsSection = ({ symbol }: NewsSectionProps) => {
+  // This would typically fetch real news data
+  const news = [
+    {
+      id: 1,
+      title: `Latest news about ${symbol}`,
+      source: 'Financial Times',
+      url: '#',
+      time: '2 hours ago',
+    },
+    {
+      id: 2,
+      title: `${symbol} quarterly earnings report`,
+      source: 'Reuters',
+      url: '#',
+      time: '4 hours ago',
+    },
+    // Add more news items
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Latest News</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {news.map((item) => (
+            <a
+              key={item.id}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block p-3 hover:bg-muted rounded-md transition-colors"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-medium">{item.title}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {item.source} • {item.time}
+                  </div>
+                </div>
+                <ExternalLink className="h-4 w-4 flex-shrink-0" />
+              </div>
+            </a>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default NewsSection;
