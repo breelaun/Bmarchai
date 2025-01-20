@@ -55,6 +55,7 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
 
   const formatPublishedDate = (dateString: string) => {
     try {
+      // Alpha Vantage format: YYYYMMDDTHHMMSS
       const year = dateString.slice(0, 4);
       const month = dateString.slice(4, 6);
       const day = dateString.slice(6, 8);
@@ -76,9 +77,9 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
 
   if (loading) {
     return (
-      <Card className="mt-4 bg-black" id="news-section">
+      <Card className="mt-4 bg-white dark:bg-gray-900">
         <CardContent className="flex items-center justify-center h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin text-yellow-500" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#f7bd00]" />
         </CardContent>
       </Card>
     );
@@ -86,7 +87,7 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
 
   if (error) {
     return (
-      <Card className="mt-4 bg-black" id="news-section">
+      <Card className="mt-4 bg-white dark:bg-gray-900">
         <CardContent className="flex items-center justify-center h-[200px] text-red-500">
           {error}
         </CardContent>
@@ -95,16 +96,16 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
   }
 
   return (
-    <Card className="mt-4 bg-black border-0" id="news-section">
+    <Card className="mt-4 bg-white dark:bg-gray-900">
       <CardHeader>
-        <CardTitle className="text-lg text-yellow-500">Latest {symbol} News</CardTitle>
+        <CardTitle className="text-lg">Latest {symbol} News</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {news.map((item, index) => (
             <div
               key={index}
-              className="p-4 rounded-lg border border-gray-800 hover:bg-gray-900 transition-colors"
+              className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="flex justify-between items-start gap-4">
                 <div>
@@ -112,15 +113,15 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-yellow-500 hover:underline inline-flex items-center gap-2"
+                    className="font-semibold text-[#f7bd00] hover:underline inline-flex items-center gap-2"
                   >
                     {item.title}
                     <ExternalLink className="h-4 w-4" />
                   </a>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {item.source.name} • {formatPublishedDate(item.publishedAt)}
                   </p>
-                  <p className="mt-2 text-sm text-gray-300 line-clamp-2">{item.summary}</p>
+                  <p className="mt-2 text-sm line-clamp-2">{item.summary}</p>
                 </div>
               </div>
             </div>

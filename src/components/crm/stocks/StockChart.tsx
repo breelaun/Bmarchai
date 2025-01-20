@@ -47,66 +47,66 @@ const getDataKey = (timeRange: string) => {
   }
 };
 
+const filterDataByTimeRange = (data: any[], timeRange: string) => {
+  const now = new Date();
+  const filtered = data.filter(item => {
+    const itemDate = new Date(item.date);
+    switch (timeRange) {
+      case "1D":
+        return itemDate >= new Date(now.setDate(now.getDate() - 1));
+      case "1W":
+        return itemDate >= new Date(now.setDate(now.getDate() - 7));
+      case "1M":
+        return itemDate >= new Date(now.setMonth(now.getMonth() - 1));
+      case "1Y":
+        return itemDate >= new Date(now.setFullYear(now.getFullYear() - 1));
+      case "3Y":
+        return itemDate >= new Date(now.setFullYear(now.getFullYear() - 3));
+      case "5Y":
+        return itemDate >= new Date(now.setFullYear(now.getFullYear() - 5));
+      case "10Y":
+        return itemDate >= new Date(now.setFullYear(now.getFullYear() - 10));
+      default:
+        return true;
+    }
+  });
+  return filtered;
+};
+
 const StockChart = ({ symbol, timeRange }: StockChartProps) => {
   const [data, setData] = useState<{ date: string; price: number; }[]>([]);
   const [averagePrice, setAveragePrice] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-};
+
   useEffect(() => {
     const fetchStockData = async () => {
-      if (!symbol) return;
-      
       setLoading(true);
       setError(null);
-      
       try {
-        const functionName = getTimeSeriesFunction(timeRange);
+        const function_name = getTimeSeriesFunction(timeRange);
         const interval = getInterval(timeRange);
-        const apiKey = import.meta.env.VITE_ALPHA_VANTAGE_API_KEY;
-        
-        if (!apiKey) {
-          throw new Error("API key not configured");
-        }
-
         const response = await fetch(
-          `https://www.alphavantage.co/query?function=${functionName}&symbol=${symbol}${interval}&apikey=${apiKey}`
+          `https://www.alphavantage.co/query?function=${function_name}&symbol=${symbol}${interval}&apikey=${import.meta.env.KUH2RAIUOSQITTNR}`
         );
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
         const result = await response.json();
 
         if (result["Error Message"]) {
           throw new Error(result["Error Message"]);
         }
 
-        if (result["Note"]) {
-          throw new Error("API call frequency exceeded. Please try again later.");
-        }
-
         const timeSeriesData = result[getDataKey(timeRange)];
-        if (!timeSeriesData || Object.keys(timeSeriesData).length === 0) {
-          throw new Error("No data available for this symbol");
+        if (!timeSeriesData) {
+          throw new Error("No data available");
         }
 
-        const processedData = Object.entries(timeSeriesData)
-          .map(([date, values]: [string, any]) => ({
-            date,
-            price: parseFloat(values["4. close"])
-          }))
-          .filter(item => !isNaN(item.price))
-          .reverse();
+        const processedData = Object.entries(timeSeriesData).map(([date, values]: [string, any]) => ({
+          date,
+          price: parseFloat(values["4. close"])
+        })).reverse();
 
-        if (processedData.length === 0) {
-          throw new Error("No valid price data available");
-        }
-
-        setData(processedData);
-        const avg = processedData.reduce((sum, item) => sum + item.price, 0) / processedData.length;
-        setAveragePrice(Number(avg.toFixed(2)));
+        const filteredData = filterDataByTimeRange(processedData, timeRange);
+        setData(filteredData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch stock data");
         console.error("Error fetching stock data:", err);
@@ -118,13 +118,24 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
     fetchStockData();
   }, [symbol, timeRange]);
 
+  useEffect(() => {
+    if (data.length > 0) {
+      const avg = data.reduce((sum, item) => sum + item.price, 0) / data.length;
+      setAveragePrice(Number(avg.toFixed(2)));
+    }
+  }, [data]);
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-background/95 backdrop-blur-sm border rounded-lg p-2 shadow-lg">
-          <p className="font-semibold">{format(new Date(label), "PPP")}</p>
-          <p className="text-primary">${Number(payload[0].value).toFixed(2)}</p>
-        </div>
+        <Card className="bg-background/95 backdrop-blur-sm border shadow-lg">
+          <CardContent className="p-3">
+            <p className="font-semibold">{format(new Date(label), "PPP")}</p>
+            <p className="text-primary">
+              ${Number(payload[0].value).toFixed(2)}
+            </p>
+          </CardContent>
+        </Card>
       );
     }
     return null;
@@ -169,11 +180,22 @@ const StockChart = ({ symbol, timeRange }: StockChartProps) => {
             >
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  <stop
+                    offset="5%"
+                    stopColor="hsl(var(--primary))"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="hsl(var(--primary))"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-muted/30"
+              />
               <XAxis
                 dataKey="date"
                 tickFormatter={(date) => format(new Date(date), "MMM d")}
