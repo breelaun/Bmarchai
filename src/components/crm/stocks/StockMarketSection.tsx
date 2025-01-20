@@ -11,12 +11,12 @@ import { SearchResults } from "./SearchResults";
 
 type TimeRange = "1D" | "1W" | "1M" | "1Y" | "3Y" | "5Y" | "10Y";
 
-const StockMarketSection = () => {
+export const StockMarketSection = () => {
   const session = useSession();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("1M");
-  const [selectedStock, setSelectedStock] = useState<string>("AAPL");
+  const [selectedStock, setSelectedStock] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
   const { data: favoriteStocks, refetch: refetchFavorites } = useQuery({
@@ -33,30 +33,47 @@ const StockMarketSection = () => {
     enabled: !!session?.user?.id,
   });
 
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const channel = supabase
+      .channel('favorite-stocks-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'favorite_stocks',
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        () => {
+          refetchFavorites();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user?.id, refetchFavorites]);
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
-
+    
     try {
       const response = await fetch(
         `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${searchQuery}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
       );
       const data = await response.json();
-
+      
       if (data.bestMatches) {
         setSearchResults(data.bestMatches);
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No results found or API limit reached",
-        });
       }
     } catch (error) {
-      console.error("Search error:", error);
       toast({
-        variant: "destructive",
         title: "Error",
-        description: "Failed to search stocks",
+        description: "Failed to search stocks. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -64,104 +81,109 @@ const StockMarketSection = () => {
   const addToFavorites = async (symbol: string, companyName: string) => {
     if (!session?.user?.id) {
       toast({
+        title: "Authentication Required",
+        description: "Please log in to add stocks to favorites.",
         variant: "destructive",
-        title: "Error",
-        description: "Please login to add favorites",
       });
       return;
     }
 
     try {
-      const { error } = await supabase.from("favorite_stocks").insert([
-        {
-          user_id: session.user.id,
-          symbol,
-          company_name: companyName,
-        },
-      ]);
+      const { error } = await supabase.from("favorite_stocks").insert({
+        user_id: session.user.id,
+        symbol,
+        company_name: companyName,
+      });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('User cannot have more than 10 favorite stocks')) {
+          toast({
+            title: "Limit Reached",
+            description: "You can only add up to 10 favorite stocks.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       toast({
         title: "Success",
-        description: `Added ${symbol} to favorites`,
+        description: "Stock added to favorites.",
       });
+      
       refetchFavorites();
     } catch (error) {
-      console.error("Error adding favorite:", error);
       toast({
-        variant: "destructive",
         title: "Error",
-        description: "Failed to add to favorites",
+        description: "Failed to add stock to favorites.",
+        variant: "destructive",
       });
     }
   };
 
-  const removeFromFavorites = async (id: string) => {
+  const removeFromFavorites = async (stockId: string) => {
     try {
       const { error } = await supabase
         .from("favorite_stocks")
         .delete()
-        .eq("id", id);
+        .eq("id", stockId);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Removed from favorites",
+        description: "Stock removed from favorites.",
       });
+      
       refetchFavorites();
     } catch (error) {
-      console.error("Error removing favorite:", error);
       toast({
-        variant: "destructive",
         title: "Error",
-        description: "Failed to remove from favorites",
+        description: "Failed to remove stock from favorites.",
+        variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="space-y-4 lg:space-y-6">
-      <Card className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <CardHeader>
-          <CardTitle>Stock Market</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <SearchBar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onSearch={handleSearch}
-            />
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>Stock Market</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onSearch={handleSearch}
+          />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 space-y-4">
-                <ChartSection
-                  symbol={selectedStock}
-                  selectedTimeRange={selectedTimeRange}
-                  onTimeRangeChange={setSelectedTimeRange}
-                />
-              </div>
-              <div className="space-y-4">
-                <TrendingStocks 
-                  onSelect={setSelectedStock}
-                  favorites={favoriteStocks || []}
-                  onAddToFavorites={addToFavorites}
-                  onRemoveFromFavorites={removeFromFavorites}
-                />
-                <SearchResults
-                  results={searchResults}
-                  onAddToFavorites={addToFavorites}
-                  favorites={favoriteStocks || []}
-                />
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <ChartSection
+                symbol={selectedStock || (favoriteStocks?.[0]?.symbol ?? "AAPL")}
+                selectedTimeRange={selectedTimeRange}
+                onTimeRangeChange={setSelectedTimeRange}
+              />
+            </div>
+            <div className="space-y-4">
+              <TrendingStocks 
+                onSelect={setSelectedStock}
+                favorites={favoriteStocks || []}
+                onAddToFavorites={addToFavorites}
+                onRemoveFromFavorites={removeFromFavorites}
+              />
+              <SearchResults
+                results={searchResults}
+                onAddToFavorites={addToFavorites}
+                favorites={favoriteStocks || []}
+              />
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
-
-export default StockMarketSection;
