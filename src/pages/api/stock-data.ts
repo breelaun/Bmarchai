@@ -5,7 +5,7 @@ interface StockResponse {
   error?: string;
 }
 
-export async function fetchStockData(symbol: string, startDate?: string, endDate?: string): Promise<StockResponse> {
+export async function fetchStockData(symbol: string, startDate?: string, endDate?: string) {
   if (!symbol) {
     throw new Error('Stock symbol is required');
   }
@@ -13,8 +13,7 @@ export async function fetchStockData(symbol: string, startDate?: string, endDate
   try {
     const apiKey = import.meta.env.VITE_POLYGON_API_KEY;
     if (!apiKey) {
-      console.error('Polygon API key not configured');
-      return { results: [] };
+      throw new Error('API key not configured');
     }
 
     // Construct API URL
@@ -26,15 +25,15 @@ export async function fetchStockData(symbol: string, startDate?: string, endDate
 
     // Fetch stock data
     const response = await fetch(url.toString());
+    const data = await response.json();
+
     if (!response.ok) {
-      console.error('Failed to fetch stock data:', await response.text());
-      return { results: [] };
+      throw new Error(data.error || 'Failed to fetch stock data');
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Stock API error:', error);
-    return { results: [] };
+    throw error;
   }
 }

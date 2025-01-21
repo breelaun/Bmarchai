@@ -7,36 +7,20 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchStockData } from "@/pages/api/stock-data";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Plus, X, TrendingUp, TrendingDown, CandlestickChart, LineChart as LineChartIcon } from "lucide-react";
+import { Bell, Plus, X } from "lucide-react";
 
 interface WatchlistItem {
   symbol: string;
   alertPrice: number | null;
 }
 
-interface StockStats {
-  high: number;
-  low: number;
-  volume: number;
-  priceChange: number;
-  priceChangePercent: number;
-}
-
 export const StockMarket = () => {
   const { toast } = useToast();
   const [symbol, setSymbol] = useState("AAPL");
   const [inputSymbol, setInputSymbol] = useState("AAPL");
-  const [timeRange, setTimeRange] = useState("1M");
+  const [timeRange, setTimeRange] = useState("1M"); // 1D, 1W, 1M, 1Y
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [alertPrice, setAlertPrice] = useState<string>("");
-  const [chartType, setChartType] = useState<"line" | "candlestick">("line");
-  const [stats, setStats] = useState<StockStats>({
-    high: 0,
-    low: 0,
-    volume: 0,
-    priceChange: 0,
-    priceChangePercent: 0
-  });
 
   const getDateRange = () => {
     const end = new Date();
@@ -70,44 +54,15 @@ export const StockMarket = () => {
       return fetchStockData(symbol, startDate, endDate);
     },
     select: (data) => {
-      if (!data?.results) return [];
-      
-      const prices = data.results.map((item: any) => item.c);
-      const volumes = data.results.map((item: any) => item.v);
-      const firstPrice = prices[0];
-      const lastPrice = prices[prices.length - 1];
-      
-      setStats({
-        high: Math.max(...prices),
-        low: Math.min(...prices),
-        volume: volumes.reduce((a: number, b: number) => a + b, 0),
-        priceChange: lastPrice - firstPrice,
-        priceChangePercent: ((lastPrice - firstPrice) / firstPrice) * 100
-      });
-
+      if (!data.results) return [];
       return data.results.map((item: any) => ({
         date: new Date(item.t).toLocaleDateString(),
-        price: item.c,
-        high: item.h,
-        low: item.l,
-        open: item.o,
-        close: item.c,
-        volume: item.v
+        price: item.c
       }));
-    },
-    retry: 1,
-    staleTime: 30000 // Cache for 30 seconds
+    }
   });
 
   const handleSearch = () => {
-    if (!inputSymbol) {
-      toast({
-        title: "Error",
-        description: "Please enter a stock symbol",
-        variant: "destructive"
-      });
-      return;
-    }
     setSymbol(inputSymbol.toUpperCase());
   };
 
@@ -162,6 +117,7 @@ export const StockMarket = () => {
     setAlertPrice("");
   };
 
+  // Check price alerts
   useEffect(() => {
     if (stockData && stockData.length > 0) {
       const currentPrice = stockData[stockData.length - 1].price;
@@ -176,7 +132,7 @@ export const StockMarket = () => {
         }
       });
     }
-  }, [stockData, watchlist, symbol, toast]);
+  }, [stockData, watchlist, toast]);
 
   return (
     <Card className="w-full">
@@ -195,54 +151,19 @@ export const StockMarket = () => {
               <Plus className="mr-2 h-4 w-4" />
               Watch
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => setChartType(chartType === "line" ? "candlestick" : "line")}
-            >
-              {chartType === "line" ? 
-                <CandlestickChart className="mr-2 h-4 w-4" /> :
-                <LineChartIcon className="mr-2 h-4 w-4" />
-              }
-              {chartType === "line" ? "Candlestick" : "Line"}
-            </Button>
           </div>
-
-          <div className="flex gap-4 items-center">
-            <div className="flex gap-2">
-              {["1D", "1W", "1M", "1Y"].map((range) => (
-                <Button
-                  key={range}
-                  variant={timeRange === range ? "default" : "outline"}
-                  onClick={() => setTimeRange(range)}
-                  size="sm"
-                >
-                  {range}
-                </Button>
-              ))}
-            </div>
-
-            {!isLoading && stockData && stockData.length > 0 && (
-              <div className="flex gap-4 ml-4">
-                <Badge variant="outline" className="text-green-500">
-                  <TrendingUp className="mr-1 h-4 w-4" />
-                  High: ${stats.high.toFixed(2)}
-                </Badge>
-                <Badge variant="outline" className="text-red-500">
-                  <TrendingDown className="mr-1 h-4 w-4" />
-                  Low: ${stats.low.toFixed(2)}
-                </Badge>
-                <Badge variant="outline">
-                  Vol: {(stats.volume / 1000000).toFixed(1)}M
-                </Badge>
-                <Badge 
-                  variant="outline"
-                  className={stats.priceChange >= 0 ? "text-green-500" : "text-red-500"}
-                >
-                  {stats.priceChange >= 0 ? "+" : ""}
-                  {stats.priceChangePercent.toFixed(2)}%
-                </Badge>
-              </div>
-            )}
+          
+          <div className="flex gap-2">
+            {["1D", "1W", "1M", "1Y"].map((range) => (
+              <Button
+                key={range}
+                variant={timeRange === range ? "default" : "outline"}
+                onClick={() => setTimeRange(range)}
+                size="sm"
+              >
+                {range}
+              </Button>
+            ))}
           </div>
 
           {watchlist.length > 0 && (
@@ -282,56 +203,16 @@ export const StockMarket = () => {
           <div className="h-[400px] flex items-center justify-center">
             Loading...
           </div>
-        ) : !stockData || stockData.length === 0 ? (
-          <div className="h-[400px] flex items-center justify-center">
-            No data available
-          </div>
         ) : (
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              {chartType === "line" ? (
-                <LineChart data={stockData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={['auto', 'auto']} />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="price" 
-                    stroke="#3b82f6" 
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              ) : (
-                <LineChart data={stockData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={['auto', 'auto']} />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="high" 
-                    stroke="#22c55e" 
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="low" 
-                    stroke="#ef4444" 
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="close" 
-                    stroke="#3b82f6" 
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              )}
+              <LineChart data={stockData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="price" stroke="#3b82f6" />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         )}
