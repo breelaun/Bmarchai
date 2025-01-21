@@ -5,21 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, Users } from "lucide-react";
 import { formatToLocalTime } from "@/utils/timezone";
-
-interface Session {
-  id: string;
-  name: string;
-  description: string | null;
-  start_time: string;
-  duration: string;
-  max_participants: number;
-  vendor_profiles: {
-    business_name: string | null;
-    profiles: {
-      username: string | null;
-    }
-  }
-}
+import { Session } from "@/types/session";
 
 const SessionsPage = () => {
   const session = useSession();
@@ -49,7 +35,17 @@ const SessionsPage = () => {
         .eq('user_id', session.user.id);
 
       if (error) throw error;
-      return data?.map(sp => sp.sessions) as Session[] || [];
+      
+      // Transform the data to match the Session type
+      return (data?.map(sp => ({
+        ...sp.sessions,
+        vendor_profiles: {
+          business_name: sp.sessions.vendor_profiles[0]?.business_name || "",
+          profiles: {
+            username: sp.sessions.vendor_profiles[0]?.profiles[0]?.username || ""
+          }
+        }
+      })) || []) as Session[];
     },
     enabled: !!session?.user?.id
   });
@@ -77,7 +73,17 @@ const SessionsPage = () => {
         .order('start_time', { ascending: true });
 
       if (error) throw error;
-      return data as Session[];
+      
+      // Transform the data to match the Session type
+      return (data?.map(session => ({
+        ...session,
+        vendor_profiles: {
+          business_name: session.vendor_profiles[0]?.business_name || "",
+          profiles: {
+            username: session.vendor_profiles[0]?.profiles[0]?.username || ""
+          }
+        }
+      })) || []) as Session[];
     }
   });
 
