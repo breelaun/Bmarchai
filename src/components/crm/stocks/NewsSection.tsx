@@ -77,9 +77,9 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
 
   if (loading) {
     return (
-      <Card className="mt-4 bg-white dark:bg-gray-900">
+      <Card className="mt-4">
         <CardContent className="flex items-center justify-center h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin text-[#f7bd00]" />
+          <Loader2 className="h-8 w-8 animate-spin" />
         </CardContent>
       </Card>
     );
@@ -87,7 +87,7 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
 
   if (error) {
     return (
-      <Card className="mt-4 bg-white dark:bg-gray-900">
+      <Card className="mt-4">
         <CardContent className="flex items-center justify-center h-[200px] text-red-500">
           {error}
         </CardContent>
@@ -96,7 +96,7 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
   }
 
   return (
-    <Card className="mt-4 bg-white dark:bg-gray-900">
+    <Card className="mt-4">
       <CardHeader>
         <CardTitle className="text-lg">Latest {symbol} News</CardTitle>
       </CardHeader>
@@ -105,7 +105,7 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
           {news.map((item, index) => (
             <div
               key={index}
-              className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="p-4 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="flex justify-between items-start gap-4">
                 <div>
@@ -113,7 +113,7 @@ export const NewsSection = ({ symbol }: NewsSectionProps) => {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-[#f7bd00] hover:underline inline-flex items-center gap-2"
+                    className="font-semibold hover:underline inline-flex items-center gap-2"
                   >
                     {item.title}
                     <ExternalLink className="h-4 w-4" />

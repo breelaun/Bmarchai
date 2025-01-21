@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 // Register ChartJS components
 ChartJS.register(
@@ -36,6 +37,7 @@ const StockChart: React.FC = () => {
   const [stockData, setStockData] = useState<StockData>({ labels: [], prices: [] });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const { toast } = useToast();
   
   const fetchStockData = async (stockSymbol: string) => {
     setIsLoading(true);
@@ -43,28 +45,36 @@ const StockChart: React.FC = () => {
     
     try {
       const response = await fetch(
-        `/api/stock-data?symbol=${stockSymbol}`, // Use backend proxy to protect API key
+        `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${stockSymbol}&apikey=${import.meta.env.VITE_ALPHA_VANTAGE_API_KEY}`
       );
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch stock data');
-      }
       
       const data = await response.json();
       
-      if (data.results && data.results.length > 0) {
-        const labels = data.results.map((item: any) => 
-          new Date(item.t).toLocaleDateString()
-        );
-        const prices = data.results.map((item: any) => item.c);
+      if (data['Time Series (Daily)']) {
+        const timeSeriesData = data['Time Series (Daily)'];
+        const dates = Object.keys(timeSeriesData).slice(0, 30).reverse();
+        const prices = dates.map(date => parseFloat(timeSeriesData[date]['4. close']));
         
-        setStockData({ labels, prices });
+        setStockData({
+          labels: dates,
+          prices: prices
+        });
+
+        toast({
+          title: "Success",
+          description: "Stock data loaded successfully",
+        });
       } else {
-        throw new Error('No data found for the provided symbol');
+        throw new Error(data.Note || 'No data found for the provided symbol');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch stock data';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
