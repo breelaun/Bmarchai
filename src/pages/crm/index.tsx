@@ -69,7 +69,7 @@ const CRMPage = () => {
               <TaskList />
             </TabsContent>
             <TabsContent value="stocks" className="mt-0">
-              <StockMarketSection />
+              <StockMarketSection defaultSymbol="AAPL" />
             </TabsContent>
             <TabsContent value="docs" className="mt-0">
               <DocumentEditor />
