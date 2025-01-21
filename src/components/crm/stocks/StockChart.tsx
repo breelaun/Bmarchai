@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { StockChartProps } from "@/types/stock";
 import {
   AreaChart,
   Area,
@@ -13,10 +12,11 @@ import {
   ReferenceLine,
 } from "recharts";
 import { format } from "date-fns";
+import { TimeRange } from "@/types/stock";
 
-interface StockChartProps {
+interface Props {
   symbol: string;
-  timeRange: string;
+  timeRange: TimeRange;
 }
 
 const getTimeSeriesFunction = (timeRange: string) => {
@@ -48,7 +48,7 @@ const getDataKey = (timeRange: string) => {
   }
 };
 
-const StockChart = ({ symbol, timeRange }: StockChartProps) => {
+const StockChart = ({ symbol, timeRange }: Props) => {
   const [data, setData] = useState<{ date: string; price: number }[]>([]);
   const [averagePrice, setAveragePrice] = useState<number>(0);
   const [loading, setLoading] = useState(false);

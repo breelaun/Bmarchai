@@ -2,19 +2,14 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, X } from "lucide-react";
-
-interface TrendingStocksProps {
-  onSelect: (symbol: string) => void;
-  favorites: Array<{ id: string; symbol: string; company_name: string }>;
-  onAddToFavorites: (symbol: string, companyName: string) => void;
-  onRemoveFromFavorites: (id: string) => void;
-}
+import { TrendingStocksProps } from "@/types/stock";
 
 export const TrendingStocks = ({ 
   onSelect, 
   favorites,
   onAddToFavorites,
-  onRemoveFromFavorites 
+  onRemoveFromFavorites,
+  isLoading 
 }: TrendingStocksProps) => {
   const [trending, setTrending] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

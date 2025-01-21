@@ -1,170 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
-import { useState } from "react";
-import { format } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCards } from "./components/StatCards";
+import { FinancialOverview } from "./components/FinancialOverview";
 import { TopProducts } from "./components/TopProducts";
 import { VideoAnalytics } from "./components/VideoAnalytics";
-import { FinancialOverview } from "./components/FinancialOverview";
 
-interface ProductCount {
-  name: string;
-  count: number;
-}
-
-interface ChartDataPoint {
-  date: string;
-  earned: number;
-  spent: number;
-  balance: number;
-}
-
-const AnalyticsDashboard = () => {
-  const [timeframe, setTimeframe] = useState<'once' | 'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
-
-  const { data: salesData, isLoading: loadingSales } = useQuery({
-    queryKey: ['sales-analytics'],
-    queryFn: async () => {
-      const { data: sales, error } = await supabase
-        .from('sales_transactions')
-        .select(`
-          amount,
-          products (name),
-          created_at
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return sales;
-    },
-  });
-
-  const { data: customerCount, isLoading: loadingCustomers } = useQuery({
-    queryKey: ['customer-count'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('crm_clients')
-        .select('*', { count: 'exact', head: true });
-
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: topProducts, isLoading: loadingProducts } = useQuery({
-    queryKey: ['top-products'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('sales_transactions')
-        .select(`
-          product_id,
-          products (name)
-        `)
-        .not('product_id', 'is', null);
-
-      if (error) throw error;
-
-      const productCounts: Record<string, number> = {};
-      data.forEach((item) => {
-        const productName = item.products?.name;
-        if (productName) {
-          productCounts[productName] = (productCounts[productName] || 0) + 1;
-        }
-      });
-
-      return Object.entries(productCounts)
-        .map(([name, count]): ProductCount => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-    },
-  });
-
-  const { data: videoAnalytics, isLoading: loadingVideos } = useQuery({
-    queryKey: ['video-analytics'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('video_analytics')
-        .select('*')
-        .order('view_count', { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const { data: financialData, isLoading: loadingFinancial } = useQuery({
-    queryKey: ['financial-data', timeframe],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('financial_transactions')
-        .select('*')
-        .order('date', { ascending: true });
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const totalRevenue = salesData?.reduce((sum, sale) => sum + Number(sale.amount), 0) || 0;
-
-  const processFinancialData = (): ChartDataPoint[] => {
-    if (!financialData) return [];
-
-    const groupedData: Record<string, ChartDataPoint> = {};
-    
-    financialData.forEach((transaction) => {
-      const date = format(new Date(transaction.date), 'yyyy-MM-dd');
-      if (!groupedData[date]) {
-        groupedData[date] = {
-          date,
-          earned: 0,
-          spent: 0,
-          balance: 0,
-        };
-      }
-      
-      if (transaction.type === 'earned') {
-        groupedData[date].earned += Number(transaction.amount);
-        groupedData[date].balance += Number(transaction.amount);
-      } else {
-        groupedData[date].spent += Number(transaction.amount);
-        groupedData[date].balance -= Number(transaction.amount);
-      }
-    });
-
-    return Object.values(groupedData);
-  };
-
-  if (loadingSales || loadingCustomers || loadingProducts || loadingVideos || loadingFinancial) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  const chartData = processFinancialData();
-
+export const AnalyticsDashboard = () => {
   return (
-    <div className="space-y-6">
-      <StatCards 
-        customerCount={customerCount}
-        totalRevenue={totalRevenue}
-        salesCount={salesData?.length || 0}
-        videoCount={videoAnalytics?.length || 0}
-      />
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <TopProducts products={topProducts} />
-        <VideoAnalytics videos={videoAnalytics} />
-        <FinancialOverview 
-          timeframe={timeframe}
-          setTimeframe={setTimeframe}
-          chartData={chartData}
-        />
+    <div className="space-y-4">
+      <StatCards />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FinancialOverview />
+        <TopProducts />
       </div>
+      <VideoAnalytics />
     </div>
   );
 };

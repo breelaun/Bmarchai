@@ -7,72 +7,49 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Create Supabase client with additional options
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'supabase-js-client',
-    },
-  },
+  }
 });
 
-// Add error handling for fetch operations
-const handleSupabaseError = async (promise: Promise<any>) => {
-  try {
-    const response = await promise;
-    if (response.error) {
-      console.error('Supabase error:', response.error);
-      throw response.error;
-    }
-    return response.data;
-  } catch (error) {
-    console.error('Operation failed:', error);
-    throw error;
-  }
-};
-
-// Helper functions for common operations
 export const supabaseHelper = {
   async getCurrentUser() {
-    return handleSupabaseError(supabase.auth.getUser());
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return data.user;
   },
   
   async getFavorites() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No user logged in');
-    
-    return handleSupabaseError(
-      supabase
-        .from('stock_favorites')
-        .select('*')
-        .eq('user_id', user.id)
-    );
+    const { data, error } = await supabase
+      .from('stock_favorites')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
   },
   
   async addFavorite(symbol: string, companyName: string) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No user logged in');
-    
-    return handleSupabaseError(
-      supabase
-        .from('stock_favorites')
-        .insert([{ user_id: user.id, symbol, company_name: companyName }])
-        .select()
-        .single()
-    );
+    const { data, error } = await supabase
+      .from('stock_favorites')
+      .insert([{ symbol, company_name: companyName }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
   
   async removeFavorite(id: string) {
-    return handleSupabaseError(
-      supabase
-        .from('stock_favorites')
-        .delete()
-        .eq('id', id)
-    );
+    const { error } = await supabase
+      .from('stock_favorites')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
   }
 };
