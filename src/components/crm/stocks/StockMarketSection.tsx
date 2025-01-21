@@ -5,8 +5,7 @@ import { NewsSection } from "./NewsSection";
 import { TrendingStocks } from "./TrendingStocks";
 import { getFavorites, addFavorite, removeFavorite } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-type TimeRange = "1D" | "1W" | "1M" | "1Y";
+import { TimeRange } from "@/types/stock";
 
 export const StockMarketSection = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("1M");
@@ -70,10 +69,6 @@ export const StockMarketSection = () => {
     }
   };
 
-  const handleTimeRangeChange = (range: TimeRange) => {
-    setSelectedTimeRange(range);
-  };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="md:col-span-2 space-y-4">
@@ -82,7 +77,7 @@ export const StockMarketSection = () => {
             <ChartSection
               symbol={symbol}
               selectedTimeRange={selectedTimeRange}
-              onTimeRangeChange={handleTimeRangeChange}
+              onTimeRangeChange={setSelectedTimeRange}
               onSymbolChange={setSymbol}
             />
           </CardContent>
