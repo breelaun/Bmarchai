@@ -1,12 +1,13 @@
 import StockChart from "./StockChart";
+import { TimeRange } from "@/types/stock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 interface ChartSectionProps {
   symbol: string;
-  selectedTimeRange: string;
-  onTimeRangeChange: (range: string) => void;
+  selectedTimeRange: TimeRange;
+  onTimeRangeChange: (range: TimeRange) => void;
   onSymbolChange: (symbol: string) => void;
 }
 
