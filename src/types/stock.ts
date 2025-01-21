@@ -15,10 +15,7 @@ export interface NewsItem {
   summary: string;
 }
 
-export interface TimeRange {
-  start: string;
-  end: string;
-}
+export type TimeRange = "1D" | "1W" | "1M" | "1Y";
 
 export interface ChartData {
   labels: string[];
@@ -27,4 +24,5 @@ export interface ChartData {
 
 export interface StockChartProps {
   symbol: string;
+  timeRange: TimeRange;
 }

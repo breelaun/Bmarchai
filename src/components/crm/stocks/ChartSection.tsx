@@ -24,6 +24,8 @@ export const ChartSection = ({
     onSymbolChange(inputSymbol.toUpperCase());
   };
 
+  const timeRanges: TimeRange[] = ["1D", "1W", "1M", "1Y"];
+
   return (
     <div className="space-y-4">
       <form onSubmit={handleSymbolSubmit} className="flex gap-2">
@@ -37,7 +39,7 @@ export const ChartSection = ({
       </form>
       
       <div className="flex gap-2">
-        {["1D", "1W", "1M", "1Y"].map((range) => (
+        {timeRanges.map((range) => (
           <Button
             key={range}
             variant={selectedTimeRange === range ? "default" : "outline"}

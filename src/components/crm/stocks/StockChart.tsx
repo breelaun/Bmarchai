@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { StockChartProps } from "@/types/stock";
+import { TimeRange } from "@/types/stock";
 import {
   AreaChart,
   Area,
@@ -16,7 +16,7 @@ import { format } from "date-fns";
 
 interface StockChartProps {
   symbol: string;
-  timeRange: string;
+  timeRange: TimeRange;
 }
 
 const getTimeSeriesFunction = (timeRange: string) => {
