@@ -3,8 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChartSection } from "./ChartSection";
 import { NewsSection } from "./NewsSection";
 import { TrendingStocks } from "./TrendingStocks";
-import { supabaseHelper } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase, supabaseHelper } from "@/integrations/supabase/client";
 
 type TimeRange = "1D" | "1W" | "1M" | "1Y";
 
