@@ -70,7 +70,7 @@ export const StockMarket = () => {
       return fetchStockData(symbol, startDate, endDate);
     },
     select: (data) => {
-      if (!data.results) return [];
+      if (!data?.results) return [];
       
       const prices = data.results.map((item: any) => item.c);
       const volumes = data.results.map((item: any) => item.v);
@@ -94,10 +94,20 @@ export const StockMarket = () => {
         close: item.c,
         volume: item.v
       }));
-    }
+    },
+    retry: 1,
+    staleTime: 30000 // Cache for 30 seconds
   });
 
   const handleSearch = () => {
+    if (!inputSymbol) {
+      toast({
+        title: "Error",
+        description: "Please enter a stock symbol",
+        variant: "destructive"
+      });
+      return;
+    }
     setSymbol(inputSymbol.toUpperCase());
   };
 
@@ -166,7 +176,7 @@ export const StockMarket = () => {
         }
       });
     }
-  }, [stockData, watchlist, toast]);
+  }, [stockData, watchlist, symbol, toast]);
 
   return (
     <Card className="w-full">
@@ -211,7 +221,7 @@ export const StockMarket = () => {
               ))}
             </div>
 
-            {!isLoading && (
+            {!isLoading && stockData && stockData.length > 0 && (
               <div className="flex gap-4 ml-4">
                 <Badge variant="outline" className="text-green-500">
                   <TrendingUp className="mr-1 h-4 w-4" />
@@ -272,6 +282,10 @@ export const StockMarket = () => {
           <div className="h-[400px] flex items-center justify-center">
             Loading...
           </div>
+        ) : !stockData || stockData.length === 0 ? (
+          <div className="h-[400px] flex items-center justify-center">
+            No data available
+          </div>
         ) : (
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -279,19 +293,43 @@ export const StockMarket = () => {
                 <LineChart data={stockData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
-                  <YAxis />
+                  <YAxis domain={['auto', 'auto']} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="price" stroke="#3b82f6" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="price" 
+                    stroke="#3b82f6" 
+                    dot={false}
+                    isAnimationActive={false}
+                  />
                 </LineChart>
               ) : (
                 <LineChart data={stockData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
-                  <YAxis />
+                  <YAxis domain={['auto', 'auto']} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="high" stroke="#22c55e" />
-                  <Line type="monotone" dataKey="low" stroke="#ef4444" />
-                  <Line type="monotone" dataKey="close" stroke="#3b82f6" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="high" 
+                    stroke="#22c55e" 
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="low" 
+                    stroke="#ef4444" 
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="close" 
+                    stroke="#3b82f6" 
+                    dot={false}
+                    isAnimationActive={false}
+                  />
                 </LineChart>
               )}
             </ResponsiveContainer>
