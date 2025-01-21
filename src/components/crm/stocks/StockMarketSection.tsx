@@ -70,8 +70,8 @@ export const StockMarketSection = () => {
     }
   };
 
-  const handleTimeRangeChange = (range: string) => {
-    setSelectedTimeRange(range as TimeRange);
+  const handleTimeRangeChange = (range: TimeRange) => {
+    setSelectedTimeRange(range);
   };
 
   return (

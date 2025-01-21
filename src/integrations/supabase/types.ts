@@ -937,6 +937,30 @@ export type Database = {
           },
         ]
       }
+      stock_favorites: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          symbol?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tool_usage: {
         Row: {
           action: string
