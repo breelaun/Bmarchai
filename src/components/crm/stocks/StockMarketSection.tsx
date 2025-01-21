@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartSection } from "./ChartSection";
+import { TimeRange } from "@/types/stock";
 
 type TimeRange = "1D" | "1W" | "1M" | "1Y";
 
