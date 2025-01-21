@@ -21,16 +21,14 @@ export const AnalyticsDashboard = () => {
     balance: number;
   }>>([]);
   const [products, setProducts] = useState<Array<{
-    id: string;
     name: string;
-    sales: number;
-    revenue: number;
+    count: number;
   }>>([]);
   const [videos, setVideos] = useState<Array<{
     id: string;
     title: string;
-    views: number;
-    watchTime: number;
+    watch_time_seconds: number;
+    view_count: number;
   }>>([]);
 
   useEffect(() => {
@@ -108,10 +106,8 @@ export const AnalyticsDashboard = () => {
 
         if (productsData) {
           const processedProducts = productsData.map(product => ({
-            id: product.id,
             name: product.name,
-            sales: product.sales_transactions?.length || 0,
-            revenue: product.sales_transactions?.reduce((sum: number, sale: any) => sum + (sale.amount || 0), 0) || 0
+            count: product.sales_transactions?.length || 0
           }));
           setProducts(processedProducts);
         }
@@ -125,8 +121,8 @@ export const AnalyticsDashboard = () => {
           const processedVideos = videosData.map(video => ({
             id: video.video_id,
             title: video.title,
-            views: video.view_count || 0,
-            watchTime: video.watch_time_seconds || 0
+            watch_time_seconds: video.watch_time_seconds || 0,
+            view_count: video.view_count || 0
           }));
           setVideos(processedVideos);
         }
