@@ -39,16 +39,16 @@ const SessionsPage = () => {
       return data?.map(sp => ({
         id: sp.sessions.id,
         name: sp.sessions.name,
-        description: sp.sessions.description,
+        description: sp.sessions.description || "",
         start_time: sp.sessions.start_time,
         duration: sp.sessions.duration,
         max_participants: sp.sessions.max_participants,
-        vendor_profiles: sp.sessions.vendor_profiles.map(vp => ({
-          business_name: vp.business_name || "",
-          profiles: vp.profiles.map(p => ({
-            username: p.username || ""
-          }))
-        }))
+        vendor_profiles: sp.sessions.vendor_profiles ? [{
+          business_name: sp.sessions.vendor_profiles.business_name || "",
+          profiles: [{
+            username: sp.sessions.vendor_profiles.profiles.username || ""
+          }]
+        }] : []
       })) as Session[] || [];
     },
     enabled: !!session?.user?.id
@@ -81,16 +81,16 @@ const SessionsPage = () => {
       return data?.map(session => ({
         id: session.id,
         name: session.name,
-        description: session.description,
+        description: session.description || "",
         start_time: session.start_time,
         duration: session.duration,
         max_participants: session.max_participants,
-        vendor_profiles: session.vendor_profiles.map(vp => ({
-          business_name: vp.business_name || "",
-          profiles: vp.profiles.map(p => ({
-            username: p.username || ""
-          }))
-        }))
+        vendor_profiles: session.vendor_profiles ? [{
+          business_name: session.vendor_profiles.business_name || "",
+          profiles: [{
+            username: session.vendor_profiles.profiles.username || ""
+          }]
+        }] : []
       })) as Session[] || [];
     }
   });
