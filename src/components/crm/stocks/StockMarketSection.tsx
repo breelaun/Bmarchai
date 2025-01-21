@@ -3,8 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChartSection } from "./ChartSection";
 import { NewsSection } from "./NewsSection";
 import { TrendingStocks } from "./TrendingStocks";
+import { getFavorites, addFavorite, removeFavorite } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase, supabaseHelper } from "@/integrations/supabase/client";
 
 type TimeRange = "1D" | "1W" | "1M" | "1Y";
 
@@ -22,7 +22,7 @@ export const StockMarketSection = () => {
   const fetchFavorites = async () => {
     try {
       setIsLoading(true);
-      const data = await supabaseHelper.getFavorites();
+      const data = await getFavorites();
       setFavorites(data || []);
     } catch (error) {
       console.error('Error fetching favorites:', error);
@@ -38,7 +38,7 @@ export const StockMarketSection = () => {
 
   const handleAddToFavorites = async (symbol: string, companyName: string) => {
     try {
-      const data = await supabaseHelper.addFavorite(symbol, companyName);
+      const data = await addFavorite(symbol, companyName);
       setFavorites([...favorites, data]);
       toast({
         title: "Success",
@@ -55,7 +55,7 @@ export const StockMarketSection = () => {
 
   const handleRemoveFromFavorites = async (id: string) => {
     try {
-      await supabaseHelper.removeFavorite(id);
+      await removeFavorite(id);
       setFavorites(favorites.filter(fav => fav.id !== id));
       toast({
         title: "Success",
