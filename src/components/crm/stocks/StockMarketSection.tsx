@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChartSection } from "./ChartSection";
 import { NewsSection } from "./NewsSection";
 import { TrendingStocks } from "./TrendingStocks";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseHelper } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
 type TimeRange = "1D" | "1W" | "1M" | "1Y";
@@ -12,6 +12,7 @@ export const StockMarketSection = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("1M");
   const [symbol, setSymbol] = useState("AAPL");
   const [favorites, setFavorites] = useState<Array<{ id: string; symbol: string; company_name: string }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -20,58 +21,33 @@ export const StockMarketSection = () => {
 
   const fetchFavorites = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('stock_favorites')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
+      setIsLoading(true);
+      const data = await supabaseHelper.getFavorites();
       setFavorites(data || []);
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch favorites",
+        description: error instanceof Error ? error.message : "Failed to fetch favorites",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleAddToFavorites = async (symbol: string, companyName: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "Please login to add favorites",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('stock_favorites')
-        .insert([
-          { user_id: user.id, symbol, company_name: companyName }
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-      
+      const data = await supabaseHelper.addFavorite(symbol, companyName);
       setFavorites([...favorites, data]);
       toast({
         title: "Success",
         description: "Added to favorites",
       });
     } catch (error) {
-      console.error('Error adding favorite:', error);
       toast({
         title: "Error",
-        description: "Failed to add to favorites",
+        description: error instanceof Error ? error.message : "Failed to add to favorites",
         variant: "destructive",
       });
     }
@@ -79,23 +55,16 @@ export const StockMarketSection = () => {
 
   const handleRemoveFromFavorites = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('stock_favorites')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      
+      await supabaseHelper.removeFavorite(id);
       setFavorites(favorites.filter(fav => fav.id !== id));
       toast({
         title: "Success",
         description: "Removed from favorites",
       });
     } catch (error) {
-      console.error('Error removing favorite:', error);
       toast({
         title: "Error",
-        description: "Failed to remove from favorites",
+        description: error instanceof Error ? error.message : "Failed to remove from favorites",
         variant: "destructive",
       });
     }
@@ -126,6 +95,7 @@ export const StockMarketSection = () => {
           favorites={favorites}
           onAddToFavorites={handleAddToFavorites}
           onRemoveFromFavorites={handleRemoveFromFavorites}
+          isLoading={isLoading}
         />
       </div>
     </div>
