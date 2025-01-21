@@ -6,7 +6,7 @@ type TimeRange = "1D" | "1W" | "1M" | "1Y" | "3Y" | "5Y" | "10Y";
 
 export const StockMarketSection = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("1M");
-  const [symbol, setSymbol] = useState("AAPL");
+  const [symbol, setSymbol] = useState("AAPL"); // Default to AAPL
 
   return (
     <Card>
@@ -15,6 +15,7 @@ export const StockMarketSection = () => {
           symbol={symbol}
           selectedTimeRange={selectedTimeRange}
           onTimeRangeChange={setSelectedTimeRange}
+          onSymbolChange={setSymbol}
         />
       </CardContent>
     </Card>
