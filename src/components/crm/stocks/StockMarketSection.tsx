@@ -2,11 +2,15 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartSection } from "./ChartSection";
 
-type TimeRange = "1D" | "1W" | "1M" | "1Y" | "3Y" | "5Y" | "10Y";
+type TimeRange = "1D" | "1W" | "1M" | "1Y";
 
 export const StockMarketSection = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("1M");
-  const [symbol, setSymbol] = useState("AAPL"); // Default to AAPL
+  const [symbol, setSymbol] = useState("AAPL");
+
+  const handleTimeRangeChange = (range: string) => {
+    setSelectedTimeRange(range as TimeRange);
+  };
 
   return (
     <Card>
@@ -14,7 +18,7 @@ export const StockMarketSection = () => {
         <ChartSection
           symbol={symbol}
           selectedTimeRange={selectedTimeRange}
-          onTimeRangeChange={setSelectedTimeRange}
+          onTimeRangeChange={handleTimeRangeChange}
           onSymbolChange={setSymbol}
         />
       </CardContent>
