@@ -1,8 +1,108 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Card } from "@/components/ui/card";
 
 const FitnessPuzzle = () => {
+  useEffect(() => {
+    // Initialize puzzle game
+    const script = document.createElement('script');
+    script.innerHTML = `
+      const words = ["FITNESS", "HEALTH", "EXERCISE", "YOGA", "DIET", "NUTRITION"];
+      const gridSize = 10;
+      const grid = [];
+      const foundWords = [];
+      const currentWordElement = document.getElementById("currentWord");
+      const foundWordsElement = document.getElementById("foundWords");
+      const gridElement = document.getElementById("grid");
+
+      function createGrid() {
+        for (let i = 0; i < gridSize; i++) {
+          grid[i] = [];
+          for (let j = 0; j < gridSize; j++) {
+            grid[i][j] = "";
+          }
+        }
+      }
+
+      function placeWords() {
+        words.forEach(word => {
+          let placed = false;
+          while (!placed) {
+            const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+            const row = Math.floor(Math.random() * gridSize);
+            const col = Math.floor(Math.random() * gridSize);
+            if (canPlaceWord(word, row, col, direction)) {
+              for (let i = 0; i < word.length; i++) {
+                if (direction === 'horizontal') {
+                  grid[row][col + i] = word[i];
+                } else {
+                  grid[row + i][col] = word[i];
+                }
+              }
+              placed = true;
+            }
+          }
+        });
+      }
+
+      function canPlaceWord(word, row, col, direction) {
+        if (direction === 'horizontal' && col + word.length > gridSize) return false;
+        if (direction === 'vertical' && row + word.length > gridSize) return false;
+        for (let i = 0; i < word.length; i++) {
+          if (direction === 'horizontal' && grid[row][col + i] !== "") return false;
+          if (direction === 'vertical' && grid[row + i][col] !== "") return false;
+        }
+        return true;
+      }
+
+      function fillEmptySpaces() {
+        for (let i = 0; i < gridSize; i++) {
+          for (let j = 0; j < gridSize; j++) {
+            if (grid[i][j] === "") {
+              grid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            }
+          }
+        }
+      }
+
+      function renderGrid() {
+        gridElement.innerHTML = "";
+        grid.forEach((row, rowIndex) => {
+          row.forEach((cell, colIndex) => {
+            const cellElement = document.createElement("div");
+            cellElement.className = "cell";
+            cellElement.innerText = cell;
+            cellElement.onclick = () => selectCell(rowIndex, colIndex);
+            gridElement.appendChild(cellElement);
+          });
+        });
+      }
+
+      function selectCell(row, col) {
+        const cell = grid[row][col];
+        if (currentWordElement.innerText.includes(cell)) {
+          currentWordElement.innerText = currentWordElement.innerText.replace(cell, "");
+          foundWords.push(cell);
+          foundWordsElement.innerText = foundWords.join(", ");
+          renderGrid();
+        } else {
+          currentWordElement.innerText += cell;
+        }
+      }
+
+      createGrid();
+      placeWords();
+      fillEmptySpaces();
+      renderGrid();
+    `;
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen p-4">
+    <div className="container mx-auto p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -12,42 +112,42 @@ const FitnessPuzzle = () => {
 
         {/* Game Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-card p-4 rounded-lg shadow-sm border">
+          <Card className="p-4">
             <div id="nextPuzzle" className="text-muted-foreground text-sm">Next puzzle in: </div>
-          </div>
-          <div className="bg-card p-4 rounded-lg shadow-sm border">
+          </Card>
+          <Card className="p-4">
             <div id="timer" className="text-muted-foreground text-sm">Time: 0s</div>
-          </div>
-          <div className="bg-card p-4 rounded-lg shadow-sm border">
+          </Card>
+          <Card className="p-4">
             <div id="score" className="text-muted-foreground text-sm">Score: 500</div>
-          </div>
+          </Card>
         </div>
 
         {/* Game Container */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Grid */}
           <div className="lg:col-span-2">
-            <div className="bg-card p-6 rounded-lg shadow-sm border">
+            <Card className="p-6">
               <div id="grid" className="flex flex-col items-center"></div>
-            </div>
+            </Card>
           </div>
 
           {/* Controls */}
           <div className="space-y-6">
             {/* Current Word */}
-            <div className="bg-card p-6 rounded-lg shadow-sm border">
+            <Card className="p-6">
               <h2 className="text-lg font-semibold mb-4">Current Selection</h2>
               <div id="currentWord" className="text-2xl font-bold text-foreground">Current Word: </div>
-            </div>
+            </Card>
 
             {/* Word List */}
-            <div className="bg-card p-6 rounded-lg shadow-sm border">
+            <Card className="p-6">
               <h2 className="text-lg font-semibold mb-4">Found Words</h2>
               <div id="foundWords" className="word-list"></div>
-            </div>
+            </Card>
 
             {/* Controls */}
-            <div className="bg-card p-6 rounded-lg shadow-sm border space-y-4">
+            <Card className="p-6 space-y-4">
               <input 
                 type="text" 
                 id="wordInput" 
@@ -69,15 +169,68 @@ const FitnessPuzzle = () => {
                   Show Word
                 </button>
               </div>
-            </div>
+            </Card>
 
             {/* Message */}
-            <div className="bg-card p-6 rounded-lg shadow-sm border">
+            <Card className="p-6">
               <div id="message" className="text-muted-foreground"></div>
-            </div>
+            </Card>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .cell {
+          width: 40px;
+          height: 40px;
+          border: 1px solid hsl(var(--border));
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          background-color: hsl(var(--background));
+          border-radius: 4px;
+          margin: 2px;
+        }
+        .cell:hover {
+          background-color: hsl(var(--accent));
+          transform: scale(1.05);
+        }
+        .selected {
+          background-color: hsl(var(--primary)) !important;
+          border-color: hsl(var(--primary));
+          color: hsl(var(--primary-foreground));
+        }
+        .found {
+          background-color: hsl(var(--success)) !important;
+          border-color: hsl(var(--success));
+          color: hsl(var(--success-foreground));
+        }
+        .highlighted {
+          background-color: hsl(var(--warning)) !important;
+          border-color: hsl(var(--warning));
+          color: hsl(var(--warning-foreground));
+        }
+        .word-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .word-item {
+          padding: 6px 12px;
+          background-color: hsl(var(--background));
+          border-radius: 16px;
+          font-size: 0.9rem;
+          border: 1px solid hsl(var(--border));
+        }
+        .word-found {
+          background-color: hsl(var(--success));
+          border-color: hsl(var(--success));
+          color: hsl(var(--success-foreground));
+        }
+      `}</style>
     </div>
   );
 };
