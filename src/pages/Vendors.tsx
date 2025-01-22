@@ -31,6 +31,14 @@ const Vendors = () => {
     navigate('/vendors/new');
   };
 
+  const handleViewProfile = (vendorId: string) => {
+    navigate(`/vendors/${vendorId}`);
+  };
+
+  const handleVisitStore = (vendorId: string) => {
+    navigate(`/vendors/${vendorId}/store`);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col gap-8">
@@ -63,7 +71,11 @@ const Vendors = () => {
             <p>Loading vendors...</p>
           ) : vendors && vendors.length > 0 ? (
             vendors.map((vendor) => (
-              <Card key={vendor.id} className="bg-card hover:bg-card/80 transition-colors">
+              <Card 
+                key={vendor.id} 
+                className="bg-card hover:bg-card/80 transition-colors cursor-pointer"
+                onClick={() => handleViewProfile(vendor.id)}
+              >
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <CardTitle>{vendor.business_name || vendor.profiles?.username}</CardTitle>
@@ -78,15 +90,18 @@ const Vendors = () => {
                   {vendor.social_links && Object.keys(vendor.social_links).length > 0 && (
                     <div className="mt-4 flex gap-2">
                       {Object.entries(vendor.social_links).map(([platform, url]) => (
-                        <a
-                          key={platform}
-                          href={url as string}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline"
-                        >
-                          {platform}
-                        </a>
+                        url && (
+                          <a
+                            key={platform}
+                            href={url as string}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {platform}
+                          </a>
+                        )
                       ))}
                     </div>
                   )}
@@ -95,14 +110,20 @@ const Vendors = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => navigate(`/vendors/${vendor.id}`)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewProfile(vendor.id);
+                    }}
                   >
                     View Profile
                   </Button>
                   <Button 
                     variant="default" 
                     size="sm" 
-                    onClick={() => navigate(`/vendors/${vendor.id}/store`)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleVisitStore(vendor.id);
+                    }}
                   >
                     <Store className="h-4 w-4 mr-2" />
                     Visit Store
