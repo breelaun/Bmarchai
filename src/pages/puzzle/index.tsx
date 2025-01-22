@@ -381,12 +381,11 @@ const WordSearch: React.FC = () => {
         const remainingWords = words.filter(word => !foundWords.includes(word));
         if (remainingWords.length > 0) {
             const word = remainingWords[Math.floor(Math.random() * remainingWords.length)];
-            setFoundWords([
-                ...foundWords,
-                word
-            ]);
+            setFoundWords([...foundWords, word]);
             const newGrid = highlightFoundWord(word, grid);
             setGrid(newGrid);
+            setMessage(`Word revealed: ${word}`);
+            setScore(prevScore => prevScore - 100); // Penalty for revealing a word
         }
     };
 
