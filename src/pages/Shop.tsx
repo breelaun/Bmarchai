@@ -35,8 +35,8 @@ const Shop = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [priceRange, setPriceRange] = useState([0, 1000]);
   
   const { data: products = [], isLoading } = useQuery({
@@ -88,8 +88,8 @@ const Shop = () => {
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase()) ||
       product.description?.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    const matchesCountry = !selectedCountry || product.vendor_profiles?.country === selectedCountry;
+    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesCountry = selectedCountry === 'all' || product.vendor_profiles?.country === selectedCountry;
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
     return matchesSearch && matchesCategory && matchesCountry && matchesPrice;
   });
@@ -130,10 +130,10 @@ const Shop = () => {
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+                <SelectItem key={category} value={category || "uncategorized"}>
+                  {category || "Uncategorized"}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -144,7 +144,7 @@ const Shop = () => {
               <SelectValue placeholder="Filter by country" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Countries</SelectItem>
+              <SelectItem value="all">All Countries</SelectItem>
               {countries.map((country) => (
                 <SelectItem key={country.code} value={country.code}>
                   {country.name}
