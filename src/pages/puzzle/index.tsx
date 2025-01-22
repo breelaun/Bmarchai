@@ -179,7 +179,8 @@ const FitnessPuzzle = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         .cell {
           width: 40px;
           height: 40px;
@@ -230,7 +231,8 @@ const FitnessPuzzle = () => {
           border-color: hsl(var(--success));
           color: hsl(var(--success-foreground));
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
