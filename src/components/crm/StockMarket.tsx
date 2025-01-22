@@ -14,10 +14,14 @@ interface WatchlistItem {
   alertPrice: number | null;
 }
 
-export const StockMarket = () => {
+interface StockMarketProps {
+  defaultSymbol?: string;
+}
+
+export const StockMarket = ({ defaultSymbol = "AAPL" }: StockMarketProps) => {
   const { toast } = useToast();
-  const [symbol, setSymbol] = useState("AAPL");
-  const [inputSymbol, setInputSymbol] = useState("AAPL");
+  const [symbol, setSymbol] = useState(defaultSymbol);
+  const [inputSymbol, setInputSymbol] = useState(defaultSymbol);
   const [timeRange, setTimeRange] = useState("1M"); // 1D, 1W, 1M, 1Y
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [alertPrice, setAlertPrice] = useState<string>("");
@@ -117,7 +121,6 @@ export const StockMarket = () => {
     setAlertPrice("");
   };
 
-  // Check price alerts
   useEffect(() => {
     if (stockData && stockData.length > 0) {
       const currentPrice = stockData[stockData.length - 1].price;

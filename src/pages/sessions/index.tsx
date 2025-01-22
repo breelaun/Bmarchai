@@ -13,12 +13,12 @@ interface SessionWithVendor {
   start_time: string;
   duration: string;
   max_participants: number;
-  vendor_profiles: {
+  vendor_profiles: Array<{
     business_name: string;
-    profiles: {
+    profiles: Array<{
       username: string;
-    }[];
-  }[];
+    }>;
+  }>;
 }
 
 const SessionsPage = () => {
@@ -50,7 +50,7 @@ const SessionsPage = () => {
 
       if (error) throw error;
       
-      return (data?.map(sp => sp.sessions) || []) as SessionWithVendor[];
+      return (data?.map(sp => sp.sessions) || []).flat().filter(Boolean) as SessionWithVendor[];
     },
     enabled: !!session?.user?.id
   });
