@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Cell {
     text: string;
@@ -381,3 +382,153 @@ const WordSearch: React.FC = () => {
         if (remainingWords.length > 0) {
             const word = remainingWords[Math.floor(Math.random() * remainingWords.length)];
             setFoundWords([
+                ...foundWords,
+                word
+            ]);
+            const newGrid = highlightFoundWord(word, grid);
+            setGrid(newGrid);
+        }
+    };
+
+    const endGame = () => {
+        setMessage('Congratulations! You found all the words!');
+        // Additional end game logic can be added here
+    };
+
+    return (
+        <div className="container mx-auto p-4">
+            <Card className="w-full max-w-4xl mx-auto">
+                <CardHeader>
+                    <CardTitle>Fitness Word Search Puzzle</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col lg:flex-row gap-8">
+                        <div className="flex-1">
+                            <div className="grid grid-cols-15 gap-1 bg-card p-4 rounded-lg shadow-inner">
+                                {grid.map((row, rowIndex) => (
+                                    <React.Fragment key={rowIndex}>
+                                        {row.map((cell) => (
+                                            <div
+                                                key={`${cell.row}-${cell.col}`}
+                                                className={`cell ${
+                                                    cell.isSelected ? 'selected' : ''
+                                                } ${
+                                                    cell.isFound ? 'found' : ''
+                                                } ${
+                                                    cell.isHighlighted ? 'highlighted' : ''
+                                                }`}
+                                                onClick={() => toggleCell(cell)}
+                                            >
+                                                {cell.text}
+                                            </div>
+                                        ))}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex-none w-full lg:w-64 space-y-4">
+                            <div className="bg-card p-4 rounded-lg shadow">
+                                <h3 className="font-semibold mb-2">Score: {score}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Time: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+                                </p>
+                            </div>
+
+                            <div className="bg-card p-4 rounded-lg shadow">
+                                <h3 className="font-semibold mb-2">Words to Find:</h3>
+                                <ul className="space-y-1">
+                                    {words.map((word) => (
+                                        <li
+                                            key={word}
+                                            className={`${
+                                                foundWords.includes(word) ? 'line-through text-muted-foreground' : ''
+                                            }`}
+                                        >
+                                            {word}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div className="space-y-2">
+                                <button
+                                    onClick={giveHint}
+                                    className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                                >
+                                    Get Hint (-25 points)
+                                </button>
+                                <button
+                                    onClick={giveRiddle}
+                                    className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                                >
+                                    Get Riddle (-25 points)
+                                </button>
+                            </div>
+
+                            {message && (
+                                <div className="bg-card p-4 rounded-lg shadow">
+                                    <p className="text-sm">{message}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <style>{`
+                .grid-cols-15 {
+                    grid-template-columns: repeat(15, minmax(0, 1fr));
+                }
+
+                .cell {
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    background-color: hsl(var(--card));
+                    border: 2px solid hsl(var(--border));
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    user-select: none;
+                    transition: all 0.2s ease;
+                }
+
+                .cell:hover {
+                    background-color: hsl(var(--accent));
+                    color: hsl(var(--accent-foreground));
+                }
+
+                .cell.selected {
+                    background-color: hsl(var(--primary));
+                    color: hsl(var(--primary-foreground));
+                    border-color: hsl(var(--primary));
+                }
+
+                .cell.found {
+                    background-color: hsl(var(--success));
+                    border-color: hsl(var(--success));
+                    color: hsl(var(--success-foreground));
+                }
+
+                .cell.highlighted {
+                    background-color: hsl(var(--success));
+                    border-color: hsl(var(--success));
+                    color: hsl(var(--success-foreground));
+                }
+
+                @media (max-width: 640px) {
+                    .cell {
+                        width: 30px;
+                        height: 30px;
+                        font-size: 0.875rem;
+                    }
+                }
+            `}</style>
+        </div>
+    );
+};
+
+export default WordSearch;
