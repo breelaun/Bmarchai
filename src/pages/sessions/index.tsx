@@ -7,6 +7,15 @@ import { Calendar, Clock, Users } from "lucide-react";
 import { formatToLocalTime } from "@/utils/timezone";
 import { Session } from "@/types/session";
 
+interface SessionWithVendor extends Session {
+  vendor_profiles: {
+    business_name: string;
+    profiles: {
+      username: string;
+    }[];
+  }[];
+}
+
 const SessionsPage = () => {
   const session = useSession();
 
@@ -36,20 +45,7 @@ const SessionsPage = () => {
 
       if (error) throw error;
       
-      return data?.map(sp => ({
-        id: sp.sessions.id,
-        name: sp.sessions.name,
-        description: sp.sessions.description || "",
-        start_time: sp.sessions.start_time,
-        duration: sp.sessions.duration,
-        max_participants: sp.sessions.max_participants,
-        vendor_profiles: sp.sessions.vendor_profiles ? [{
-          business_name: sp.sessions.vendor_profiles.business_name || "",
-          profiles: [{
-            username: sp.sessions.vendor_profiles.profiles.username || ""
-          }]
-        }] : []
-      })) as Session[] || [];
+      return data?.map(sp => sp.sessions) as SessionWithVendor[] || [];
     },
     enabled: !!session?.user?.id
   });
@@ -77,25 +73,11 @@ const SessionsPage = () => {
         .order('start_time', { ascending: true });
 
       if (error) throw error;
-      
-      return data?.map(session => ({
-        id: session.id,
-        name: session.name,
-        description: session.description || "",
-        start_time: session.start_time,
-        duration: session.duration,
-        max_participants: session.max_participants,
-        vendor_profiles: session.vendor_profiles ? [{
-          business_name: session.vendor_profiles.business_name || "",
-          profiles: [{
-            username: session.vendor_profiles.profiles.username || ""
-          }]
-        }] : []
-      })) as Session[] || [];
+      return data as SessionWithVendor[] || [];
     }
   });
 
-  const renderSessionCard = (session: Session) => (
+  const renderSessionCard = (session: SessionWithVendor) => (
     <Card key={session.id} className="mb-4">
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-2">{session.name}</h3>
