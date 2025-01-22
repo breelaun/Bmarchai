@@ -1,18 +1,45 @@
-import React, { useEffect } from 'react';
-import { Card } from "@/components/ui/card";
+import React, { useState, useEffect, useCallback } from 'react';
 
-const FitnessPuzzle = () => {
-  useEffect(() => {
-    // Initialize puzzle game
-    const script = document.createElement('script');
-    script.innerHTML = `
-      const wordPool = [
+interface Cell {
+    text: string;
+    row: number;
+    col: number;
+    isSelected: boolean;
+    isFound: boolean;
+    isHighlighted: boolean;
+}
+
+interface Direction {
+    rowDelta: number;
+    colDelta: number;
+}
+
+interface Definition {
+    [key: string]: string;
+}
+
+interface Riddle {
+    [key: string]: string;
+}
+
+const WordSearch: React.FC = () => {
+    const [grid, setGrid] = useState<Cell[][]>([]);
+    const [selectedCells, setSelectedCells] = useState<Cell[]>([]);
+    const [foundWords, setFoundWords] = useState<string[]>([]);
+    const [score, setScore] = useState<number>(500);
+    const [timer, setTimer] = useState<number>(0);
+    const [message, setMessage] = useState<string>('');
+    const [currentWord, setCurrentWord] = useState<string>('');
+    const [nextPuzzleTime, setNextPuzzleTime] = useState<Date>(new Date());
+    const [inputWord, setInputWord] = useState<string>('');
+
+    const wordPool = [
         "ENDURANCE", "STRENGTH", "CARDIO", "FLEXIBILITY", "NUTRITION",
         "MUSCLES", "WORKOUT", "FITNESS", "HEALTH", "PROTEIN",
         "VITAMINS", "MINERALS"
-      ];
+    ];
 
-      const definitionPool = {
+    const definitionPool: Definition = {
         "ENDURANCE": "The ability to sustain prolonged physical or mental effort.",
         "STRENGTH": "The capacity of an object or substance to withstand great force or pressure.",
         "CARDIO": "Exercise that raises your heart rate and improves the function of your heart and blood vessels.",
@@ -25,9 +52,9 @@ const FitnessPuzzle = () => {
         "PROTEIN": "A nutrient essential for building and repairing tissues in the body.",
         "VITAMINS": "Organic compounds essential for normal growth and nutrition.",
         "MINERALS": "Inorganic substances required as an essential nutrient by organisms to perform functions necessary for life."
-      };
+    };
 
-      const riddlePool = {
+    const riddlePool: Riddle = {
         "ENDURANCE": "I'm not a race, but I'll help you pace. The longer you go, the stronger I grow. What am I?",
         "STRENGTH": "I'm not might, but I give you fight. Lift me up, and I'll make you tough. What am I?",
         "CARDIO": "I make your heart beat and your feet fleet. Run or dance, I'll give you a chance. What am I?",
@@ -40,242 +67,317 @@ const FitnessPuzzle = () => {
         "PROTEIN": "I'm the builder in your food. Eat me right, and I'll improve your mood. What am I?",
         "VITAMINS": "We're tiny helpers, A to Z. Fruits and veggies set us free. What are we?",
         "MINERALS": "In rocks and foods, we play our parts. We're essential for healthy hearts. What are we?"
-      };
+    };
 
-      const words = [];
-      const gridSize = 10;
-      const grid = [];
-      const foundWords = [];
-      const currentWordElement = document.getElementById("currentWord");
-      const foundWordsElement = document.getElementById("foundWords");
-      const gridElement = document.getElementById("grid");
+    const [words, setWords] = useState<string[]>([]);
+    const [definitions, setDefinitions] = useState<Definition>({});
+    const [riddles, setRiddles] = useState<Riddle>({});
 
-      function createGrid() {
-        for (let i = 0; i < gridSize; i++) {
-          grid[i] = [];
-          for (let j = 0; j < gridSize; j++) {
-            grid[i][j] = "";
-          }
-        }
-      }
+    const getDirections = (): Direction[] => [
+        { rowDelta: 0, colDelta: 1 },    // right
+        { rowDelta: 1, colDelta: 0 },    // down
+        { rowDelta: 1, colDelta: 1 },    // diagonal down-right
+        { rowDelta: 1, colDelta: -1 },   // diagonal down-left
+        { rowDelta: 0, colDelta: -1 },   // left
+        { rowDelta: -1, colDelta: 0 },   // up
+        { rowDelta: -1, colDelta: 1 },   // diagonal up-right
+        { rowDelta: -1, colDelta: -1 }   // diagonal up-left
+    ];
 
-      function placeWords() {
-        const selectedWords = wordPool.slice(0, 10); // Get first 10 words
+    const selectRandomWords = () => {
+        const shuffled = [...wordPool].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 10);
+    };
+
+    const generateDefinitionsAndRiddles = (selectedWords: string[]) => {
+        const newDefinitions: Definition = {};
+        const newRiddles: Riddle = {};
         selectedWords.forEach(word => {
-          let placed = false;
-          while (!placed) {
-            const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
-            const row = Math.floor(Math.random() * gridSize);
-            const col = Math.floor(Math.random() * gridSize);
-            if (canPlaceWord(word, row, col, direction)) {
-              for (let i = 0; i < word.length; i++) {
-                if (direction === 'horizontal') {
-                  grid[row][col + i] = word[i];
-                } else {
-                  grid[row + i][col] = word[i];
-                }
-              }
-              placed = true;
-              words.push(word);
-            }
-          }
+            newDefinitions[word] = definitionPool[word];
+            newRiddles[word] = riddlePool[word];
         });
-      }
+        return { newDefinitions, newRiddles };
+    };
 
-      function canPlaceWord(word, row, col, direction) {
-        if (direction === 'horizontal' && col + word.length > gridSize) return false;
-        if (direction === 'vertical' && row + word.length > gridSize) return false;
+    const createEmptyGrid = (): Cell[][] => {
+        return Array(15).fill(null).map((_, row) =>
+            Array(15).fill(null).map((_, col) => ({
+                text: '-',
+                row,
+                col,
+                isSelected: false,
+                isFound: false,
+                isHighlighted: false
+            }))
+        );
+    };
+
+    const canPlaceWord = (
+        word: string,
+        startRow: number,
+        startCol: number,
+        direction: Direction,
+        currentGrid: Cell[][]
+    ): boolean => {
+        const { rowDelta, colDelta } = direction;
+        
         for (let i = 0; i < word.length; i++) {
-          if (direction === 'horizontal' && grid[row][col + i] !== "") return false;
-          if (direction === 'vertical' && grid[row + i][col] !== "") return false;
+            const newRow = startRow + (rowDelta * i);
+            const newCol = startCol + (colDelta * i);
+            
+            if (newRow < 0 || newRow >= 15 || newCol < 0 || newCol >= 15) {
+                return false;
+            }
+            
+            const currentCell = currentGrid[newRow][newCol].text;
+            if (currentCell !== '-' && currentCell !== word[i]) {
+                return false;
+            }
         }
         return true;
-      }
-
-      function fillEmptySpaces() {
-        for (let i = 0; i < gridSize; i++) {
-          for (let j = 0; j < gridSize; j++) {
-            if (grid[i][j] === "") {
-              grid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-            }
-          }
-        }
-      }
-
-      function renderGrid() {
-        gridElement.innerHTML = "";
-        for (let i = 0; i < gridSize; i++) {
-          const row = document.createElement("div");
-          row.className = "flex";
-          for (let j = 0; j < gridSize; j++) {
-            const cell = document.createElement("div");
-            cell.className = "cell";
-            cell.textContent = grid[i][j];
-            cell.onclick = () => selectCell(i, j);
-            row.appendChild(cell);
-          }
-          gridElement.appendChild(row);
-        }
-      }
-
-      function selectCell(row, col) {
-        const cell = grid[row][col];
-        if (currentWordElement.innerText.includes(cell)) {
-          currentWordElement.innerText = currentWordElement.innerText.replace(cell, "");
-          foundWords.push(cell);
-          foundWordsElement.innerText = foundWords.join(", ");
-          renderGrid();
-        } else {
-          currentWordElement.innerText += cell;
-        }
-      }
-
-      createGrid();
-      placeWords();
-      fillEmptySpaces();
-      renderGrid();
-    `;
-    document.body.appendChild(script);
-    
-    return () => {
-      document.body.removeChild(script);
     };
-  }, []);
 
-  return (
-    <div className="container mx-auto p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Word Search</h1>
-          <p className="text-muted-foreground">Find all the hidden words related to fitness and health</p>
-        </div>
-
-        {/* Game Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="p-4">
-            <div id="nextPuzzle" className="text-muted-foreground text-sm">Next puzzle in: </div>
-          </Card>
-          <Card className="p-4">
-            <div id="timer" className="text-muted-foreground text-sm">Time: 0s</div>
-          </Card>
-          <Card className="p-4">
-            <div id="score" className="text-muted-foreground text-sm">Score: 500</div>
-          </Card>
-        </div>
-
-        {/* Game Container */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Grid */}
-          <div className="lg:col-span-2">
-            <Card className="p-6">
-              <div id="grid" className="grid grid-cols-10 gap-1"></div>
-            </Card>
-          </div>
-
-          {/* Controls */}
-          <div className="space-y-6">
-            {/* Current Word */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Current Selection</h2>
-              <div id="currentWord" className="text-2xl font-bold text-foreground">Current Word: </div>
-            </Card>
-
-            {/* Word List */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Found Words</h2>
-              <div id="foundWords" className="word-list"></div>
-            </Card>
-
-            {/* Controls */}
-            <Card className="p-6 space-y-4">
-              <input 
-                type="text" 
-                id="wordInput" 
-                placeholder="Enter word" 
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <button id="submitWordBtn" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition">
-                  Submit Word
-                </button>
-                <button id="hintBtn" className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
-                  Hint
-                </button>
-                <button id="riddleBtn" className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">
-                  Riddle
-                </button>
-                <button id="showWordBtn" className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
-                  Show Word
-                </button>
-              </div>
-            </Card>
-
-            {/* Message */}
-            <Card className="p-6">
-              <div id="message" className="text-muted-foreground"></div>
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      <style>
-        {`
-        .cell {
-          width: 40px;
-          height: 40px;
-          border: 1px solid hsl(var(--border));
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-          font-weight: 500;
-          transition: all 0.2s ease;
-          background-color: hsl(var(--background));
-          border-radius: 4px;
-          margin: 2px;
+    const placeWord = (
+        word: string,
+        startRow: number,
+        startCol: number,
+        direction: Direction,
+        currentGrid: Cell[][]
+    ): Cell[][] => {
+        const newGrid = currentGrid.map(row => [...row]);
+        const { rowDelta, colDelta } = direction;
+        
+        for (let i = 0; i < word.length; i++) {
+            const newRow = startRow + (rowDelta * i);
+            const newCol = startCol + (colDelta * i);
+            newGrid[newRow][newCol].text = word[i];
         }
-        .cell:hover {
-          background-color: hsl(var(--accent));
-          transform: scale(1.05);
-        }
-        .selected {
-          background-color: hsl(var(--primary)) !important;
-          border-color: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
-        }
-        .found {
-          background-color: hsl(var(--success)) !important;
-          border-color: hsl(var(--success));
-          color: hsl(var(--success-foreground));
-        }
-        .highlighted {
-          background-color: hsl(var(--warning)) !important;
-          border-color: hsl(var(--warning));
-          color: hsl(var(--warning-foreground));
-        }
-        .word-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-        .word-item {
-          padding: 6px 12px;
-          background-color: hsl(var(--background));
-          border-radius: 16px;
-          font-size: 0.9rem;
-          border: 1px solid hsl(var(--border));
-        }
-        .word-found {
-          background-color: hsl(var(--success));
-          border-color: hsl(var(--success));
-          color: hsl(var(--success-foreground));
-        }
-        `}
-      </style>
-    </div>
-  );
-};
+        
+        return newGrid;
+    };
 
-export default FitnessPuzzle;
+    const placeWords = (selectedWords: string[]): Cell[][] => {
+        let currentGrid = createEmptyGrid();
+        const directions = getDirections();
+        
+        selectedWords.forEach(word => {
+            let placed = false;
+            let attempts = 0;
+            const maxAttempts = 100;
+            
+            while (!placed && attempts < maxAttempts) {
+                const row = Math.floor(Math.random() * 15);
+                const col = Math.floor(Math.random() * 15);
+                const direction = directions[Math.floor(Math.random() * directions.length)];
+                
+                if (canPlaceWord(word, row, col, direction, currentGrid)) {
+                    currentGrid = placeWord(word, row, col, direction, currentGrid);
+                    placed = true;
+                }
+                attempts++;
+            }
+            
+            if (!placed) {
+                console.warn(`Failed to place word: ${word}`);
+            }
+        });
+        
+        // Fill empty cells with random letters
+        currentGrid = currentGrid.map(row =>
+            row.map(cell => ({
+                ...cell,
+                text: cell.text === '-' ? 
+                    String.fromCharCode(65 + Math.floor(Math.random() * 26)) : cell.text
+            }))
+        );
+        
+        return currentGrid;
+    };
+
+    const initGame = useCallback(() => {
+        const selectedWords = selectRandomWords();
+        const { newDefinitions, newRiddles } = generateDefinitionsAndRiddles(selectedWords);
+        
+        setWords(selectedWords);
+        setDefinitions(newDefinitions);
+        setRiddles(newRiddles);
+        setGrid(placeWords(selectedWords));
+        setSelectedCells([]);
+        setFoundWords([]);
+        setScore(500);
+        setTimer(0);
+        setMessage('');
+        setCurrentWord('');
+        setInputWord('');
+        
+        // Set next puzzle time
+        const nextTime = new Date(Math.ceil(new Date().getTime() / (4 * 60 * 60 * 1000)) * (4 * 60 * 60 * 1000));
+        setNextPuzzleTime(nextTime);
+    }, []);
+
+    useEffect(() => {
+        initGame();
+    }, [initGame]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimer(prev => prev + 1);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = new Date();
+            if (now >= nextPuzzleTime) {
+                initGame();
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [nextPuzzleTime, initGame]);
+
+    const toggleCell = (cell: Cell) => {
+        if (cell.isFound) return;
+
+        const newGrid = grid.map(row => [...row]);
+        const cellToToggle = newGrid[cell.row][cell.col];
+
+        if (selectedCells.length > 0) {
+            const lastCell = selectedCells[selectedCells.length - 1];
+            const rowDiff = Math.abs(lastCell.row - cell.row);
+            const colDiff = Math.abs(lastCell.col - cell.col);
+            
+            if (rowDiff > 1 || colDiff > 1) {
+                return;
+            }
+        }
+
+        cellToToggle.isSelected = !cellToToggle.isSelected;
+        setGrid(newGrid);
+
+        if (cellToToggle.isSelected) {
+            setSelectedCells([...selectedCells, cellToToggle]);
+        } else {
+            setSelectedCells(selectedCells.filter(c => 
+                c.row !== cell.row || c.col !== cell.col
+            ));
+        }
+
+        setCurrentWord(selectedCells.map(c => c.text).join(''));
+    };
+
+    const checkWord = (word: string): boolean => {
+        return words.includes(word) && !foundWords.includes(word);
+    };
+
+    const processWord = (word: string) => {
+        word = word.toUpperCase();
+        if (checkWord(word)) {
+            setFoundWords([...foundWords, word]);
+            setMessage(`Found "${word}"!\n${definitions[word]}`);
+            
+            // Mark word as found in grid
+            const newGrid = highlightFoundWord(word, grid);
+            setGrid(newGrid);
+            
+            if (foundWords.length + 1 === words.length) {
+                endGame();
+            }
+        } else {
+            setMessage('Word not found. Try again!');
+            setScore(prevScore => prevScore - 50);
+        }
+        
+        // Reset selections
+        setSelectedCells([]);
+        setInputWord('');
+        setCurrentWord('');
+    };
+
+    const highlightFoundWord = (word: string, currentGrid: Cell[][]): Cell[][] => {
+        const directions = getDirections();
+        const newGrid = currentGrid.map(row => row.map(cell => ({ ...cell })));
+        
+        for (let row = 0; row < 15; row++) {
+            for (let col = 0; col < 15; col++) {
+                if (newGrid[row][col].text === word[0]) {
+                    for (const direction of directions) {
+                        if (checkWordFromPosition(word, row, col, direction, newGrid)) {
+                            markWordAsFound(word, row, col, direction, newGrid);
+                            return newGrid;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return newGrid;
+    };
+
+    const checkWordFromPosition = (
+        word: string,
+        startRow: number,
+        startCol: number,
+        direction: Direction,
+        currentGrid: Cell[][]
+    ): boolean => {
+        const { rowDelta, colDelta } = direction;
+        
+        for (let i = 0; i < word.length; i++) {
+            const newRow = startRow + (rowDelta * i);
+            const newCol = startCol + (colDelta * i);
+            
+            if (newRow < 0 || newRow >= 15 || newCol < 0 || newCol >= 15) {
+                return false;
+            }
+            
+            if (currentGrid[newRow][newCol].text !== word[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    const markWordAsFound = (
+        word: string,
+        startRow: number,
+        startCol: number,
+        direction: Direction,
+        currentGrid: Cell[][]
+    ) => {
+        const { rowDelta, colDelta } = direction;
+        
+        for (let i = 0; i < word.length; i++) {
+            const newRow = startRow + (rowDelta * i);
+            const newCol = startCol + (colDelta * i);
+            currentGrid[newRow][newCol].isFound = true;
+        }
+    };
+
+    const giveHint = () => {
+        const remainingWords = words.filter(word => !foundWords.includes(word));
+        if (remainingWords.length > 0) {
+            const word = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+            setMessage(`Hint: ${definitions[word]}`);
+            setScore(prevScore => prevScore - 25);
+        } else {
+            setMessage('All words found!');
+        }
+    };
+
+    const giveRiddle = () => {
+        const remainingWords = words.filter(word => !foundWords.includes(word));
+        if (remainingWords.length > 0) {
+            const word = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+            setMessage(`Riddle: ${riddles[word]}`);
+            setScore(prevScore => prevScore - 25);
+        } else {
+            setMessage('All words found!');
+        }
+    };
+
+    const showWord = () => {
+        const remainingWords = words.filter(word => !foundWords.includes(word));
+        if (remainingWords.length > 0) {
+            const word = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+            setFoundWords([
