@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette } from "lucide-react";
+import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette, Puzzle } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -65,6 +65,7 @@ const Navigation = () => {
       submenu: [
         { name: "Streaming", path: "/streaming", icon: <Film className="h-4 w-4 mr-2" /> },
         { name: "Arts", path: "/arts", icon: <Palette className="h-4 w-4 mr-2" /> },
+        { name: "Puzzle", path: "/puzzle", icon: <Puzzle className="h-4 w-4 mr-2" /> },
       ]
     },
     { name: "CRM", path: "/crm" },

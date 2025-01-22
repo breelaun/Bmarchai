@@ -26,6 +26,7 @@ import Cart from "./pages/Cart";
 import ProductPage from "./pages/products/[id]";
 import SessionsPage from "./pages/sessions";
 import CRMPage from "./pages/crm";
+import FitnessPuzzle from "./pages/puzzle";
 import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/streaming" element={<StreamingPage />} />
                     <Route path="/arts" element={<ArtsPage />} />
+                    <Route path="/puzzle" element={<FitnessPuzzle />} />
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/shop" element={<Shop />} />
                     <Route path="/cart" element={<Cart />} />
