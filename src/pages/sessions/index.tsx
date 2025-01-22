@@ -5,9 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, Users } from "lucide-react";
 import { formatToLocalTime } from "@/utils/timezone";
-import { Session } from "@/types/session";
 
-interface SessionWithVendor extends Session {
+interface SessionWithVendor {
+  id: string;
+  name: string;
+  description: string | null;
+  start_time: string;
+  duration: string;
+  max_participants: number;
   vendor_profiles: {
     business_name: string;
     profiles: {
@@ -45,7 +50,7 @@ const SessionsPage = () => {
 
       if (error) throw error;
       
-      return data?.map(sp => sp.sessions) as SessionWithVendor[] || [];
+      return (data?.map(sp => sp.sessions) || []) as SessionWithVendor[];
     },
     enabled: !!session?.user?.id
   });
@@ -73,7 +78,7 @@ const SessionsPage = () => {
         .order('start_time', { ascending: true });
 
       if (error) throw error;
-      return data as SessionWithVendor[] || [];
+      return data as SessionWithVendor[];
     }
   });
 
@@ -99,7 +104,9 @@ const SessionsPage = () => {
           </div>
         </div>
         <div className="mt-3 text-sm">
-          Hosted by: {session.vendor_profiles[0]?.business_name || session.vendor_profiles[0]?.profiles[0]?.username || "Unknown Vendor"}
+          Hosted by: {session.vendor_profiles[0]?.business_name || 
+                     session.vendor_profiles[0]?.profiles[0]?.username || 
+                     "Unknown Vendor"}
         </div>
       </CardContent>
     </Card>
