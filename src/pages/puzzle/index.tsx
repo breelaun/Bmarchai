@@ -6,7 +6,43 @@ const FitnessPuzzle = () => {
     // Initialize puzzle game
     const script = document.createElement('script');
     script.innerHTML = `
-      const words = ["FITNESS", "HEALTH", "EXERCISE", "YOGA", "DIET", "NUTRITION"];
+      const wordPool = [
+        "ENDURANCE", "STRENGTH", "CARDIO", "FLEXIBILITY", "NUTRITION",
+        "MUSCLES", "WORKOUT", "FITNESS", "HEALTH", "PROTEIN",
+        "VITAMINS", "MINERALS"
+      ];
+
+      const definitionPool = {
+        "ENDURANCE": "The ability to sustain prolonged physical or mental effort.",
+        "STRENGTH": "The capacity of an object or substance to withstand great force or pressure.",
+        "CARDIO": "Exercise that raises your heart rate and improves the function of your heart and blood vessels.",
+        "FLEXIBILITY": "The quality of bending easily without breaking.",
+        "NUTRITION": "The process of providing or obtaining the food necessary for health and growth.",
+        "MUSCLES": "A band or bundle of fibrous tissue in a human or animal body that has the ability to contract.",
+        "WORKOUT": "A session of vigorous physical exercise or training.",
+        "FITNESS": "The condition of being physically fit and healthy.",
+        "HEALTH": "The state of being free from illness or injury.",
+        "PROTEIN": "A nutrient essential for building and repairing tissues in the body.",
+        "VITAMINS": "Organic compounds essential for normal growth and nutrition.",
+        "MINERALS": "Inorganic substances required as an essential nutrient by organisms to perform functions necessary for life."
+      };
+
+      const riddlePool = {
+        "ENDURANCE": "I'm not a race, but I'll help you pace. The longer you go, the stronger I grow. What am I?",
+        "STRENGTH": "I'm not might, but I give you fight. Lift me up, and I'll make you tough. What am I?",
+        "CARDIO": "I make your heart beat and your feet fleet. Run or dance, I'll give you a chance. What am I?",
+        "FLEXIBILITY": "Bend me, stretch me, I won't break. The more you use me, the more I'll take. What am I?",
+        "NUTRITION": "I'm not a doctor, but I help you heal. I'm on your plate, in every meal. What am I?",
+        "MUSCLES": "We're a team that helps you gleam. Flex us right, we'll show our might. What are we?",
+        "WORKOUT": "I'm a session full of action. Sweat and strain for satisfaction. What am I?",
+        "FITNESS": "I'm a state you want to achieve. Exercise and diet, in me you'll believe. What am I?",
+        "HEALTH": "I'm wealth without the money. Keep me good, and life is sunny. What am I?",
+        "PROTEIN": "I'm the builder in your food. Eat me right, and I'll improve your mood. What am I?",
+        "VITAMINS": "We're tiny helpers, A to Z. Fruits and veggies set us free. What are we?",
+        "MINERALS": "In rocks and foods, we play our parts. We're essential for healthy hearts. What are we?"
+      };
+
+      const words = [];
       const gridSize = 10;
       const grid = [];
       const foundWords = [];
@@ -24,7 +60,8 @@ const FitnessPuzzle = () => {
       }
 
       function placeWords() {
-        words.forEach(word => {
+        const selectedWords = wordPool.slice(0, 10); // Get first 10 words
+        selectedWords.forEach(word => {
           let placed = false;
           while (!placed) {
             const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
@@ -39,6 +76,7 @@ const FitnessPuzzle = () => {
                 }
               }
               placed = true;
+              words.push(word);
             }
           }
         });
@@ -66,15 +104,18 @@ const FitnessPuzzle = () => {
 
       function renderGrid() {
         gridElement.innerHTML = "";
-        grid.forEach((row, rowIndex) => {
-          row.forEach((cell, colIndex) => {
-            const cellElement = document.createElement("div");
-            cellElement.className = "cell";
-            cellElement.innerText = cell;
-            cellElement.onclick = () => selectCell(rowIndex, colIndex);
-            gridElement.appendChild(cellElement);
-          });
-        });
+        for (let i = 0; i < gridSize; i++) {
+          const row = document.createElement("div");
+          row.className = "flex";
+          for (let j = 0; j < gridSize; j++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.textContent = grid[i][j];
+            cell.onclick = () => selectCell(i, j);
+            row.appendChild(cell);
+          }
+          gridElement.appendChild(row);
+        }
       }
 
       function selectCell(row, col) {
@@ -128,7 +169,7 @@ const FitnessPuzzle = () => {
           {/* Grid */}
           <div className="lg:col-span-2">
             <Card className="p-6">
-              <div id="grid" className="flex flex-col items-center"></div>
+              <div id="grid" className="grid grid-cols-10 gap-1"></div>
             </Card>
           </div>
 
