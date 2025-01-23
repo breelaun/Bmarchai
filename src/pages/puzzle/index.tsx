@@ -178,6 +178,42 @@ const WordSearch: React.FC = () => {
         setGrid(newGrid);
     };
 
+    const giveHint = () => {
+        const remainingWords = wordPool.filter(word => !foundWords.includes(word));
+        if (remainingWords.length > 0) {
+            const word = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+            setMessage(`Hint: ${definitionPool[word]}`);
+            setScore(prevScore => prevScore - 25);
+        } else {
+            setMessage('All words found!');
+        }
+    };
+
+    const giveRiddle = () => {
+        const remainingWords = wordPool.filter(word => !foundWords.includes(word));
+        if (remainingWords.length > 0) {
+            const word = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+            setMessage(`Riddle: ${riddlePool[word]}`);
+            setScore(prevScore => prevScore - 25);
+        } else {
+            setMessage('All words found!');
+        }
+    };
+
+    const showWord = () => {
+        const remainingWords = wordPool.filter(word => !foundWords.includes(word));
+        if (remainingWords.length > 0) {
+            const word = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+            setFoundWords([...foundWords, word]);
+            const newGrid = highlightFoundWord(word, grid);
+            setGrid(newGrid);
+            setMessage(`Word revealed: ${word}`);
+            setScore(prevScore => prevScore - 100);
+        } else {
+            setMessage('All words found!');
+        }
+    };
+
     return (
         <div className="container mx-auto p-4">
             <Card className="w-full max-w-4xl mx-auto">
@@ -269,22 +305,24 @@ const WordSearch: React.FC = () => {
                 </CardContent>
             </Card>
 
-            <style jsx>{`
-                .grid-cols-15 {
-                    grid-template-columns: repeat(15, minmax(0, 1fr));
-                }
+            <style>
+                {`
+                    .grid-cols-15 {
+                        grid-template-columns: repeat(15, minmax(0, 1fr));
+                    }
 
-                @keyframes scale-95 {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(0.95); }
-                    100% { transform: scale(1); }
-                }
+                    @keyframes scale-95 {
+                        0% { transform: scale(1); }
+                        50% { transform: scale(0.95); }
+                        100% { transform: scale(1); }
+                    }
 
-                @keyframes fade-in {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-            `}</style>
+                    @keyframes fade-in {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                `}
+            </style>
         </div>
     );
 };
