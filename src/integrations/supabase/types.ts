@@ -1171,6 +1171,47 @@ export type Database = {
           },
         ]
       }
+      youtube_embeds: {
+        Row: {
+          active: boolean | null
+          category: string
+          created_at: string
+          created_by: string | null
+          embed_id: string
+          embed_type: string
+          id: string
+          title: string
+        }
+        Insert: {
+          active?: boolean | null
+          category: string
+          created_at?: string
+          created_by?: string | null
+          embed_id: string
+          embed_type: string
+          id?: string
+          title: string
+        }
+        Update: {
+          active?: boolean | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          embed_id?: string
+          embed_type?: string
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "youtube_embeds_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
