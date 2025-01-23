@@ -21,8 +21,8 @@ const WordSearch: React.FC = () => {
     const [showWords, setShowWords] = useState<boolean>(true);
     const [dragStart, setDragStart] = useState<Cell | null>(null);
     const [currentSelection, setCurrentSelection] = useState<Cell[]>([]);
+    const [currentWord, setCurrentWord] = useState<string>('');
 
-    // Word pool and definitions remain the same as in your original code
     const wordPool = [
         "ENDURANCE", "STRENGTH", "CARDIO", "FLEXIBILITY", "NUTRITION",
         "MUSCLES", "WORKOUT", "FITNESS", "HEALTH", "PROTEIN",
@@ -84,6 +84,36 @@ const WordSearch: React.FC = () => {
                 isHighlighted: false
             }))
         );
+    };
+
+    const toggleCell = (cell: Cell) => {
+        if (cell.isFound) return;
+
+        const newGrid = grid.map(row => [...row]);
+        const cellToToggle = newGrid[cell.row][cell.col];
+
+        if (selectedCells.length > 0) {
+            const lastCell = selectedCells[selectedCells.length - 1];
+            const rowDiff = Math.abs(lastCell.row - cell.row);
+            const colDiff = Math.abs(lastCell.col - cell.col);
+            
+            if (rowDiff > 1 || colDiff > 1) {
+                return;
+            }
+        }
+
+        cellToToggle.isSelected = !cellToToggle.isSelected;
+        setGrid(newGrid);
+
+        if (cellToToggle.isSelected) {
+            setSelectedCells([...selectedCells, cellToToggle]);
+        } else {
+            setSelectedCells(selectedCells.filter(c => 
+                c.row !== cell.row || c.col !== cell.col
+            ));
+        }
+
+        setCurrentWord(selectedCells.map(c => c.text).join(''));
     };
 
     const handleMouseDown = (cell: Cell) => {
@@ -152,62 +182,89 @@ const WordSearch: React.FC = () => {
         <div className="container mx-auto p-4">
             <Card className="w-full max-w-4xl mx-auto">
                 <CardHeader>
-                    <CardTitle>Word Search Puzzle</CardTitle>
-                    <Button 
-                        onClick={() => setShowWords(!showWords)}
-                        className="mt-2"
-                    >
-                        {showWords ? 'Hide Words' : 'Show Words'}
-                    </Button>
+                    <CardTitle className="text-2xl font-bold">Word Search Puzzle</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex flex-col lg:flex-row gap-8">
-                        <div className="flex-1">
-                            <div 
-                                className="grid grid-cols-15 gap-1 bg-card p-4 rounded-lg shadow-inner"
-                                onMouseLeave={handleMouseUp}
-                            >
-                                {grid.map((row, rowIndex) => (
-                                    <React.Fragment key={rowIndex}>
-                                        {row.map((cell) => (
-                                            <div
-                                                key={`${cell.row}-${cell.col}`}
-                                                className={`
-                                                    cell
-                                                    ${cell.isSelected ? 'selected' : ''}
-                                                    ${cell.isFound ? 'found' : ''}
-                                                `}
-                                                onMouseDown={() => handleMouseDown(cell)}
-                                                onMouseEnter={() => handleMouseEnter(cell)}
-                                                onMouseUp={handleMouseUp}
-                                            >
-                                                {cell.text}
-                                            </div>
-                                        ))}
-                                    </React.Fragment>
+                    <div className="grid grid-cols-15 gap-1 bg-card p-4 rounded-lg shadow-inner">
+                        {grid.map((row, rowIndex) => (
+                            <React.Fragment key={rowIndex}>
+                                {row.map((cell) => (
+                                    <button
+                                        key={`${cell.row}-${cell.col}`}
+                                        onClick={() => toggleCell(cell)}
+                                        className={`
+                                            w-8 h-8 sm:w-10 sm:h-10 
+                                            flex items-center justify-center 
+                                            rounded-md font-bold text-sm sm:text-base
+                                            transition-all duration-200 transform
+                                            ${cell.isFound ? 'bg-green-500 text-white scale-95' : ''}
+                                            ${cell.isSelected ? 'bg-primary text-primary-foreground scale-105' : 'bg-card hover:bg-muted'}
+                                            ${!cell.isFound && !cell.isSelected ? 'hover:scale-105' : ''}
+                                            active:scale-95
+                                        `}
+                                        disabled={cell.isFound}
+                                    >
+                                        {cell.text}
+                                    </button>
                                 ))}
-                            </div>
+                            </React.Fragment>
+                        ))}
+                    </div>
+
+                    <div className="mt-6 space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                            {wordPool.map((word) => (
+                                <div
+                                    key={word}
+                                    className={`
+                                        px-3 py-1 rounded-full text-sm
+                                        transition-all duration-300 transform
+                                        ${foundWords.includes(word) 
+                                            ? 'bg-green-500 text-white scale-95' 
+                                            : 'bg-secondary text-secondary-foreground'}
+                                        ${foundWords.includes(word) ? 'animate-[scale-95_0.2s_ease-in-out]' : ''}
+                                    `}
+                                >
+                                    {word}
+                                </div>
+                            ))}
                         </div>
 
-                        {showWords && (
-                            <div className="flex-none w-full lg:w-64 space-y-4">
-                                <div className="bg-card p-4 rounded-lg shadow">
-                                    <h3 className="font-semibold mb-2">Words to Find:</h3>
-                                    <ul className="space-y-1">
-                                        {wordPool.map((word) => (
-                                            <li
-                                                key={word}
-                                                className={`${
-                                                    foundWords.includes(word) ? 'line-through text-muted-foreground' : ''
-                                                }`}
-                                            >
-                                                {word}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                        <div className="flex gap-2 flex-wrap">
+                            <Button 
+                                onClick={giveHint}
+                                className="transition-transform hover:scale-105 active:scale-95"
+                            >
+                                Get Hint
+                            </Button>
+                            <Button 
+                                onClick={giveRiddle}
+                                className="transition-transform hover:scale-105 active:scale-95"
+                            >
+                                Get Riddle
+                            </Button>
+                            <Button 
+                                onClick={showWord}
+                                className="transition-transform hover:scale-105 active:scale-95"
+                            >
+                                Reveal Word
+                            </Button>
+                        </div>
+
+                        {message && (
+                            <div className="bg-muted p-4 rounded-lg animate-[fade-in_0.3s_ease-out]">
+                                {message}
                             </div>
                         )}
+
+                        <div className="flex justify-between items-center">
+                            <div className="text-lg font-semibold">
+                                Score: {score}
+                            </div>
+                            <div className="text-lg">
+                                Time: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -217,37 +274,15 @@ const WordSearch: React.FC = () => {
                     grid-template-columns: repeat(15, minmax(0, 1fr));
                 }
 
-                .cell {
-                    width: 40px;
-                    height: 40px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: bold;
-                    background-color: hsl(var(--card));
-                    border: 2px solid hsl(var(--border));
-                    border-radius: 0.5rem;
-                    cursor: pointer;
-                    user-select: none;
-                    transition: all 0.2s ease;
+                @keyframes scale-95 {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(0.95); }
+                    100% { transform: scale(1); }
                 }
 
-                .cell.selected {
-                    background-color: hsl(var(--primary));
-                    color: hsl(var(--primary-foreground));
-                }
-
-                .cell.found {
-                    background-color: hsl(var(--success));
-                    color: hsl(var(--success-foreground));
-                }
-
-                @media (max-width: 640px) {
-                    .cell {
-                        width: 30px;
-                        height: 30px;
-                        font-size: 0.875rem;
-                    }
+                @keyframes fade-in {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
         </div>
