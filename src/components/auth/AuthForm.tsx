@@ -21,7 +21,7 @@ const AuthForm = () => {
       providers={[]}
       view="sign_up"
       showLinks={true}
-      redirectTo={window.location.origin}
+      redirectTo="https://6f714e32-18dd-46c3-aa52-8aaead7bb41d.lovableproject.com"
     />
   );
 };

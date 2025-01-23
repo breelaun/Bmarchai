@@ -12,26 +12,15 @@ const Login = () => {
   const { trackToolUsage } = useToolTracking();
 
   useEffect(() => {
-    console.log('Debug - Session Object:', session);
-    console.log('Debug - Session Details:', {
-      exists: !!session,
-      user: session?.user,
-      accessToken: !!session?.access_token
-    });
-
     if (session) {
-      try {
-        trackToolUsage({
-          tool: "auth",
-          action: "login_success",
-          metadata: {
-            provider: session.user?.app_metadata?.provider || "email",
-          },
-        });
-        navigate("/");
-      } catch (error) {
-        console.error('Navigation Error:', error);
-      }
+      trackToolUsage({
+        tool: "auth",
+        action: "login_success",
+        metadata: {
+          provider: session.user?.app_metadata?.provider || "email",
+        },
+      });
+      navigate("/");
     }
   }, [session, navigate, trackToolUsage]);
 

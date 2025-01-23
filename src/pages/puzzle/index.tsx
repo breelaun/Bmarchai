@@ -203,8 +203,7 @@ const WordSearch = () => {
         </CardContent>
       </Card>
 
-      <style>
-        {`
+      <style jsx>{`
         .grid-cols-15 {
           grid-template-columns: repeat(15, minmax(0, 1fr));
         }
@@ -219,8 +218,7 @@ const WordSearch = () => {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        `}
-      </style>
+      `}</style>
     </div>
   );
 };
