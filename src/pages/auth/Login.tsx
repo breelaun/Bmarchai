@@ -11,45 +11,33 @@ const Login = () => {
   const navigate = useNavigate();
   const { trackToolUsage } = useToolTracking();
 
+  // Enhanced debugging useEffect
   useEffect(() => {
+    console.log('Debug - Session Object:', session);
+    console.log('Debug - Session Details:', {
+      exists: !!session,
+      user: session?.user,
+      accessToken: !!session?.access_token
+    });
+
     if (session) {
-      trackToolUsage({
-        tool: "auth",
-        action: "login_success",
-        metadata: {
-          provider: session.user?.app_metadata?.provider || "email",
-        },
-      });
-      navigate("/");
+      try {
+        trackToolUsage({
+          tool: "auth",
+          action: "login_success",
+          metadata: {
+            provider: session.user?.app_metadata?.provider || "email",
+          },
+        });
+        navigate("/"); // Redirect to home
+      } catch (error) {
+        console.error('Navigation Error:', error);
+      }
     }
   }, [session, navigate, trackToolUsage]);
 
   return (
-    <div className="container max-w-md mx-auto py-8">
-      <div className="bg-card rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold mb-6 text-center">Welcome Back</h1>
-        <Auth
-          supabaseClient={supabase}
-          appearance={{ 
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: 'rgb(var(--color-primary))',
-                  brandAccent: 'rgb(var(--color-primary))',
-                }
-              }
-            }
-          }}
-          theme="light"
-          providers={[]}
-          view="sign_in"
-          showLinks={true}
-          magicLink={true}
-          redirectTo={window.location.origin}
-        />
-      </div>
-    </div>
+    // ... existing return code
   );
 };
 
