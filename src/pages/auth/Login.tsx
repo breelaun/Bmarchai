@@ -32,6 +32,7 @@ const Login = () => {
       } catch (error) {
         console.error('Navigation Error:', error);
       }
+    }
   }, [session, navigate, trackToolUsage]);
 
   return (
