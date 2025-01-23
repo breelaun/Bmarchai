@@ -74,36 +74,6 @@ const WordSearch = () => {
     initGame();
   }, [initGame]);
 
-  const toggleCell = (cell: Cell) => {
-    if (cell.isFound) return;
-
-    const newGrid = grid.map(row => [...row]);
-    const cellToToggle = newGrid[cell.row][cell.col];
-
-    if (selectedCells.length > 0) {
-      const lastCell = selectedCells[selectedCells.length - 1];
-      const rowDiff = Math.abs(lastCell.row - cell.row);
-      const colDiff = Math.abs(lastCell.col - cell.col);
-      
-      if (rowDiff > 1 || colDiff > 1) {
-        return;
-      }
-    }
-
-    cellToToggle.isSelected = !cellToToggle.isSelected;
-    setGrid(newGrid);
-
-    if (cellToToggle.isSelected) {
-      setSelectedCells([...selectedCells, cellToToggle]);
-    } else {
-      setSelectedCells(selectedCells.filter(c => 
-        c.row !== cell.row || c.col !== cell.col
-      ));
-    }
-
-    setCurrentWord(selectedCells.map(c => c.text).join(''));
-  };
-
   const handleMouseDown = (cell: Cell) => {
     setDragStart(cell);
     setCurrentSelection([cell]);
@@ -203,7 +173,7 @@ const WordSearch = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 mt-8">
+    <div className="container mx-auto p-4 mt-24">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Word Search Puzzle</CardTitle>
@@ -211,7 +181,7 @@ const WordSearch = () => {
         <CardContent>
           <Grid
             grid={grid}
-            onCellClick={toggleCell}
+            onCellClick={() => {}}
             onCellMouseDown={handleMouseDown}
             onCellMouseEnter={handleMouseEnter}
             onCellMouseUp={handleMouseUp}
@@ -233,24 +203,22 @@ const WordSearch = () => {
         </CardContent>
       </Card>
 
-      <style>
-        {`
-          .grid-cols-15 {
-            grid-template-columns: repeat(15, minmax(0, 1fr));
-          }
+      <style jsx>{`
+        .grid-cols-15 {
+          grid-template-columns: repeat(15, minmax(0, 1fr));
+        }
 
-          @keyframes scale-95 {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-            100% { transform: scale(1); }
-          }
+        @keyframes scale-95 {
+          0% { transform: scale(1); }
+          50% { transform: scale(0.95); }
+          100% { transform: scale(1); }
+        }
 
-          @keyframes fade-in {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}
-      </style>
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
