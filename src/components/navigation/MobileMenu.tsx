@@ -1,75 +1,155 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
-import { Package } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
-import { useSession } from "@supabase/auth-helpers-react";
-import { useCart } from "@/components/cart/CartProvider";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { useState } from "react";
-import { countries } from "@/lib/countries";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { MenuItem, SubMenuItem } from "./types";
+import CartIcon from "./CartIcon";
 
-interface Product {
-  id: number;
-  name: string;
-  description: string | null;
-  price: number;
-  image_url: string | null;
-  category: string | null;
-  inventory_count: number | null;
-  vendor_profiles: {
-    business_name: string | null;
-    country: string | null;
-    profiles: {
-      username: string | null;
-      is_vendor: boolean;
-    }
-  }
+interface MobileMenuProps {
+  isOpen: boolean;
+  menuItems: MenuItem[];
+  vendorSubmenu: SubMenuItem[];
+  profileSubmenu: SubMenuItem[];
+  authItems: SubMenuItem[];
+  onClose: () => void;
+  session: boolean;
+  cartItemsCount: number;
 }
 
-const Shop = () => {
-  const session = useSession();
-  const navigate = useNavigate();
-  const { addToCart } = useCart();
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedCountry, setSelectedCountry] = useState<string>("all");
-  const [priceRange, setPriceRange] = useState([0, 1000]);
-  
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          vendor_profiles (
-            business_name,
-            country,
-            profiles (
-              username,
-              is_vendor
-            )
-          )
-        `)
-        .order('created_at', { ascending: false });
+const MobileMenu = ({
+  isOpen,
+  menuItems,
+  vendorSubmenu,
+  profileSubmenu,
+  authItems,
+  onClose,
+  session,
+  cartItemsCount
+}: MobileMenuProps) => {
+  return (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+        <ScrollArea className="h-[calc(100vh-4rem)] pb-10">
+          <div className="space-y-4 py-4">
+            {menuItems.map((item) => (
+              <div key={item.path} className="px-3">
+                {item.submenu ? (
+                  <div className="space-y-2">
+                    <h4 className="font-medium">{item.name}</h4>
+                    <div className="pl-4 space-y-2">
+                      {item.submenu.map((subItem) => (
+                        <Button
+                          key={subItem.path}
+                          variant="ghost"
+                          className="w-full justify-start"
+                          asChild
+                          onClick={onClose}
+                        >
+                          <Link to={subItem.path}>
+                            {subItem.icon}
+                            {subItem.name}
+                          </Link>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    asChild
+                    onClick={onClose}
+                  >
+                    <Link to={item.path}>{item.name}</Link>
+                  </Button>
+                )}
+              </div>
+            ))}
 
-      if (error) {
-        console.error("Error fetching products:", error);
-        throw error;
-      }
-      
-      return data as Product[];
-    },
-  });
+            {session && (
+              <>
+                <div className="px-3">
+                  <h4 className="mb-2 font-medium">Profile</h4>
+                  <div className="space-y-2">
+                    {profileSubmenu.map((item) => (
+                      <Button
+                        key={item.path}
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          if (item.onClick) item.onClick();
+                          onClose();
+                        }}
+                        asChild={!item.onClick}
+                      >
+                        {item.onClick ? (
+                          <div className="flex items-center">
+                            {item.icon}
+                            {item.name}
+                          </div>
+                        ) : (
+                          <Link to={item.path}>
+                            {item.icon}
+                            {item.name}
+                          </Link>
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
 
-  // Rest of the code remains the same as in the previous version
-  // ... (categories query, formatPrice, filteredProducts, etc.)
+                <div className="px-3">
+                  <h4 className="mb-2 font-medium">Vendor</h4>
+                  <div className="space-y-2">
+                    {vendorSubmenu.map((item) => (
+                      <Button
+                        key={item.path}
+                        variant="ghost"
+                        className="w-full justify-start"
+                        asChild
+                        onClick={onClose}
+                      >
+                        <Link to={item.path}>
+                          {item.icon}
+                          {item.name}
+                        </Link>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
 
-  // Render methods and return statement remain unchanged
+                <div className="px-3">
+                  <CartIcon count={cartItemsCount} />
+                </div>
+              </>
+            )}
+
+            {!session && (
+              <div className="px-3">
+                <h4 className="mb-2 font-medium">Auth</h4>
+                <div className="space-y-2">
+                  {authItems.map((item) => (
+                    <Button
+                      key={item.path}
+                      variant="ghost"
+                      className="w-full justify-start"
+                      asChild
+                      onClick={onClose}
+                    >
+                      <Link to={item.path}>
+                        {item.icon}
+                        {item.name}
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
+  );
 };
 
-export default Shop;
+export default MobileMenu;
