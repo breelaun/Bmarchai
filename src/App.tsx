@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Index from "@/pages/Index";
 import Shop from "@/pages/Shop";
@@ -21,6 +21,8 @@ const App = () => {
           <Route path="/crm" element={<CRM />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          {/* Catch all route - redirects to home page */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
