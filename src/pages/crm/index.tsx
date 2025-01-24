@@ -33,7 +33,7 @@ const CRM = () => {
               <AnalyticsDashboard />
             </TabsContent>
             <TabsContent value="stocks">
-              <StockMarket symbol="AAPL" />
+              <StockMarket defaultSymbol="AAPL" />
             </TabsContent>
           </Tabs>
         </CardContent>
