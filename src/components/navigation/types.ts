@@ -1,17 +1,18 @@
-import { ReactNode } from "react";
+function ProtectedRoute() {
+  const session = useSession();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-export interface MenuItem {
-  name: string;
-  path: string;
-  submenu?: SubMenuItem[];
-}
+  useEffect(() => {
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access this feature.",
+        variant: "destructive",
+      });
+      navigate("/login");
+    }
+  }, [session, navigate]);
 
-export interface SubMenuItem extends MenuItem {
-  icon: ReactNode;
-  onClick?: () => void;
-}
-
-export interface NavigationProps {
-  isOpen?: boolean;
-  onClose?: () => void;
+  return session ? <CRMPage /> : null;
 }
