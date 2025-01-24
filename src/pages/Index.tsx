@@ -3,6 +3,9 @@ import MealPlanner from '@/components/home/meal-planner/MealPlanner';
 import CalorieBurner from '@/components/home/CalorieBurner';
 import ServiceCards from '@/components/home/ServiceCards';
 
+// Import the SentryTest component
+import SentryTest from '@/components/SentryTest';
+
 const Index = () => {
   return (
     <div className="min-h-screen">
@@ -41,6 +44,13 @@ const Index = () => {
         <div className="w-full">
           <CalorieBurner />
         </div>
+
+        {/* Add Sentry Test Button - Only in development */}
+        {process.env.NODE_ENV !== 'production' && (
+          <div className="fixed bottom-4 right-4">
+            <SentryTest />
+          </div>
+        )}
       </div>
     </div>
   );
