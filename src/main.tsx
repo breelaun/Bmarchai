@@ -22,8 +22,8 @@ const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Sentry.ErrorBoundary fallback={({ error }: { error: Error }) => (
-      <div>An error occurred: {error.message}</div>
+    <Sentry.ErrorBoundary fallback={(errorData: { error: unknown; componentStack: string; eventId: string; resetError: () => void }) => (
+      <div>An error occurred: {errorData.error instanceof Error ? errorData.error.message : 'Unknown error'}</div>
     )}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
