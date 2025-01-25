@@ -4,6 +4,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ArtsSection from "@/components/admin/ArtsSection";
+import YouTubeEmbedsManager from "@/components/admin/YouTubeEmbedsManager";
 
 const AdminPage = () => {
   const session = useSession();
@@ -40,6 +41,9 @@ const AdminPage = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
       <ArtsSection />
+      <div className="mt-8">
+        <YouTubeEmbedsManager />
+      </div>
     </div>
   );
 };
