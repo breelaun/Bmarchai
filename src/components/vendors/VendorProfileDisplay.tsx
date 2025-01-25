@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@supabase/auth-helpers-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
@@ -12,6 +12,8 @@ const VendorProfile = () => {
   const session = useSession();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+
   const isProfileRoute = id === "profile";
 
   useEffect(() => {
@@ -20,9 +22,8 @@ const VendorProfile = () => {
     }
   }, [isProfileRoute, session, navigate]);
 
-  const { data: vendorProfile, isLoading, error } = useQuery({
-    queryKey: ['vendorProfile', id, session?.user?.id],
-    queryFn: async () => {
+  const fetchVendorProfile = async () => {
+    try {
       let userId = id;
       
       if (isProfileRoute) {
@@ -32,10 +33,8 @@ const VendorProfile = () => {
         userId = session.user.id;
       }
 
-      // Check if the provided ID is a valid UUID
-      const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId || '');
-      
-      if (!isValidUUID) {
+      // More lenient UUID validation
+      if (!userId || userId.length !== 36) {
         throw new Error("Invalid vendor ID");
       }
 
@@ -54,9 +53,21 @@ const VendorProfile = () => {
       }
 
       return data;
-    },
+    } catch (err) {
+      console.error("Vendor profile fetch error:", err);
+      throw err;
+    }
+  };
+
+  const { 
+    data: vendorProfile, 
+    error 
+  } = useQuery({
+    queryKey: ['vendorProfile', id, session?.user?.id],
+    queryFn: fetchVendorProfile,
     enabled: !!id && (!isProfileRoute || !!session),
-    retry: 1  // Limit retry attempts
+    retry: 1,
+    onSettled: () => setIsLoading(false)
   });
 
   useEffect(() => {
@@ -64,14 +75,20 @@ const VendorProfile = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Vendor profile not found. Please check the vendor ID."
+        description: error instanceof Error 
+          ? error.message 
+          : "Vendor profile not found. Please check the vendor ID."
       });
       navigate('/vendors');
     }
   }, [error, navigate, toast]);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        Loading vendor profile...
+      </div>
+    );
   }
 
   if (isProfileRoute && !session) {
@@ -91,9 +108,9 @@ const VendorProfile = () => {
 
   const vendorData = vendorProfile ? {
     socialLinks: vendorProfile.social_links ? {
-      facebook: (vendorProfile.social_links as any)?.facebook || "",
-      instagram: (vendorProfile.social_links as any)?.instagram || "",
-      twitter: (vendorProfile.social_links as any)?.twitter || "",
+      facebook: vendorProfile.social_links?.facebook || "",
+      instagram: vendorProfile.social_links?.instagram || "",
+      twitter: vendorProfile.social_links?.twitter || "",
     } : defaultVendorData.socialLinks,
     aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
     enableReviews: true,
