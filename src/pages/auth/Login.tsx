@@ -24,7 +24,7 @@ const Login = () => {
         case 'SIGNED_IN':
           handleSuccessfulLogin(session);
           break;
-        case 'USER_DELETED':
+        case 'SIGNED_OUT':
           handleLoginError();
           break;
         case 'PASSWORD_RECOVERY':
