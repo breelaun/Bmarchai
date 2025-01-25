@@ -19,19 +19,20 @@ const AuthForm = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Successfully logged in!",
-      });
-      
-      navigate("/");
+      if (data.user) {
+        toast({
+          title: "Success",
+          description: "Successfully logged in!",
+        });
+        navigate("/profile");
+      }
     } catch (error: any) {
       toast({
         title: "Error",
