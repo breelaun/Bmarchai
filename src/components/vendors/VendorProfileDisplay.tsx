@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@supabase/auth-helpers-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
@@ -12,9 +12,35 @@ const VendorProfile = () => {
   const session = useSession();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
 
   const isProfileRoute = id === "profile";
+
+  const fetchVendorProfile = async () => {
+    const userId = isProfileRoute ? session?.user?.id : id;
+
+    if (!userId) {
+      throw new Error("Invalid user ID");
+    }
+
+    const { data, error } = await supabase
+      .from('vendor_profiles')
+      .select('*, profiles:vendor_profiles_id_fkey(*)')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  };
+
+  const { 
+    data: vendorProfile, 
+    isLoading,
+    error 
+  } = useQuery({
+    queryKey: ['vendorProfile', id, session?.user?.id],
+    queryFn: fetchVendorProfile,
+    enabled: !!id && (!isProfileRoute || !!session)
+  });
 
   useEffect(() => {
     if (isProfileRoute && !session) {
@@ -22,110 +48,48 @@ const VendorProfile = () => {
     }
   }, [isProfileRoute, session, navigate]);
 
-  const fetchVendorProfile = async () => {
-    try {
-      let userId = id;
-      
-      if (isProfileRoute) {
-        if (!session?.user?.id) {
-          throw new Error("No authenticated user found");
-        }
-        userId = session.user.id;
-      }
-
-      // More lenient UUID validation
-      if (!userId || userId.length !== 36) {
-        throw new Error("Invalid vendor ID");
-      }
-
-      const { data, error } = await supabase
-        .from('vendor_profiles')
-        .select(`
-          *,
-          profiles:vendor_profiles_id_fkey(*)
-        `)
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching vendor profile:", error);
-        throw error;
-      }
-
-      return data;
-    } catch (err) {
-      console.error("Vendor profile fetch error:", err);
-      throw err;
-    }
-  };
-
-  const { 
-    data: vendorProfile, 
-    error 
-  } = useQuery({
-    queryKey: ['vendorProfile', id, session?.user?.id],
-    queryFn: fetchVendorProfile,
-    enabled: !!id && (!isProfileRoute || !!session),
-    retry: 1,
-    onSettled: () => setIsLoading(false)
-  });
-
   useEffect(() => {
     if (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error 
-          ? error.message 
-          : "Vendor profile not found. Please check the vendor ID."
+        description: "Vendor profile not found"
       });
       navigate('/vendors');
     }
   }, [error, navigate, toast]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        Loading vendor profile...
-      </div>
-    );
-  }
-
-  if (isProfileRoute && !session) {
-    return null;
+    return <div className="text-center py-8">Loading...</div>;
   }
 
   const defaultVendorData = {
-    socialLinks: {
-      facebook: "",
-      instagram: "",
-      twitter: "",
-    },
+    socialLinks: { facebook: "", instagram: "", twitter: "" },
     aboutMe: "Welcome to my vendor profile!",
     enableReviews: true,
-    enableFeatured: true,
+    enableFeatured: true
   };
 
-  const vendorData = vendorProfile ? {
-    socialLinks: vendorProfile.social_links ? {
-      facebook: vendorProfile.social_links?.facebook || "",
-      instagram: vendorProfile.social_links?.instagram || "",
-      twitter: vendorProfile.social_links?.twitter || "",
-    } : defaultVendorData.socialLinks,
-    aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
-    enableReviews: true,
-    enableFeatured: true,
-  } : defaultVendorData;
+  const vendorData = vendorProfile 
+    ? {
+        socialLinks: {
+          facebook: vendorProfile.social_links?.facebook || "",
+          instagram: vendorProfile.social_links?.instagram || "",
+          twitter: vendorProfile.social_links?.twitter || ""
+        },
+        aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
+        enableReviews: true,
+        enableFeatured: true
+      }
+    : defaultVendorData;
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="space-y-8">
-        <VendorProfileDisplay 
-          vendorData={vendorData} 
-          vendorId={id} 
-        />
-        <VendorStore vendorId={id} />
-      </div>
+      <VendorProfileDisplay 
+        vendorData={vendorData} 
+        vendorId={id} 
+      />
+      <VendorStore vendorId={id} />
     </div>
   );
 };
