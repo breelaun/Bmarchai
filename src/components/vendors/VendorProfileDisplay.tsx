@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import VendorHeader from "./profile/VendorHeader";
@@ -19,61 +18,25 @@ interface VendorProfileDisplayProps {
     enableReviews: boolean;
     enableFeatured: boolean;
   };
+  vendorId?: string;
 }
 
-const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
-  const session = useSession();
+const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProps) => {
   const { toast } = useToast();
 
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ['profile', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        
-        if (error) {
-          console.error('Error fetching profile:', error);
-          toast({
-            variant: "destructive",
-            title: "Error fetching profile",
-            description: error.message
-          });
-          throw error;
-        }
-        return data;
-      } catch (error: any) {
-        console.error('Error in profile query:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to fetch profile data"
-        });
-        throw error;
-      }
-    },
-    enabled: !!session?.user?.id,
-    retry: 1
-  });
-
   const { data: vendorProfile, isLoading: vendorLoading } = useQuery({
-    queryKey: ['vendorProfile', session?.user?.id],
+    queryKey: ['vendorProfile', vendorId],
     queryFn: async () => {
-      if (!session?.user?.id) return null;
+      if (!vendorId) return null;
       
       try {
         const { data, error } = await supabase
           .from('vendor_profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
+          .select('*, profiles:vendor_profiles_id_fkey(*)')
+          .eq('id', vendorId)
+          .single();
         
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
           console.error('Error fetching vendor profile:', error);
           toast({
             variant: "destructive",
@@ -83,13 +46,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           throw error;
         }
 
-        // Type assertion to ensure social_links matches expected structure
-        const typedData = data ? {
-          ...data,
-          social_links: data.social_links as VendorProfileData['social_links']
-        } : null;
-
-        return typedData as VendorProfileData;
+        return data;
       } catch (error: any) {
         console.error('Error in vendor profile query:', error);
         toast({
@@ -100,11 +57,10 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
         throw error;
       }
     },
-    enabled: !!session?.user?.id,
-    retry: 1
+    enabled: !!vendorId,
   });
 
-  if (profileLoading || vendorLoading) {
+  if (vendorLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse">Loading...</div>
@@ -112,28 +68,25 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
     );
   }
 
-  const defaultVendorData = {
-    socialLinks: {
+  if (!vendorProfile) {
+    return <div>Vendor not found</div>;
+  }
+
+  const currentVendorData = {
+    socialLinks: vendorProfile.social_links || {
       facebook: "",
       instagram: "",
       twitter: ""
     },
-    aboutMe: "",
-    enableReviews: false,
-    enableFeatured: false
-  };
-
-  const currentVendorData = vendorProfile ? {
-    socialLinks: vendorProfile.social_links || defaultVendorData.socialLinks,
     aboutMe: vendorProfile.business_description || "",
     enableReviews: true,
     enableFeatured: true
-  } : defaultVendorData;
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <VendorHeader 
-        profile={profile} 
+        profile={vendorProfile.profiles} 
         aboutMe={currentVendorData.aboutMe}
       />
       
@@ -144,7 +97,7 @@ const VendorProfileDisplay = ({ vendorData }: VendorProfileDisplayProps) => {
           </div>
           
           <div className="md:col-span-9 space-y-6">
-            <VendorStore />
+            <VendorStore vendorId={vendorId} />
             <VendorSocial socialLinks={currentVendorData.socialLinks} />
           </div>
         </div>
