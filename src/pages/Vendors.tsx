@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Store, BadgeCheck } from "lucide-react";
+import { Search, BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -31,12 +31,8 @@ const Vendors = () => {
     navigate('/vendors/new');
   };
 
-  const handleViewProfile = (vendorId: string) => {
+  const handleVendorNavigation = (vendorId: string) => {
     navigate(`/vendors/${vendorId}`);
-  };
-
-  const handleVisitStore = (vendorId: string) => {
-    navigate(`/vendors/${vendorId}/store`);
   };
 
   return (
@@ -73,7 +69,8 @@ const Vendors = () => {
             vendors.map((vendor) => (
               <Card 
                 key={vendor.id} 
-                className="bg-card hover:bg-card/80 transition-colors"
+                className="bg-card hover:bg-card/80 transition-colors cursor-pointer"
+                onClick={() => handleVendorNavigation(vendor.id)}
               >
                 <CardHeader>
                   <div className="flex items-center gap-2">
@@ -105,23 +102,6 @@ const Vendors = () => {
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleViewProfile(vendor.id)}
-                  >
-                    View Profile
-                  </Button>
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    onClick={() => handleVisitStore(vendor.id)}
-                  >
-                    <Store className="h-4 w-4 mr-2" />
-                    Visit Store
-                  </Button>
-                </CardFooter>
               </Card>
             ))
           ) : (
