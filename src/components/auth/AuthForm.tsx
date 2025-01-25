@@ -19,9 +19,9 @@ const AuthForm = () => {
     setLoading(true);
 
     try {
-      console.log("Attempting login with:", { email });
+      console.log("Starting login process for:", email);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: { session }, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -31,25 +31,37 @@ const AuthForm = () => {
         throw error;
       }
 
-      console.log("Login successful:", data);
-
-      if (data.user) {
-        // Verify session was created
-        const session = await supabase.auth.getSession();
-        console.log("Current session after login:", session);
-
-        toast({
-          title: "Success",
-          description: "Successfully logged in!",
-        });
+      if (session) {
+        console.log("Session created successfully:", session);
         
-        navigate("/profile");
+        // Verify the session was stored
+        const currentSession = await supabase.auth.getSession();
+        console.log("Current session after login:", currentSession);
+
+        // Set up auth state change listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+          console.log("Auth state changed:", event, currentSession);
+          if (event === 'SIGNED_IN' && currentSession) {
+            toast({
+              title: "Success",
+              description: "Successfully logged in!",
+            });
+            navigate("/profile");
+          }
+        });
+
+        // Clean up subscription
+        return () => {
+          subscription.unsubscribe();
+        };
+      } else {
+        throw new Error("No session created");
       }
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Login process error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to log in",
+        description: error.message || "Failed to log in. Please check your credentials.",
         variant: "destructive",
       });
     } finally {
@@ -73,6 +85,7 @@ const AuthForm = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              placeholder="Enter your email"
             />
           </div>
           <div className="space-y-2">
@@ -84,6 +97,7 @@ const AuthForm = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
+              placeholder="Enter your password"
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
