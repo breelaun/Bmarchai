@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import DesktopMenu from "./navigation/DesktopMenu";
 import MobileMenu from "./navigation/MobileMenu";
 import ProfileMenu from "./navigation/ProfileMenu";
@@ -17,7 +17,6 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const session = useSession();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   // Fetch cart items count
   const { data: cartItemsCount = 0 } = useQuery({
@@ -51,20 +50,6 @@ const Navigation = () => {
     enabled: !!session?.user?.id,
   });
 
-  const handleProtectedNavigation = (path: string) => {
-    if (!session) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to access this feature.",
-        variant: "destructive",
-      });
-      navigate("/login");
-      return false;
-    }
-    navigate(path);
-    return true;
-  };
-
   const menuItems: MenuItem[] = [
     { 
       name: "Shop", 
@@ -82,11 +67,7 @@ const Navigation = () => {
         { name: "Arts", path: "/arts", icon: <Palette className="h-4 w-4 mr-2" /> },
       ]
     },
-    { 
-      name: "CRM", 
-      path: "/crm",
-      onClick: () => handleProtectedNavigation("/crm")
-    },
+    { name: "CRM", path: "/crm" },
     { name: "Blogs", path: "/blogs" },
   ];
 

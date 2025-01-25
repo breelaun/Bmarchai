@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/components/cart/CartProvider";
 import { useNavigate } from "react-router-dom";
 import { Package, Minus, Plus, Trash2 } from "lucide-react";
+import PaymentButton from "@/components/payment/PaymentButton";
 
 const Cart = () => {
   const { items = [], updateQuantity, removeFromCart } = useCart();
@@ -11,6 +12,8 @@ const Cart = () => {
   const total = items.reduce((sum, item) => {
     return sum + (item.product.price * item.quantity);
   }, 0);
+
+  const vendorId = items[0]?.product?.vendor_id;
 
   if (!items || items.length === 0) {
     return (
@@ -91,9 +94,7 @@ const Cart = () => {
             <div className="text-lg font-semibold">
               Total: ${total.toFixed(2)}
             </div>
-            <Button onClick={() => navigate("/checkout")} size="lg">
-              Proceed to Checkout
-            </Button>
+            <PaymentButton amount={total} vendorId={vendorId} />
           </div>
         </CardContent>
       </Card>
