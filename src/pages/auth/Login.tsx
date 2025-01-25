@@ -12,14 +12,12 @@ const Login = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // If user is already logged in, redirect to home
     if (session) {
       console.log("Session detected, redirecting to home");
       navigate("/");
     }
   }, [session, navigate]);
 
-  // Set up auth state change listener
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, session);
@@ -57,14 +55,6 @@ const Login = () => {
           theme="light"
           providers={[]}
           redirectTo={window.location.origin}
-          onError={(error) => {
-            console.error("Auth error:", error);
-            toast({
-              title: "Authentication Error",
-              description: error.message,
-              variant: "destructive",
-            });
-          }}
         />
       </div>
     </div>
