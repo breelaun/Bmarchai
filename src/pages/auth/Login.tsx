@@ -4,35 +4,36 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useToolTracking } from "@/hooks/use-tool-tracking";
+import { useToast } from "@/components/ui/use-toast";
 
 const Login = () => {
   const session = useSession();
   const navigate = useNavigate();
-  const { trackToolUsage } = useToolTracking();
+  const { toast } = useToast();
 
   useEffect(() => {
-    console.log('Debug - Session Object:', session);
-    console.log('Debug - Session Details:', {
-      exists: !!session,
-      user: session?.user,
-      accessToken: !!session?.access_token
-    });
-
     if (session) {
-      try {
-        trackToolUsage({
-          tool: "auth",
-          action: "login_success",
-          metadata: {
-            provider: session.user?.app_metadata?.provider || "email",
-          },
+      console.log("Session detected, redirecting to home");
+      navigate("/");
+    }
+  }, [session, navigate]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
+      if (event === 'SIGNED_IN') {
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
         });
         navigate("/");
-      } catch (error) {
-        console.error('Navigation Error:', error);
       }
-  }, [session, navigate, trackToolUsage]);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   return (
     <div className="container max-w-md mx-auto py-8">
@@ -53,9 +54,6 @@ const Login = () => {
           }}
           theme="light"
           providers={[]}
-          view="sign_in"
-          showLinks={true}
-          magicLink={true}
           redirectTo={window.location.origin}
         />
       </div>
