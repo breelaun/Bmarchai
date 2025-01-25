@@ -19,7 +19,7 @@ const VendorProfile = () => {
   }, [isProfileRoute, session, navigate]);
 
   const { data: vendorProfile, isLoading } = useQuery({
-    queryKey: ['vendorProfile', id],
+    queryKey: ['vendorProfile', id, session?.user?.id],
     queryFn: async () => {
       let userId = id;
       
@@ -34,7 +34,7 @@ const VendorProfile = () => {
         .from('vendor_profiles')
         .select('*')
         .eq('id', userId)
-        .single(); // Changed from maybeSingle to ensure single record
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching vendor profile:", error);
@@ -50,8 +50,8 @@ const VendorProfile = () => {
     return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
   }
 
-  if (!vendorProfile) {
-    return <div className="text-center py-8">Vendor profile not found</div>;
+  if (isProfileRoute && !session) {
+    return null;
   }
 
   const defaultVendorData = {
@@ -65,7 +65,7 @@ const VendorProfile = () => {
     enableFeatured: true,
   };
 
-  const vendorData = {
+  const vendorData = vendorProfile ? {
     socialLinks: vendorProfile.social_links ? {
       facebook: (vendorProfile.social_links as any)?.facebook || "",
       instagram: (vendorProfile.social_links as any)?.instagram || "",
@@ -74,7 +74,7 @@ const VendorProfile = () => {
     aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
     enableReviews: true,
     enableFeatured: true,
-  };
+  } : defaultVendorData;
 
   return (
     <div className="container mx-auto px-4 py-8">
