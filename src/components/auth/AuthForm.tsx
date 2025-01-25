@@ -19,27 +19,39 @@ const AuthForm = () => {
     setLoading(true);
 
     try {
+      console.log("Attempting login with:", { email });
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
+
+      console.log("Login successful:", data);
 
       if (data.user) {
+        // Verify session was created
+        const session = await supabase.auth.getSession();
+        console.log("Current session after login:", session);
+
         toast({
           title: "Success",
           description: "Successfully logged in!",
         });
+        
         navigate("/profile");
       }
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to log in",
         variant: "destructive",
       });
-      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -60,6 +72,7 @@ const AuthForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -70,10 +83,11 @@ const AuthForm = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Loading..." : "Sign In"}
+            {loading ? "Logging in..." : "Sign In"}
           </Button>
         </form>
       </CardContent>
