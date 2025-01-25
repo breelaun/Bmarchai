@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "@/pages/Index";
 import Shop from "@/pages/Shop";
 import Cart from "@/pages/Cart";
@@ -16,12 +17,25 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/shop" element={<Shop />} />
-          <Route path="/cart" element={<Cart />} />
+          <Route 
+            path="/cart" 
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/vendors" element={<Vendors />} />
-          <Route path="/crm" element={<CRM />} />
+          <Route 
+            path="/crm" 
+            element={
+              <ProtectedRoute>
+                <CRM />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          {/* Catch all route - redirects to home page */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
