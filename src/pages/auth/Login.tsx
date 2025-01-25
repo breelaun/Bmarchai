@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { AuthChangeEvent } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import AuthForm from "@/components/auth/AuthForm";
 
 const Login = () => {
   const session = useSession();
@@ -19,12 +19,12 @@ const Login = () => {
   }, [session]);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
       switch (event) {
         case 'SIGNED_IN':
           handleSuccessfulLogin(session);
           break;
-        case 'SIGN_IN_ERROR':
+        case 'USER_DELETED':
           handleLoginError();
           break;
         case 'PASSWORD_RECOVERY':
@@ -42,16 +42,15 @@ const Login = () => {
     };
   }, [navigate, toast]);
 
-  const handleSuccessfulLogin = async (session) => {
+  const handleSuccessfulLogin = async (session: any) => {
     setIsLoading(true);
     try {
-      // Optional: Fetch additional user profile data
       const { data: { user } } = await supabase.auth.getUser();
       
       toast({
         title: "Welcome Back",
         description: `Logged in as ${user?.email}`,
-        variant: "success"
+        variant: "default"
       });
       
       navigateToProfile();
@@ -62,7 +61,7 @@ const Login = () => {
     }
   };
 
-  const handleLoginError = (error = null) => {
+  const handleLoginError = (error: any = null) => {
     toast({
       title: "Login Error",
       description: error?.message || "Unable to log in. Please try again.",
@@ -81,25 +80,7 @@ const Login = () => {
         <h1 className="text-2xl font-bold mb-6 text-center">
           {isLoading ? "Logging In..." : "Welcome Back"}
         </h1>
-        <Auth
-          supabaseClient={supabase}
-          appearance={{ 
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: 'rgb(var(--color-primary))',
-                  brandAccent: 'rgb(var(--color-primary))',
-                }
-              }
-            }
-          }}
-          theme="light"
-          providers={[]}
-          redirectTo={window.location.origin + "/profile"}
-          onSuccess={handleSuccessfulLogin}
-          onError={handleLoginError}
-        />
+        <AuthForm />
       </div>
     </div>
   );
