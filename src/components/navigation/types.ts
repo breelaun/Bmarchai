@@ -1,4 +1,10 @@
-function ProtectedRoute() {
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useToast } from "@/components/ui/use-toast";
+import CRMPage from "@/pages/crm";
+
+export function ProtectedRoute() {
   const session = useSession();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -12,7 +18,7 @@ function ProtectedRoute() {
       });
       navigate("/login");
     }
-  }, [session, navigate]);
+  }, [session, navigate, toast]);
 
   return session ? <CRMPage /> : null;
 }
