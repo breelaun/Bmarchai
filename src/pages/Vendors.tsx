@@ -73,8 +73,7 @@ const Vendors = () => {
             vendors.map((vendor) => (
               <Card 
                 key={vendor.id} 
-                className="bg-card hover:bg-card/80 transition-colors cursor-pointer"
-                onClick={() => handleViewProfile(vendor.id)}
+                className="bg-card hover:bg-card/80 transition-colors"
               >
                 <CardHeader>
                   <div className="flex items-center gap-2">
@@ -110,20 +109,14 @@ const Vendors = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewProfile(vendor.id);
-                    }}
+                    onClick={() => handleViewProfile(vendor.id)}
                   >
                     View Profile
                   </Button>
                   <Button 
                     variant="default" 
                     size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleVisitStore(vendor.id);
-                    }}
+                    onClick={() => handleVisitStore(vendor.id)}
                   >
                     <Store className="h-4 w-4 mr-2" />
                     Visit Store
