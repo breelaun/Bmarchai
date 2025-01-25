@@ -14,7 +14,7 @@ interface EmbedsListProps {
 export const EmbedsList = ({ embeds, onEdit }: EmbedsListProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const deleteEmbed = useMutation({
     mutationFn: async (embedId: string) => {
@@ -41,48 +41,43 @@ export const EmbedsList = ({ embeds, onEdit }: EmbedsListProps) => {
     },
   });
 
-  const toggleExpand = (embedId: string) => {
-    setExpandedIds(current => 
-      current.includes(embedId)
-        ? current.filter(id => id !== embedId)
-        : [...current, embedId]
-    );
-  };
-
   return (
     <div className="space-y-4">
-      {embeds.map((embed) => {
-        const isExpanded = expandedIds.includes(embed.id);
-        
-        return (
-          <div
-            key={embed.id}
-            className="border rounded-lg"
-          >
-            <div className="flex items-center justify-between p-4">
-              <div className="flex-grow">
+      <div className="flex items-center justify-between p-4 border rounded-lg">
+        <h3 className="text-lg font-semibold">
+          Embeds List ({embeds.length} items)
+        </h3>
+        <Button
+          variant="ghost"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? (
+            <>Collapse <ChevronUp className="ml-2" /></>
+          ) : (
+            <>Expand <ChevronDown className="ml-2" /></>
+          )}
+        </Button>
+      </div>
+
+      {isExpanded && (
+        <div className="space-y-4">
+          {embeds.map((embed) => (
+            <div
+              key={embed.id}
+              className="flex items-center justify-between p-4 border rounded-lg"
+            >
+              <div>
                 <h4 className="font-medium">{embed.title}</h4>
-                {isExpanded && (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      Category: {embed.arts_categories?.name}
-                    </p>
-                    {embed.end_date && (
-                      <p className="text-sm text-muted-foreground">
-                        Expires: {new Date(embed.end_date).toLocaleDateString()}
-                      </p>
-                    )}
-                  </>
+                <p className="text-sm text-muted-foreground">
+                  Category: {embed.arts_categories?.name}
+                </p>
+                {embed.end_date && (
+                  <p className="text-sm text-muted-foreground">
+                    Expires: {new Date(embed.end_date).toLocaleDateString()}
+                  </p>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => toggleExpand(embed.id)}
-                >
-                  {isExpanded ? <ChevronUp /> : <ChevronDown />}
-                </Button>
+              <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="icon"
@@ -99,9 +94,9 @@ export const EmbedsList = ({ embeds, onEdit }: EmbedsListProps) => {
                 </Button>
               </div>
             </div>
-          </div>
-        );
-      })}
+          ))}
+        </div>
+      )}
     </div>
   );
 };
