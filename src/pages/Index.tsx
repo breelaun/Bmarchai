@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,9 +22,10 @@ const Index = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<Embed[]>({
     queryKey: ['embeds'],
-    queryFn: async ({ pageParam = 0 }) => {
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
       const { data, error } = await supabase
         .from('arts_embeds')
         .select('*, arts_categories(name)')
@@ -35,7 +36,7 @@ const Index = () => {
       return data as Embed[];
     },
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage?.length === 10 ? allPages.length : undefined;
+      return lastPage.length === 10 ? allPages.length : undefined;
     },
   });
 
