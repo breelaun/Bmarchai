@@ -1,9 +1,33 @@
-import React from 'react';
-import MealPlanner from '@/components/home/meal-planner/MealPlanner';
-import CalorieBurner from '@/components/home/CalorieBurner';
-import ServiceCards from '@/components/home/ServiceCards';
+import React, { useEffect, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 const Index = () => {
+  const [page, setPage] = useState(1);
+  const { ref: bottomRef, inView } = useInView();
+
+  const { data: embeds = [], isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useQuery({
+    queryKey: ['embeds', page],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('arts_embeds')
+        .select('*, arts_categories(name)')
+        .order('created_at', { ascending: false })
+        .range((page - 1) * 10, page * 10 - 1);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (inView && !isLoading && !isFetchingNextPage && hasNextPage) {
+      setPage(prev => prev + 1);
+    }
+  }, [inView, isLoading, isFetchingNextPage, hasNextPage]);
+
   return (
     <div className="min-h-screen">
       {/* Hero Banner - Full width container */}
@@ -26,20 +50,29 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Main content container with responsive padding */}
-      <div className="px-4 md:container md:mx-auto py-8 space-y-8 md:space-y-12">
-        {/* Service Cards - Smaller on mobile */}
-        <div className="max-w-lg mx-auto md:max-w-none">
-          <ServiceCards />
-        </div>
-
-        {/* Full-width sections for Meal Planner and Calorie Burner */}
-        <div className="w-full">
-          <MealPlanner />
-        </div>
-
-        <div className="w-full">
-          <CalorieBurner />
+      {/* Infinite Scroll Container */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-4 max-w-3xl mx-auto">
+          {embeds.map((embed) => (
+            <div 
+              key={embed.id} 
+              className="aspect-video w-full bg-card rounded-lg overflow-hidden shadow-lg"
+            >
+              <iframe
+                src={embed.embed_url}
+                className="w-full h-full"
+                allowFullScreen
+                title={embed.title}
+              />
+            </div>
+          ))}
+          
+          {/* Loading indicator */}
+          <div ref={bottomRef} className="py-4 flex justify-center">
+            {isFetchingNextPage && (
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            )}
+          </div>
         </div>
       </div>
     </div>
