@@ -6,6 +6,17 @@ import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
 import { supabase } from "@/integrations/supabase/client";
 
+interface VendorData {
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
+  aboutMe: string;
+  enableReviews: boolean;
+  enableFeatured: boolean;
+}
+
 const VendorProfile = () => {
   const { id } = useParams();
   const session = useSession();
@@ -54,7 +65,7 @@ const VendorProfile = () => {
     return null;
   }
 
-  const defaultVendorData = {
+  const defaultVendorData: VendorData = {
     socialLinks: {
       facebook: "",
       instagram: "",
@@ -65,7 +76,7 @@ const VendorProfile = () => {
     enableFeatured: true,
   };
 
-  const vendorData = vendorProfile ? {
+  const vendorData: VendorData = vendorProfile ? {
     socialLinks: vendorProfile.social_links ? {
       facebook: (vendorProfile.social_links as any)?.facebook || "",
       instagram: (vendorProfile.social_links as any)?.instagram || "",
@@ -79,7 +90,7 @@ const VendorProfile = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
-        <VendorProfileDisplay vendorData={vendorData} />
+        <VendorProfileDisplay vendorData={vendorData} vendorId={id} />
         <VendorStore vendorId={id} />
       </div>
     </div>

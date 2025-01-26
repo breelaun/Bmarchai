@@ -3,95 +3,40 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
-import VendorStore from "@/components/vendors/VendorStore";
 import { supabase } from "@/integrations/supabase/client";
 
-const VendorProfile = () => {
-  const { id } = useParams();
-  const session = useSession();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const isProfileRoute = id === "profile";
-
-  const fetchVendorProfile = async () => {
-    const userId = isProfileRoute ? session?.user?.id : id;
-
-    if (!userId) {
-      throw new Error("Invalid user ID");
-    }
-
-    const { data, error } = await supabase
-      .from('vendor_profiles')
-      .select('*, profiles:vendor_profiles_id_fkey(*)')
-      .eq('id', userId)
-      .single();
-
-    if (error) throw error;
-    return data;
+interface VendorData {
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
   };
+  aboutMe: string;
+  enableReviews: boolean;
+  enableFeatured: boolean;
+}
 
-  const { 
-    data: vendorProfile, 
-    isLoading,
-    error 
-  } = useQuery({
-    queryKey: ['vendorProfile', id, session?.user?.id],
-    queryFn: fetchVendorProfile,
-    enabled: !!id && (!isProfileRoute || !!session)
-  });
+interface VendorProfileDisplayProps {
+  vendorData: VendorData;
+  vendorId?: string;
+}
 
-  useEffect(() => {
-    if (isProfileRoute && !session) {
-      navigate("/auth/login");
-    }
-  }, [isProfileRoute, session, navigate]);
-
-  useEffect(() => {
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Vendor profile not found"
-      });
-      navigate('/vendors');
-    }
-  }, [error, navigate, toast]);
-
-  if (isLoading) {
-    return <div className="text-center py-8">Loading...</div>;
-  }
-
-  const defaultVendorData = {
-    socialLinks: { facebook: "", instagram: "", twitter: "" },
-    aboutMe: "Welcome to my vendor profile!",
-    enableReviews: true,
-    enableFeatured: true
-  };
-
-  const vendorData = vendorProfile 
-    ? {
-        socialLinks: {
-          facebook: vendorProfile.social_links?.facebook || "",
-          instagram: vendorProfile.social_links?.instagram || "",
-          twitter: vendorProfile.social_links?.twitter || ""
-        },
-        aboutMe: vendorProfile.business_description || defaultVendorData.aboutMe,
-        enableReviews: true,
-        enableFeatured: true
-      }
-    : defaultVendorData;
+const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProps) => {
+  const { socialLinks, aboutMe, enableReviews, enableFeatured } = vendorData;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <VendorProfileDisplay 
-        vendorData={vendorData} 
-        vendorId={id} 
-      />
-      <VendorStore vendorId={id} />
+    <div className="vendor-profile">
+      <h2 className="text-2xl font-bold">{vendorId}</h2>
+      <p>{aboutMe}</p>
+      <div className="social-links">
+        <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer">Facebook</a>
+        <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer">Twitter</a>
+      </div>
+      {enableReviews && <div>Reviews are enabled</div>}
+      {enableFeatured && <div>Featured content is enabled</div>}
     </div>
   );
 };
 
-export default VendorProfile;
+export default VendorProfileDisplay;
