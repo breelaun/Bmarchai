@@ -16,7 +16,7 @@ const VideoPlayer: React.FC<ArtsEmbed> = (embed) => {
       <div className="w-1/4 flex items-center justify-center">
         <span className="text-white text-2xl font-bold"
               style={{ writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
-          {embed.arts_categories?.name}
+          {embed.category?.name}
         </span>
       </div>
     </div>
@@ -29,7 +29,12 @@ const IndexPage: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("arts_embeds")
-        .select("*, arts_categories(name)")
+        .select(`
+          *,
+          category:category_id(
+            name
+          )
+        `)
       if (error) throw error;
       return data;
     },
