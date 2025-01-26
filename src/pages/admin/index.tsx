@@ -1,51 +1,62 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSession } from "@supabase/auth-helpers-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import ArtsSection from "@/components/admin/ArtsSection";
-import YouTubeEmbedsManager from "@/components/admin/YouTubeEmbedsManager";
+import React, { useState, useCallback } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
-const AdminPage = () => {
-  const session = useSession();
-  const navigate = useNavigate();
+interface InfiniteScrollProps<T> {
+  fetchFunction: (pageParam: number) => Promise<{ data: T[], nextPage?: number }>;
+  renderItem: (item: T) => React.ReactNode;
+  itemKeyExtractor?: (item: T) => string | number;
+}
 
-  const { data: profile } = useQuery({
-    queryKey: ["profile", session?.user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session?.user?.id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!session?.user?.id,
+function InfiniteScroll<T>({ 
+  fetchFunction, 
+  renderItem, 
+  itemKeyExtractor = (item: any) => item.id 
+}: InfiniteScrollProps<T>) {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status
+  } = useInfiniteQuery({
+    queryKey: ['infiniteData'],
+    queryFn: ({ pageParam = 1 }) => fetchFunction(pageParam),
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 1
   });
 
-  useEffect(() => {
-    if (!session) {
-      navigate("/login");
-    } else if (profile && !profile.admin) {
-      navigate("/");
-    }
-  }, [session, profile, navigate]);
+  const handleScroll = useCallback(() => {
+    const scrolledToBottom = 
+      window.innerHeight + document.documentElement.scrollTop >=
+      document.documentElement.offsetHeight - 100;
 
-  if (!profile?.admin) {
-    return null;
-  }
+    if (scrolledToBottom && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  React.useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
+  if (status === 'pending') return <div>Loading...</div>;
+  if (status === 'error') return <div>Error fetching data</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-      <ArtsSection />
-      <div className="mt-8">
-        <YouTubeEmbedsManager />
-      </div>
+    <div>
+      {data?.pages.map((page, pageIndex) => (
+        <React.Fragment key={pageIndex}>
+          {page.data.map((item) => (
+            <div key={itemKeyExtractor(item)}>
+              {renderItem(item)}
+            </div>
+          ))}
+        </React.Fragment>
+      ))}
+      {isFetchingNextPage && <div>Loading more...</div>}
     </div>
   );
-};
+}
 
-export default AdminPage;
+export default InfiniteScroll;
