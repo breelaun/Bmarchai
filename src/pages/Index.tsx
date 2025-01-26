@@ -1,32 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
+interface Embed {
+  id: string;
+  title: string;
+  embed_url: string;
+  arts_categories: {
+    name: string;
+  } | null;
+}
+
 const Index = () => {
-  const [page, setPage] = useState(1);
   const { ref: bottomRef, inView } = useInView();
 
-  const { data: embeds = [], isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useQuery({
-    queryKey: ['embeds', page],
-    queryFn: async () => {
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
+    queryKey: ['embeds'],
+    queryFn: async ({ pageParam = 0 }) => {
       const { data, error } = await supabase
         .from('arts_embeds')
         .select('*, arts_categories(name)')
         .order('created_at', { ascending: false })
-        .range((page - 1) * 10, page * 10 - 1);
+        .range(pageParam * 10, (pageParam + 1) * 10 - 1);
 
       if (error) throw error;
-      return data;
+      return data as Embed[];
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage?.length === 10 ? allPages.length : undefined;
     },
   });
 
   useEffect(() => {
     if (inView && !isLoading && !isFetchingNextPage && hasNextPage) {
-      setPage(prev => prev + 1);
+      fetchNextPage();
     }
-  }, [inView, isLoading, isFetchingNextPage, hasNextPage]);
+  }, [inView, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
+
+  const embeds = data?.pages.flat() ?? [];
 
   return (
     <div className="min-h-screen">
