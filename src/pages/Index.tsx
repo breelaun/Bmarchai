@@ -26,11 +26,14 @@ const Index = () => {
     queryKey: ['embeds'],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
+      const startIndex = pageParam * 10;
+      const endIndex = startIndex + 9;
+      
       const { data, error } = await supabase
         .from('arts_embeds')
         .select('*, arts_categories(name)')
         .order('created_at', { ascending: false })
-        .range(pageParam * 10, (pageParam + 1) * 10 - 1);
+        .range(startIndex, endIndex);
 
       if (error) throw error;
       return data as Embed[];
