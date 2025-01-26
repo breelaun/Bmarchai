@@ -14,7 +14,10 @@ const VideoPlayer: React.FC<VideoProps> = ({ videoUrl, category }) => {
         </video>
       </div>
       <div className="w-1/4 flex items-center justify-center">
-        <span className="text-white rotate-90">{category}</span>
+        <span className="text-white text-2xl font-bold writing-mode-vertical"
+              style={{ writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
+          {category}
+        </span>
       </div>
     </div>
   );
