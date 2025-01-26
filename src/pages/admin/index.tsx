@@ -1,62 +1,50 @@
-import React, { useState, useCallback } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import React from 'react';
 
-interface InfiniteScrollProps<T> {
-  fetchFunction: (pageParam: number) => Promise<{ data: T[], nextPage?: number }>;
-  renderItem: (item: T) => React.ReactNode;
-  itemKeyExtractor?: (item: T) => string | number;
+interface VideoProps {
+  videoUrl: string;
+  category: string;
 }
 
-function InfiniteScroll<T>({ 
-  fetchFunction, 
-  renderItem, 
-  itemKeyExtractor = (item: any) => item.id 
-}: InfiniteScrollProps<T>) {
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status
-  } = useInfiniteQuery({
-    queryKey: ['infiniteData'],
-    queryFn: ({ pageParam = 1 }) => fetchFunction(pageParam),
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageParam: 1
-  });
-
-  const handleScroll = useCallback(() => {
-    const scrolledToBottom = 
-      window.innerHeight + document.documentElement.scrollTop >=
-      document.documentElement.offsetHeight - 100;
-
-    if (scrolledToBottom && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  React.useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
-
-  if (status === 'pending') return <div>Loading...</div>;
-  if (status === 'error') return <div>Error fetching data</div>;
-
+const VideoPlayer: React.FC<VideoProps> = ({ videoUrl, category }) => {
   return (
-    <div>
-      {data?.pages.map((page, pageIndex) => (
-        <React.Fragment key={pageIndex}>
-          {page.data.map((item) => (
-            <div key={itemKeyExtractor(item)}>
-              {renderItem(item)}
-            </div>
-          ))}
-        </React.Fragment>
-      ))}
-      {isFetchingNextPage && <div>Loading more...</div>}
+    <div className="flex items-center justify-between">
+      <div className="w-3/4">
+        <video controls>
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+      </div>
+      <div className="w-1/4 flex items-center justify-center">
+        <span className="text-white rotate-90">{category}</span>
+      </div>
     </div>
   );
-}
+};
 
-export default InfiniteScroll;
+const IndexPage: React.FC = () => {
+  const videos: VideoProps[] = [
+    {
+      videoUrl: 'path/to/avishai-cohen-trio.mp4',
+      category: 'Piano'
+    },
+    {
+      videoUrl: 'path/to/sandra-nkake.mp4',
+      category: 'Ambient'
+    },
+    {
+      videoUrl: 'path/to/charles-lloyd-jason-moran-eric-harland.mp4',
+      category: 'Jazz'
+    }
+  ];
+
+  return (
+    <div className="container mx-auto py-8">
+      {videos.map((video, index) => (
+        <div key={index} className="mb-8">
+          <VideoPlayer videoUrl={video.videoUrl} category={video.category} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default IndexPage;
