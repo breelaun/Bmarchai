@@ -1,11 +1,12 @@
 import React from 'react';
 
 interface VideoProps {
-  videoUrl: string;
-  category: string;
+  title: string;
+  video_url: string;
+  category_id: string;
 }
 
-const VideoPlayer = ({ title, video_url, category_id }: ArtsEmbed) => {
+const VideoPlayer = ({ title, video_url, category_id }: VideoProps) => {
   const { data: category } = useQuery({
     queryKey: ["category", category_id],
     queryFn: async () => {
@@ -19,41 +20,24 @@ const VideoPlayer = ({ title, video_url, category_id }: ArtsEmbed) => {
   });
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="w-3/4">
-        <video controls>
+    <div className="relative">
+      {/* Video container taking full width */}
+      <div className="w-full">
+        <video controls className="w-full">
           <source src={video_url} type="video/mp4" />
         </video>
       </div>
-      <div className="w-1/4 flex items-center justify-center">
-        <span className="text-white text-2xl font-bold" style={{ writingMode: 'vertical-lr' }}>
-          {category?.name}
-        </span>
+      
+      {/* Overlay container for category name */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="bg-black/50 px-6 py-3 rounded-lg">
+          <span className="text-white text-3xl font-bold">
+            {category?.name}
+          </span>
+        </div>
       </div>
     </div>
   );
 };
 
-const IndexPage = () => {
-  const { data: videos } = useQuery({
-    queryKey: ["arts-embeds"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("arts_embeds")
-        .select("*");
-      return data;
-    },
-  });
-
-  return (
-    <div className="container mx-auto py-8">
-      {videos?.map(video => (
-        <div key={video.id} className="mb-8">
-          <VideoPlayer {...video} />
-        </div>
-      ))}
-    </div>
-  );
-};
-
-export default IndexPage;
+export default VideoPlayer;
