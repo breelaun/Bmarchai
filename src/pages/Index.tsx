@@ -26,7 +26,7 @@ const Index = () => {
     queryKey: ['embeds'],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
-      const startIndex = pageParam * 10;
+      const startIndex = Number(pageParam) * 10;
       const endIndex = startIndex + 9;
       
       const { data, error } = await supabase
@@ -73,8 +73,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Infinite Scroll Container */}
-      <div className="container mx-auto px-4 py-8">
+      {/* Infinite Scroll Container - Removed horizontal padding */}
+      <div className="container mx-auto py-8">
         <div className="flex flex-col gap-4 max-w-3xl mx-auto">
           {embeds.map((embed) => (
             <div 
