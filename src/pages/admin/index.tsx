@@ -5,18 +5,18 @@ interface VideoProps {
   category: string;
 }
 
-const VideoPlayer: React.FC<VideoProps> = ({ videoUrl, category }) => {
+const VideoPlayer: React.FC<ArtsEmbed> = (embed) => {
   return (
     <div className="flex items-center justify-between">
       <div className="w-3/4">
         <video controls>
-          <source src={videoUrl} type="video/mp4" />
+          <source src={embed.video_url} type="video/mp4" />
         </video>
       </div>
       <div className="w-1/4 flex items-center justify-center">
-        <span className="text-white text-2xl font-bold writing-mode-vertical"
+        <span className="text-white text-2xl font-bold"
               style={{ writingMode: 'vertical-lr', textOrientation: 'mixed' }}>
-          {category}
+          {embed.arts_categories?.name}
         </span>
       </div>
     </div>
@@ -24,26 +24,22 @@ const VideoPlayer: React.FC<VideoProps> = ({ videoUrl, category }) => {
 };
 
 const IndexPage: React.FC = () => {
-  const videos: VideoProps[] = [
-    {
-      videoUrl: 'path/to/avishai-cohen-trio.mp4',
-      category: 'Piano'
+  const { data: embeds } = useQuery({
+    queryKey: ["arts-embeds"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("arts_embeds")
+        .select("*, arts_categories(name)")
+      if (error) throw error;
+      return data;
     },
-    {
-      videoUrl: 'path/to/sandra-nkake.mp4',
-      category: 'Ambient'
-    },
-    {
-      videoUrl: 'path/to/charles-lloyd-jason-moran-eric-harland.mp4',
-      category: 'Jazz'
-    }
-  ];
+  });
 
   return (
     <div className="container mx-auto py-8">
-      {videos.map((video, index) => (
-        <div key={index} className="mb-8">
-          <VideoPlayer videoUrl={video.videoUrl} category={video.category} />
+      {embeds?.map((embed) => (
+        <div key={embed.id} className="mb-8">
+          <VideoPlayer {...embed} />
         </div>
       ))}
     </div>
