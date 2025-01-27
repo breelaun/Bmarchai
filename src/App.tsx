@@ -27,9 +27,9 @@ import ProductPage from "./pages/products/[id]";
 import SessionsPage from "./pages/sessions";
 import CRMPage from "./pages/crm";
 import { supabase } from "./integrations/supabase/client";
-import { VideoProvider } from "./contexts/VideoPlayerContext";
+import { VideoProvider } from "@/contexts/VideoPlayerContext";
 import PersistentPlayer from "./components/PersistentPlayer";
-import { useVideo } from "./contexts/VideoPlayerContext";
+import { useVideo } from "@/contexts/VideoPlayerContext";
 
 const queryClient = new QueryClient();
 
