@@ -98,16 +98,13 @@ const Index = () => {
       </section>
 
       {/* Filter Section */}
-      <div className="mx-auto py-4 px-4">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search videos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
+      <AutocompleteSearch
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        embeds={embeds}
+      />
           </div>
           {selectedCategory && (
             <Badge 
