@@ -73,20 +73,27 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Infinite Scroll Container - Removed horizontal padding */}
-      <div className="container mx-auto py-8">
-        <div className="flex flex-col gap-4 max-w-3xl mx-auto">
+      {/* Infinite Scroll Container - No padding, no gaps */}
+      <div className="container mx-auto">
+        <div className="flex flex-col">
           {embeds.map((embed) => (
             <div 
               key={embed.id} 
-              className="aspect-video w-full bg-card rounded-lg overflow-hidden shadow-lg"
+              className="relative flex items-stretch border-b border-muted last:border-b-0"
             >
-              <iframe
-                src={embed.embed_url}
-                className="w-full h-full"
-                allowFullScreen
-                title={embed.title}
-              />
+              <div className="flex-1">
+                <div className="aspect-video w-full">
+                  <iframe
+                    src={embed.embed_url}
+                    className="w-full h-full"
+                    allowFullScreen
+                    title={embed.title}
+                  />
+                </div>
+              </div>
+              <div className="w-32 flex items-center justify-center bg-card text-card-foreground font-medium">
+                {embed.arts_categories?.name || 'Uncategorized'}
+              </div>
             </div>
           ))}
           
