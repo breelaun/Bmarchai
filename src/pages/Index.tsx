@@ -130,7 +130,7 @@ const Index = () => {
           {embeds.map((embed) => (
             <div 
               key={embed.id} 
-              className="relative flex items-stretch border-b border-muted my-2" // my-4 adds margin top and bottom
+              className="relative flex items-stretch border-y border-muted py-2" // my-4 adds margin top and bottom
             >
               <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(embed)}>
                 <div className="aspect-video w-full">
