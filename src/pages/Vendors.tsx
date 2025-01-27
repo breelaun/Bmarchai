@@ -32,6 +32,7 @@ const Vendors = () => {
   };
 
   const handleVendorNavigation = (vendorId: string) => {
+    // Navigate to the specific vendor's profile page
     navigate(`/vendors/${vendorId}`);
   };
 
