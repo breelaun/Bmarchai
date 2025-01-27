@@ -2,21 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AutocompleteSearch } from "@/components/AutocompleteSearch";
+import { Loader2, Search, X } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useVideo } from "@/contexts/VideoPlayerContext";
-
-interface Embed {
-  id: string;
-  title: string;
-  category: string;
-  embed_url: string;
-  arts_categories: {
-    name: string;
-  } | null;
-}
+import { useVideo } from '@/contexts/VideoPlayerContext';
 
 const Index = () => {
   const { setActiveVideo } = useVideo();
@@ -24,13 +14,7 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
-  } = useInfiniteQuery({
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['embeds', selectedCategory, searchQuery],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
@@ -53,7 +37,7 @@ const Index = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Embed[];
+      return data;
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 10 ? allPages.length : undefined;
@@ -68,7 +52,7 @@ const Index = () => {
 
   const embeds = data?.pages.flat() ?? [];
 
-  const handleVideoClick = (embed: Embed) => {
+  const handleVideoClick = (embed: any) => {
     setActiveVideo({
       url: embed.embed_url,
       title: embed.title
@@ -97,6 +81,33 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Search and Filter Section */}
+      <div className="mx-auto py-4 px-4">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search videos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          
+          {selectedCategory && (
+            <Badge 
+              variant="secondary"
+              className="flex items-center gap-1"
+            >
+              {selectedCategory}
+              <X 
+                className="h-3 w-3 cursor-pointer" 
+                onClick={() => setSelectedCategory(null)}
+              />
+            </Badge>
+          )}
+        </div>
+      </div>
       
       {/* Infinite Scroll Container */}
       <div className="w-full">
@@ -104,13 +115,13 @@ const Index = () => {
           {embeds.map((embed) => (
             <div 
               key={embed.id} 
-              className="relative flex items-stretch border-y border-muted py-2" // my-4 adds margin top and bottom
+              className="relative flex items-stretch border-y border-muted py-2"
             >
               <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(embed)}>
                 <div className="aspect-video w-full">
                   <iframe
                     src={encodeURI(embed.embed_url)}
-                    className="w-full h-full pointer-events-none" // Prevent iframe from capturing clicks
+                    className="w-full h-full pointer-events-none"
                     allowFullScreen
                     title={embed.title}
                   />
