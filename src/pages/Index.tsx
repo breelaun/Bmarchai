@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search, X } from 'lucide-react';
+import { AutocompleteSearch } from "@/components/AutocompleteSearch";
 import { Button } from "@/components/ui/button";
 import { useVideo } from '@/contexts/VideoPlayerContext';
 
