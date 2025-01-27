@@ -6,13 +6,14 @@ import { Loader2, Search, X } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useVideo } from '@/contexts/VideoPlayerContext';
+import { useVideo } from "@/contexts/VideoPlayerContext";
 
 interface Embed {
   id: string;
   title: string;
+  category: string;
   embed_url: string;
-  arts_categories?: {
+  arts_categories: {
     name: string;
   } | null;
 }
@@ -23,7 +24,13 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
     queryKey: ['embeds', selectedCategory, searchQuery],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
@@ -70,6 +77,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      {/* Hero Banner - Full width container */}
       <section className="relative w-full h-[500px] md:h-[750px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/50">
           <img 
@@ -89,6 +97,7 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Filter Section */}
       <div className="mx-auto py-4 px-4">
         <div className="flex items-center gap-4 mb-4">
           <div className="relative flex-1 max-w-sm">
@@ -100,7 +109,6 @@ const Index = () => {
               className="pl-9"
             />
           </div>
-          
           {selectedCategory && (
             <Badge 
               variant="secondary"
@@ -115,19 +123,20 @@ const Index = () => {
           )}
         </div>
       </div>
-      
+
+      {/* Infinite Scroll Container */}
       <div className="w-full">
         <div className="flex flex-col">
           {embeds.map((embed) => (
             <div 
               key={embed.id} 
-              className="relative flex items-stretch border-y border-muted py-2"
+              className="relative flex items-stretch border-y border-muted py-2" // my-4 adds margin top and bottom
             >
               <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(embed)}>
                 <div className="aspect-video w-full">
                   <iframe
                     src={encodeURI(embed.embed_url)}
-                    className="w-full h-full pointer-events-none"
+                    className="w-full h-full pointer-events-none" // Prevent iframe from capturing clicks
                     allowFullScreen
                     title={embed.title}
                   />
@@ -137,13 +146,16 @@ const Index = () => {
                 variant="ghost"
                 className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-[#f7bd00] hover:text-black transition-colors duration-200 rounded-none"
                 onClick={() => setSelectedCategory(embed.arts_categories?.name || null)}
-                style={{ writingMode: 'vertical-rl' }}
+                style={{ 
+                  writingMode: 'vertical-rl'
+                }}
               >
                 {embed.arts_categories?.name || 'Uncategorized'}
               </Button>
             </div>
           ))}
           
+          {/* Loading indicator */}
           <div ref={bottomRef} className="py-4 flex justify-center">
             {isFetchingNextPage && (
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
