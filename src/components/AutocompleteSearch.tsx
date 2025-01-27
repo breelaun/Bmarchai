@@ -14,21 +14,22 @@ interface AutocompleteSearchProps {
     } | null;
   }>;
 }
-const AutocompleteSearch = ({ 
+
+const AutocompleteSearch: React.FC<AutocompleteSearchProps> = ({ 
   searchQuery, 
   setSearchQuery, 
   selectedCategory, 
   setSelectedCategory, 
-  embeds // We'll use the existing embeds data to get categories
+  embeds
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
 
   // Extract unique categories from embeds
   const uniqueCategories = [...new Set(
     embeds
       .map(embed => embed.arts_categories?.name)
-      .filter(Boolean)
+      .filter((name): name is string => name !== null && name !== undefined)
   )];
 
   // Filter categories based on search input
