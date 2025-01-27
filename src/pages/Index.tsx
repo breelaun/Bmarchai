@@ -2,21 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AutocompleteSearch } from "@/components/AutocompleteSearch";
+import { Loader2, Search, X } from 'lucide-react';
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 import { useVideo } from '@/contexts/VideoPlayerContext';
 
 interface Embed {
   id: string;
-  embed_url: string;
   title: string;
+  embed_url: string;
   arts_categories?: {
     name: string;
   } | null;
 }
 
-const Index: React.FC = () => {
+const Index = () => {
   const { setActiveVideo } = useVideo();
   const { ref: bottomRef, inView } = useInView();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -45,7 +46,7 @@ const Index: React.FC = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as Embed[];
     },
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 10 ? allPages.length : undefined;
@@ -88,25 +89,41 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      <AutocompleteSearch
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        embeds={embeds}
-      />
-
+      <div className="mx-auto py-4 px-4">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search videos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          
+          {selectedCategory && (
+            <Badge 
+              variant="secondary"
+              className="flex items-center gap-1"
+            >
+              {selectedCategory}
+              <X 
+                className="h-3 w-3 cursor-pointer" 
+                onClick={() => setSelectedCategory(null)}
+              />
+            </Badge>
+          )}
+        </div>
+      </div>
+      
       <div className="w-full">
         <div className="flex flex-col">
-          {embeds.map((embed: Embed) => (
+          {embeds.map((embed) => (
             <div 
               key={embed.id} 
               className="relative flex items-stretch border-y border-muted py-2"
             >
-              <div 
-                className="flex-1 cursor-pointer" 
-                onClick={() => handleVideoClick(embed)}
-              >
+              <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(embed)}>
                 <div className="aspect-video w-full">
                   <iframe
                     src={encodeURI(embed.embed_url)}

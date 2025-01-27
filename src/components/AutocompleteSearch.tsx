@@ -59,7 +59,6 @@ const AutocompleteSearch: React.FC<AutocompleteSearchProps> = ({
             onFocus={() => setShowSuggestions(true)}
           />
           
-          {/* Suggestions Dropdown */}
           {showSuggestions && filteredCategories.length > 0 && (
             <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
               {filteredCategories.map((category, index) => (
