@@ -1,8 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search, X } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Embed {
   id: string;
@@ -15,6 +18,8 @@ interface Embed {
 
 const Index = () => {
   const { ref: bottomRef, inView } = useInView();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
     data,
@@ -22,19 +27,28 @@ const Index = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useInfiniteQuery<Embed[]>({
-    queryKey: ['embeds'],
+  } = useInfiniteQuery({
+    queryKey: ['embeds', selectedCategory, searchQuery],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
       const startIndex = Number(pageParam) * 10;
       const endIndex = startIndex + 9;
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('arts_embeds')
         .select('*, arts_categories(name)')
         .order('created_at', { ascending: false })
         .range(startIndex, endIndex);
 
+      if (selectedCategory) {
+        query = query.eq('arts_categories.name', selectedCategory);
+      }
+
+      if (searchQuery) {
+        query = query.ilike('title', `%${searchQuery}%`);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as Embed[];
     },
@@ -73,7 +87,34 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Infinite Scroll Container - No padding, no gaps */}
+      {/* Filter Section */}
+      <div className="container mx-auto py-4 px-4">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search videos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          {selectedCategory && (
+            <Badge 
+              variant="secondary"
+              className="flex items-center gap-1"
+            >
+              {selectedCategory}
+              <X 
+                className="h-3 w-3 cursor-pointer" 
+                onClick={() => setSelectedCategory(null)}
+              />
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Infinite Scroll Container */}
       <div className="container mx-auto">
         <div className="flex flex-col">
           {embeds.map((embed) => (
@@ -91,9 +132,13 @@ const Index = () => {
                   />
                 </div>
               </div>
-              <div className="w-32 flex items-center justify-center bg-card text-card-foreground font-medium">
+              <Button
+                variant="ghost"
+                className="w-32 flex items-center justify-center bg-card text-card-foreground font-medium hover:bg-accent"
+                onClick={() => setSelectedCategory(embed.arts_categories?.name || null)}
+              >
                 {embed.arts_categories?.name || 'Uncategorized'}
-              </div>
+              </Button>
             </div>
           ))}
           
