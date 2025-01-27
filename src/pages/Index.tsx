@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 interface Embed {
   id: string;
   title: string;
+  category: string;
   embed_url: string;
   arts_categories: {
     name: string;
@@ -125,7 +126,7 @@ const Index = () => {
               <div className="flex-1">
                 <div className="aspect-video w-full">
                   <iframe
-                    src={embed.embed_url}
+                    src={encodeURI(embed.embed_url)}
                     className="w-full h-full"
                     allowFullScreen
                     title={embed.title}
