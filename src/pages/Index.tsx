@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search, X } from 'lucide-react';
+import { AutocompleteSearch } from "@/components/AutocompleteSearch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,30 +97,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Filter Section */}
-      <AutocompleteSearch
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        embeds={embeds}
-      />
-          </div>
-          {selectedCategory && (
-            <Badge 
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              {selectedCategory}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => setSelectedCategory(null)}
-              />
-            </Badge>
-          )}
-        </div>
-      </div>
-
+      
       {/* Infinite Scroll Container */}
       <div className="w-full">
         <div className="flex flex-col">
