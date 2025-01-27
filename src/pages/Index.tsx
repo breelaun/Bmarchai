@@ -4,9 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AutocompleteSearch } from "@/components/AutocompleteSearch";
 import { Button } from "@/components/ui/button";
-import { Search, X, Loader2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Loader2 } from 'lucide-react';
 import { useVideo } from '@/contexts/VideoPlayerContext';
 
 const Index = () => {
@@ -62,7 +60,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Banner - Full width container */}
       <section className="relative w-full h-[500px] md:h-[750px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/50">
           <img 
@@ -82,7 +79,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Search Component */}
       <AutocompleteSearch
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -90,8 +86,7 @@ const Index = () => {
         setSelectedCategory={setSelectedCategory}
         embeds={embeds}
       />
-      
-      {/* Infinite Scroll Container */}
+
       <div className="w-full">
         <div className="flex flex-col">
           {embeds.map((embed) => (
@@ -122,7 +117,6 @@ const Index = () => {
             </div>
           ))}
           
-          {/* Loading indicator */}
           <div ref={bottomRef} className="py-4 flex justify-center">
             {isFetchingNextPage && (
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
