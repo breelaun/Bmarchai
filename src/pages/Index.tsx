@@ -7,7 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from 'lucide-react';
 import { useVideo } from '@/contexts/VideoPlayerContext';
 
-const Index = () => {
+interface Embed {
+  id: string;
+  embed_url: string;
+  title: string;
+  arts_categories?: {
+    name: string;
+  } | null;
+}
+
+const Index: React.FC = () => {
   const { setActiveVideo } = useVideo();
   const { ref: bottomRef, inView } = useInView();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -51,7 +60,7 @@ const Index = () => {
 
   const embeds = data?.pages.flat() ?? [];
 
-  const handleVideoClick = (embed: any) => {
+  const handleVideoClick = (embed: Embed) => {
     setActiveVideo({
       url: embed.embed_url,
       title: embed.title
@@ -89,12 +98,15 @@ const Index = () => {
 
       <div className="w-full">
         <div className="flex flex-col">
-          {embeds.map((embed) => (
+          {embeds.map((embed: Embed) => (
             <div 
               key={embed.id} 
               className="relative flex items-stretch border-y border-muted py-2"
             >
-              <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(embed)}>
+              <div 
+                className="flex-1 cursor-pointer" 
+                onClick={() => handleVideoClick(embed)}
+              >
                 <div className="aspect-video w-full">
                   <iframe
                     src={encodeURI(embed.embed_url)}
@@ -108,9 +120,7 @@ const Index = () => {
                 variant="ghost"
                 className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-[#f7bd00] hover:text-black transition-colors duration-200 rounded-none"
                 onClick={() => setSelectedCategory(embed.arts_categories?.name || null)}
-                style={{ 
-                  writingMode: 'vertical-rl'
-                }}
+                style={{ writingMode: 'vertical-rl' }}
               >
                 {embed.arts_categories?.name || 'Uncategorized'}
               </Button>
