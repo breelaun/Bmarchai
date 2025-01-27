@@ -6,7 +6,7 @@ import { Loader2, Search, X } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useVideo } from './VideoPlayerContext';
+import { useVideo } from './contexts/VideoPlayerContext';
 
 interface Embed {
   id: string;
