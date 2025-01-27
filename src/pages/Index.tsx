@@ -6,6 +6,7 @@ import { Loader2, Search, X } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useVideo } from './VideoPlayerContext';
 
 interface Embed {
   id: string;
@@ -18,6 +19,7 @@ interface Embed {
 }
 
 const Index = () => {
+  const { setActiveVideo } = useVideo();
   const { ref: bottomRef, inView } = useInView();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +67,13 @@ const Index = () => {
   }, [inView, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   const embeds = data?.pages.flat() ?? [];
+
+  const handleVideoClick = (embed: Embed) => {
+    setActiveVideo({
+      url: embed.embed_url,
+      title: embed.title
+    });
+  };
 
   return (
     <div className="min-h-screen">
@@ -123,11 +132,11 @@ const Index = () => {
               key={embed.id} 
               className="relative flex items-stretch border-b border-muted last:border-b-0"
             >
-              <div className="flex-1">
+              <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(embed)}>
                 <div className="aspect-video w-full">
                   <iframe
                     src={encodeURI(embed.embed_url)}
-                    className="w-full h-full"
+                    className="w-full h-full pointer-events-none" // Prevent iframe from capturing clicks
                     allowFullScreen
                     title={embed.title}
                   />
