@@ -1,9 +1,9 @@
-import TargetGame from '@/components/game/TargetGame';
+import SqeresGame from '@/components/sqeres/SqeresGame';
 
 export default function SqeresPage() {
   return (
     <div className="w-full h-screen">
-      <TargetGame />
+      <SqeresGame />
     </div>
   );
 }
