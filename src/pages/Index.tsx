@@ -89,7 +89,7 @@ const Index = () => {
       </section>
 
       {/* Filter Section */}
-      <div className="container mx-auto py-4 px-4">
+      <div className="mx-auto py-4 px-4">
         <div className="flex items-center gap-4 mb-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -116,7 +116,7 @@ const Index = () => {
       </div>
 
       {/* Infinite Scroll Container */}
-      <div className="container mx-auto">
+      <div className="w-full">
         <div className="flex flex-col">
           {embeds.map((embed) => (
             <div 
@@ -135,7 +135,7 @@ const Index = () => {
               </div>
               <Button
                 variant="ghost"
-                className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-card text-card-foreground font-medium hover:bg-accent"
+                className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-card text-card-foreground font-medium hover:bg-accent rounded-none"
                 onClick={() => setSelectedCategory(embed.arts_categories?.name || null)}
                 style={{ writingMode: 'vertical-rl' }}
               >
