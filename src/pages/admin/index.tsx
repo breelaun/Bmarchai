@@ -1,43 +1,44 @@
-import React from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
-interface VideoProps {
-  title: string;
-  video_url: string;
-  category_id: string;
-}
-
-const VideoPlayer = ({ title, video_url, category_id }: VideoProps) => {
-  const { data: category } = useQuery({
-    queryKey: ["category", category_id],
+const AdminPage = () => {
+  const { data: embeds, isLoading } = useQuery({
+    queryKey: ['admin-embeds'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("categories")
-        .select("name")
-        .eq("id", category_id)
-        .single();
+      const { data, error } = await supabase
+        .from('arts_embeds')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
       return data;
-    },
+    }
   });
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="relative">
-      {/* Video container taking full width */}
-      <div className="w-full">
-        <video controls className="w-full">
-          <source src={video_url} type="video/mp4" />
-        </video>
-      </div>
-      
-      {/* Overlay container for category name */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="bg-black/50 px-6 py-3 rounded-lg">
-          <span className="text-white text-3xl font-bold">
-            {category?.name}
-          </span>
-        </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+      <div className="grid gap-4">
+        {embeds?.map((embed) => (
+          <Card key={embed.id} className="p-4">
+            <h2 className="font-semibold">{embed.title}</h2>
+            <p className="text-sm text-muted-foreground">{embed.embed_url}</p>
+            <div className="mt-2">
+              <Button variant="outline" size="sm">
+                Edit
+              </Button>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );
 };
 
-export default VideoPlayer;
+export default AdminPage;
