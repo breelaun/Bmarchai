@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
 import { AutocompleteSearch } from "@/components/AutocompleteSearch";
 import { Button } from "@/components/ui/button";
+import { Search, X, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useVideo } from '@/contexts/VideoPlayerContext';
 
 const Index = () => {
@@ -80,7 +82,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Search and Filter Section */}
+      {/* Search Component */}
       <AutocompleteSearch
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -88,22 +90,6 @@ const Index = () => {
         setSelectedCategory={setSelectedCategory}
         embeds={embeds}
       />
-          </div>
-          
-          {selectedCategory && (
-            <Badge 
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              {selectedCategory}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => setSelectedCategory(null)}
-              />
-            </Badge>
-          )}
-        </div>
-      </div>
       
       {/* Infinite Scroll Container */}
       <div className="w-full">
