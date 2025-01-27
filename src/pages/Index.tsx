@@ -144,11 +144,10 @@ const Index = () => {
               </div>
               <Button
                 variant="ghost"
-                className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center text-white hover:brightness-110 rounded-none"
+                className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-[#f7bd00] hover:text-black transition-colors duration-200 rounded-none"
                 onClick={() => setSelectedCategory(embed.arts_categories?.name || null)}
                 style={{ 
-                  writingMode: 'vertical-rl',
-                  backgroundColor: '#000000',
+                  writingMode: 'vertical-rl'
                 }}
               >
                 {embed.arts_categories?.name || 'Uncategorized'}
