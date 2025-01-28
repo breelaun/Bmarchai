@@ -15,3 +15,18 @@ export interface ArtsCategory {
   id: string;
   name: string;
 }
+
+export interface YouTubeEmbed {
+  id: string;
+  title: string;
+  embed_type: string;
+  embed_id: string;
+  created_at: string;
+  created_by?: string;
+  active: boolean;
+  end_date?: string;
+  category_id?: string;
+  arts_categories?: {
+    name: string;
+  };
+}

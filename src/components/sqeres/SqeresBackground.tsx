@@ -8,32 +8,12 @@ export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
   squareSize = 40,
   hoverFillColor = '#222',
 }) => {
-import { useRef, useEffect, useState } from 'react';
-import { SqeresBackgroundProps } from './types';
-
-interface HoveredSquare {
-  x: number;
-  y: number;
-}
-
-interface GridOffset {
-  x: number;
-  y: number;
-}
-
-export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
-  direction = 'right',
-  speed = 1,
-  borderColor = '#999',
-  squareSize = 40,
-  hoverFillColor = '#222',
-}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number | null>(null);
   const numSquaresX = useRef<number>(0);
   const numSquaresY = useRef<number>(0);
-  const gridOffset = useRef<GridOffset>({ x: 0, y: 0 });
-  const [hoveredSquare, setHoveredSquare] = useState<HoveredSquare | null>(null);
+  const gridOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [hoveredSquare, setHoveredSquare] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -157,7 +137,5 @@ export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
     />
   );
 };
-};
 
 export default SqeresBackground;
-

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { SqeresBackground } from '../sqeres/SqeresBackground';
+import { SqeresCrosshair } from '../sqeres/SqeresCrosshair';
 
-const Game = () => {
+const TargetGame: React.FC = () => {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() => {
     const saved = localStorage.getItem('targetGameHighScore');
@@ -11,10 +13,10 @@ const Game = () => {
   const [isLocked, setIsLocked] = useState(false);
   const [gameDirection, setGameDirection] = useState('right');
   
-  const containerRef = useRef(null);
-  const targetRef = useRef(null);
-  const lockTimer = useRef(null);
-  const animationFrameId = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const targetRef = useRef<HTMLDivElement | null>(null);
+  const lockTimer = useRef<NodeJS.Timeout | null>(null);
+  const animationFrameId = useRef<number | null>(null);
   
   const [targetPosition, setTargetPosition] = useState({
     x: Math.random() * 80 + 10, // 10-90% of width
@@ -27,7 +29,7 @@ const Game = () => {
     const targetSpeed = 2;
     const targetDirection = { x: 1, y: 1 };
 
-    const moveTarget = (currentTime) => {
+    const moveTarget = (currentTime: number) => {
       if (isPaused) return;
       
       const deltaTime = currentTime - lastTime;
@@ -110,10 +112,12 @@ const Game = () => {
   };
 
   // Handle mouse tracking for lock-on
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isPaused) return;
     
-    const rect = containerRef.current.getBoundingClientRect();
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
     const mouseX = ((e.clientX - rect.left) / rect.width) * 100;
     const mouseY = ((e.clientY - rect.top) / rect.height) * 100;
 
@@ -139,10 +143,13 @@ const Game = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden" ref={containerRef}>
-      {/* Background grid */}
+    <div 
+      className="relative w-full h-screen bg-black overflow-hidden" 
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+    >
       <div className="absolute inset-0">
-        <Squares
+        <SqeresBackground
           speed={0.5}
           squareSize={40}
           direction={gameDirection}
@@ -151,7 +158,6 @@ const Game = () => {
         />
       </div>
 
-      {/* Target */}
       <div
         ref={targetRef}
         className="absolute w-8 h-8 bg-yellow-400 cursor-pointer transform -translate-x-1/2 -translate-y-1/2"
@@ -163,13 +169,11 @@ const Game = () => {
         onClick={handleTargetHit}
       />
 
-      {/* Crosshair */}
-      <Crosshair
+      <SqeresCrosshair
         containerRef={containerRef}
         color={isLocked ? '#ff0000' : '#ffffff'}
       />
 
-      {/* UI Elements */}
       <div className="absolute top-4 left-4 text-white space-y-2">
         <div>Score: {score}</div>
         <div>High Score: {highScore}</div>
@@ -184,4 +188,4 @@ const Game = () => {
   );
 };
 
-export default Game;
+export default TargetGame;
