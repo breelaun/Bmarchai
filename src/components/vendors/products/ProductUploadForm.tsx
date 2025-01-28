@@ -164,7 +164,7 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             <label className="block text-sm font-medium text-gray-700">Embed Content</label>
             <div className="space-y-4">
               <div>
-                <label htmlFor="embed-url" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="embed-url" className="block bg-black text-sm font-medium text-gray-700">
                   Embed URL
                 </label>
                 <input
