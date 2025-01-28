@@ -1174,35 +1174,45 @@ export type Database = {
       youtube_embeds: {
         Row: {
           active: boolean | null
-          category: string
+          category_id: string | null
           created_at: string
           created_by: string | null
           embed_id: string
           embed_type: string
+          end_date: string | null
           id: string
           title: string
         }
         Insert: {
           active?: boolean | null
-          category: string
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
           embed_id: string
           embed_type: string
+          end_date?: string | null
           id?: string
           title: string
         }
         Update: {
           active?: boolean | null
-          category?: string
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
           embed_id?: string
           embed_type?: string
+          end_date?: string | null
           id?: string
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "youtube_embeds_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "arts_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "youtube_embeds_created_by_fkey"
             columns: ["created_by"]
