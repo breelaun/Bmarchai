@@ -191,20 +191,26 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     type="text"
                     placeholder="00:00:00"
                     value={embedData.autoplayStart}
-                    onChange={(e) => setEmbedData({ ...embedData, autoplayStart: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (validateTimeFormat(value) || value === "") {
+                        setEmbedData({ ...embedData, autoplayStart: value });
+                      }
+                    }}
                     className="mt-1 block w-full rounded-lg bg-black text-white border-gray-700 focus:border-[#f7bd00] focus:ring-[#f7bd00] shadow-sm p-3"
                   />
-                </div>
-                <div>
-                  <label htmlFor="autoplay-end" className="block text-sm font-medium text-gray-100">
-                    Autoplay End (HH:MM:SS)
-                  </label>
+
                   <input
                     id="autoplay-end"
                     type="text"
                     placeholder="00:00:00"
                     value={embedData.autoplayEnd}
-                    onChange={(e) => setEmbedData({ ...embedData, autoplayEnd: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (validateTimeFormat(value) || value === "") {
+                        setEmbedData({ ...embedData, autoplayEnd: value });
+                      }
+                    }}
                     className="mt-1 block w-full rounded-lg bg-black text-white border-gray-700 focus:border-[#f7bd00] focus:ring-[#f7bd00] shadow-sm p-3"
                   />
                 </div>
