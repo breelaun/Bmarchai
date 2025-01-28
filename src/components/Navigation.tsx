@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette } from "lucide-react";
+import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette, MessageSquare } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -69,6 +69,7 @@ const Navigation = () => {
     },
     { name: "CRM", path: "/crm" },
     { name: "Blogs", path: "/blogs" },
+    { name: "Chat", path: "/chat", icon: <MessageSquare className="h-4 w-4 mr-2" /> },
   ];
 
   if (profile?.admin) {
@@ -153,5 +154,3 @@ const Navigation = () => {
     </nav>
   );
 };
-
-export default Navigation;

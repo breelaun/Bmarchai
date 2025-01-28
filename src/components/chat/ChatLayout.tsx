@@ -59,7 +59,7 @@ const ChatLayout = () => {
   }, [session?.user?.id]);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-[calc(100vh-4rem)] bg-background mt-16">
       {/* Sidebar */}
       <div className="w-64 bg-muted flex flex-col">
         <div className="p-4 border-b">
@@ -133,7 +133,7 @@ const ChatLayout = () => {
         <div className="p-4 border-b">
           <h3 className="font-semibold">Sections</h3>
         </div>
-        <ScrollArea className="h-[calc(100vh-57px)]">
+        <ScrollArea className="h-[calc(100vh-4rem-57px)]">
           <div className="p-2 space-y-2">
             {sections.map((section) => (
               <Button
