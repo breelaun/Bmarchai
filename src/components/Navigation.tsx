@@ -69,7 +69,7 @@ const Navigation = () => {
     },
     { name: "CRM", path: "/crm" },
     { name: "Blogs", path: "/blogs" },
-    { name: "Chat", path: "/chat", icon: <MessageSquare className="h-4 w-4 mr-2" /> },
+    { name: "Chat", path: "/chat" },
   ];
 
   if (profile?.admin) {
@@ -154,3 +154,5 @@ const Navigation = () => {
     </nav>
   );
 };
+
+export default Navigation;

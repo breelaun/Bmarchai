@@ -4,6 +4,7 @@ export interface MenuItem {
   name: string;
   path: string;
   submenu?: SubMenuItem[];
+  icon?: ReactNode;
 }
 
 export interface SubMenuItem extends MenuItem {
