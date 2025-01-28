@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,32 +11,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Edit2 } from "lucide-react";
+import { YouTubeEmbedsList } from "./YouTubeEmbedsList";
+import type { ArtsCategory } from "./types";
 
 interface YouTubeEmbed {
   id: string;
   title: string;
-  category: string;
+  category_id: string;
   embed_type: 'channel' | 'playlist' | 'video';
   embed_id: string;
   active: boolean;
+  end_date?: string;
+  arts_categories?: {
+    name: string;
+  };
 }
 
 const YouTubeEmbedsManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [embedType, setEmbedType] = useState<'channel' | 'playlist' | 'video'>('video');
   const [embedId, setEmbedId] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  // Fetch categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ["arts-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("arts_categories")
+        .select("*")
+        .order("name");
+      
+      if (error) throw error;
+      return data as ArtsCategory[];
+    },
+  });
+
+  // Fetch YouTube embeds
   const { data: embeds = [] } = useQuery({
     queryKey: ["youtube-embeds"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("youtube_embeds")
-        .select("*")
+        .select("*, arts_categories(name)")
         .order("created_at", { ascending: false });
       
       if (error) throw error;
@@ -50,9 +71,10 @@ const YouTubeEmbedsManager = () => {
         .from("youtube_embeds")
         .insert([{
           title,
-          category,
+          category_id: categoryId,
           embed_type: embedType,
           embed_id: embedId,
+          end_date: endDate || null,
         }]);
       
       if (error) throw error;
@@ -82,9 +104,10 @@ const YouTubeEmbedsManager = () => {
         .from("youtube_embeds")
         .update({
           title,
-          category,
+          category_id: categoryId,
           embed_type: embedType,
           embed_id: embedId,
+          end_date: endDate || null,
         })
         .eq('id', editingId);
       
@@ -107,55 +130,21 @@ const YouTubeEmbedsManager = () => {
     },
   });
 
-  const toggleActive = useMutation({
-    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
-      const { error } = await supabase
-        .from("youtube_embeds")
-        .update({ active })
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["youtube-embeds"] });
-      toast({
-        title: "Success",
-        description: "Status updated successfully",
-      });
-    },
-  });
-
-  const deleteEmbed = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("youtube_embeds")
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["youtube-embeds"] });
-      toast({
-        title: "Success",
-        description: "YouTube embed deleted successfully",
-      });
-    },
-  });
-
   const resetForm = () => {
     setTitle("");
-    setCategory("");
+    setCategoryId("");
     setEmbedType('video');
     setEmbedId("");
+    setEndDate("");
     setEditingId(null);
   };
 
   const handleEdit = (embed: YouTubeEmbed) => {
     setTitle(embed.title);
-    setCategory(embed.category);
+    setCategoryId(embed.category_id);
     setEmbedType(embed.embed_type);
     setEmbedId(embed.embed_id);
+    setEndDate(embed.end_date || "");
     setEditingId(embed.id);
   };
 
@@ -178,11 +167,21 @@ const YouTubeEmbedsManager = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-          <Input
-            placeholder="Category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
+          <Select
+            value={categoryId}
+            onValueChange={setCategoryId}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select
             value={embedType}
             onValueChange={(value: 'channel' | 'playlist' | 'video') => setEmbedType(value)}
@@ -201,6 +200,12 @@ const YouTubeEmbedsManager = () => {
             value={embedId}
             onChange={(e) => setEmbedId(e.target.value)}
           />
+          <Input
+            type="datetime-local"
+            placeholder="End date (optional)"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
           <div className="flex gap-2">
             <Button onClick={handleSubmit}>
               {editingId ? 'Update Embed' : 'Add Embed'}
@@ -214,50 +219,10 @@ const YouTubeEmbedsManager = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {embeds.map((embed) => (
-          <div
-            key={embed.id}
-            className="flex items-center justify-between p-4 border rounded-lg"
-          >
-            <div>
-              <h4 className="font-medium">{embed.title}</h4>
-              <p className="text-sm text-muted-foreground">
-                Category: {embed.category}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Type: {embed.embed_type}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toggleActive.mutate({ 
-                  id: embed.id, 
-                  active: !embed.active 
-                })}
-              >
-                {embed.active ? 'Disable' : 'Enable'}
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handleEdit(embed)}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={() => deleteEmbed.mutate(embed.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
+      <YouTubeEmbedsList 
+        embeds={embeds}
+        onEdit={handleEdit}
+      />
     </div>
   );
 };
