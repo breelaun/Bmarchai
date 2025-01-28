@@ -27,7 +27,7 @@ const EnhancedVideoManager = () => {
 
     const youtubeQuery = supabase
       .from('youtube_embeds')
-      .select('*')
+      .select('*, arts_categories(name)')
       .eq('active', true)
       .order('created_at', { ascending: false });
 
