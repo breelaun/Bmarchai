@@ -11,7 +11,7 @@ const TargetGame: React.FC = () => {
   });
   const [isPaused, setIsPaused] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const [gameDirection, setGameDirection] = useState('right');
+  const [gameDirection, setGameDirection] = useState<'right' | 'left' | 'up' | 'down' | 'diagonal'>('right');
   
   const containerRef = useRef<HTMLDivElement | null>(null);
   const targetRef = useRef<HTMLDivElement | null>(null);
@@ -63,7 +63,6 @@ const TargetGame: React.FC = () => {
     };
   }, [isPaused]);
 
-  // Change background direction periodically
   useEffect(() => {
     if (isPaused) return;
     
