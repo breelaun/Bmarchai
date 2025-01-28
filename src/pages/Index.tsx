@@ -155,12 +155,20 @@ const EnhancedVideoManager = () => {
                   >
                     <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(video)}>
                       <div className="aspect-video w-full">
-                        <iframe
-                          src={video.embed_url || `https://www.youtube.com/embed/${video.embed_id}`}
-                          className="w-full h-full pointer-events-none"
-                          allowFullScreen
-                          title={video.title}
-                        />
+                        {'embed_id' in video && video.embed_id ? (
+                          <img
+                            src={`https://img.youtube.com/vi/${video.embed_id}/maxresdefault.jpg`}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <iframe
+                            src={video.embed_url || `https://www.youtube.com/embed/${video.embed_id}`}
+                            className="w-full h-full pointer-events-none"
+                            allowFullScreen
+                            title={video.title}
+                          />
+                        )}
                       </div>
                     </div>
                     <Button
