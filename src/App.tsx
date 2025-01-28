@@ -30,6 +30,7 @@ import { supabase } from "./integrations/supabase/client";
 import { VideoProvider } from "@/contexts/VideoPlayerContext";
 import PersistentPlayer from "./components/PersistentPlayer";
 import { useVideo } from "@/contexts/VideoPlayerContext";
+import PuzzlePage from "@/pages/PuzzlePage";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const AppContent = () => {
           <Route path="/products/:id" element={<ProductPage />} />
           <Route path="/sessions" element={<SessionsPage />} />
           <Route path="/crm" element={<CRMPage />} />
+          <Route path="/puzzle" element={<PuzzlePage />} />
         </Routes>
       </main>
       <Footer />
