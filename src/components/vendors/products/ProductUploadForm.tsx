@@ -13,6 +13,7 @@ import PricingInventory from "./components/PricingInventory";
 import CategoryInput from "./components/CategoryInput";
 import ProductFileUpload from "./components/ProductFileUpload";
 import type { ProductFormData, ProductFile, ProductCategory } from "./types";
+import EmbedUrlInput from "./components/EmbedUrlInput";
 
 interface ProductUploadFormProps {
   onSuccess?: () => void;
