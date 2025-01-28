@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search, X, Calendar, Clock, Youtube } from 'lucide-react';
+import { Loader2, Search, X, Calendar, Clock } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,17 +49,20 @@ const EnhancedVideoManager = () => {
     const startIndex = pageParam * 10;
     const endIndex = startIndex + 9;
     
+    // Fetch arts embeds
     const artsQuery = supabase
       .from('arts_embeds')
       .select('*, arts_categories(name)')
       .order('created_at', { ascending: false });
 
+    // Fetch YouTube embeds
     const youtubeQuery = supabase
       .from('youtube_embeds')
       .select('*')
       .eq('active', true)
       .order('created_at', { ascending: false });
 
+    // Fetch sessions
     const sessionsQuery = supabase
       .from('sessions')
       .select('*')
@@ -74,7 +77,7 @@ const EnhancedVideoManager = () => {
 
     if (selectedCategory) {
       artsQuery.eq('arts_categories.name', selectedCategory);
-      youtubeQuery.eq('category', selectedCategory);
+      youtubeQuery.eq('arts_categories.name', selectedCategory);
     }
 
     const [artsData, youtubeData, sessionsData] = await Promise.all([
@@ -126,65 +129,9 @@ const EnhancedVideoManager = () => {
     }
   };
 
-  const renderVideoCard = (video: ArtsEmbed | YouTubeEmbed | SessionEmbed) => {
-    const isYouTube = 'embed_id' in video && video.embed_id;
-    const thumbnailUrl = isYouTube 
-      ? `https://img.youtube.com/vi/${video.embed_id}/maxresdefault.jpg`
-      : null;
-
-    return (
-      <Card key={video.id} className="hover:bg-accent/5">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-4">
-            {isYouTube ? (
-              <div className="w-48 flex-shrink-0">
-                <div className="relative aspect-video">
-                  <img
-                    src={thumbnailUrl}
-                    alt={video.title}
-                    className="w-full h-full object-cover rounded-md"
-                  />
-                  <Youtube className="absolute bottom-2 right-2 h-6 w-6 text-red-600" />
-                </div>
-                <Badge variant="outline" className="mt-2 w-full justify-center">
-                  {'category' in video ? video.category : 'Uncategorized'}
-                </Badge>
-              </div>
-            ) : null}
-            <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(video)}>
-              <h3 className="font-semibold">{video.title}</h3>
-              <div className="aspect-video w-full mt-2">
-                <iframe
-                  src={video.embed_url || `https://www.youtube.com/embed/${video.embed_id}`}
-                  className="w-full h-full pointer-events-none"
-                  allowFullScreen
-                  title={video.title}
-                />
-              </div>
-            </div>
-            {!isYouTube && (
-              <Button
-                variant="ghost"
-                className="ml-4"
-                onClick={() => setSelectedCategory(
-                  'arts_categories' in video 
-                    ? video.arts_categories?.name || null
-                    : 'category' in video ? video.category : null
-                )}
-              >
-                {'arts_categories' in video 
-                  ? video.arts_categories?.name || 'Uncategorized'
-                  : 'category' in video ? video.category : 'Uncategorized'}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
   return (
     <div className="space-y-8">
+      {/* Search and Filter Section */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4">
         <div className="flex items-center gap-4 mb-4">
           <div className="relative flex-1 max-w-sm">
@@ -214,7 +161,38 @@ const EnhancedVideoManager = () => {
         <TabsContent value="all" className="space-y-4">
           {data?.pages.map((page, i) => (
             <React.Fragment key={i}>
-              {[...page.arts, ...page.youtube].map((video) => renderVideoCard(video))}
+              {[...page.arts, ...page.youtube].map((video) => (
+                <Card key={video.id} className="hover:bg-accent/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(video)}>
+                        <h3 className="font-semibold">{video.title}</h3>
+                        <div className="aspect-video w-full mt-2">
+                          <iframe
+                            src={video.embed_url || `https://www.youtube.com/embed/${video.embed_id}`}
+                            className="w-full h-full pointer-events-none"
+                            allowFullScreen
+                            title={video.title}
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="ml-4"
+                        onClick={() => setSelectedCategory(
+                          'arts_categories' in video 
+                            ? video.arts_categories?.name || null
+                            : video.category
+                        )}
+                      >
+                        {'arts_categories' in video 
+                          ? video.arts_categories?.name || 'Uncategorized'
+                          : video.category}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </React.Fragment>
           ))}
         </TabsContent>
@@ -259,6 +237,7 @@ const EnhancedVideoManager = () => {
         </TabsContent>
       </Tabs>
 
+      {/* Loading indicator */}
       <div ref={bottomRef} className="py-4 flex justify-center">
         {isFetchingNextPage && (
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
