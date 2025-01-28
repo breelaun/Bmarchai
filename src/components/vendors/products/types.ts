@@ -5,6 +5,7 @@ export interface ProductFormData {
   category: ProductCategory;
   inventory_count: number;
   is_featured: boolean;
+  embedUrl?: string;
 }
 
 export type ProductCategory = 'Books' | 'Clothing' | 'Consultation' | 'Ebook' | 'Photo' | 'Podcast' | 'Session';
