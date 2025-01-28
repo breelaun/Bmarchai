@@ -24,3 +24,9 @@ export interface ProductFile {
   file: File;
   type: string;
 }
+
+export interface EmbedData {
+  url: string;
+  autoplayStart?: string;
+  autoplayEnd?: string;
+}
