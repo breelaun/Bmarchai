@@ -66,11 +66,11 @@ const Navigation = () => {
         { name: "Streaming", path: "/streaming", icon: <Film className="h-4 w-4 mr-2" /> },
         { name: "Arts", path: "/arts", icon: <Palette className="h-4 w-4 mr-2" /> },
         { name: "Puzzle Game", path: "/puzzle" },
+        { name: "Blogs", path: "/blogs" },
       ]
     },
     { name: "CRM", path: "/crm" },
-    { name: "Blogs", path: "/blogs" },
-    { name: "Chat", path: "/chat" },
+        { name: "Chat", path: "/chat" },
   ];
 
   if (profile?.admin) {
