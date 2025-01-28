@@ -81,6 +81,11 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         productFileUrls.push(publicUrl);
       }
 
+      const validateTimeFormat = (time: string): boolean => {
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/;
+        return timeRegex.test(time);
+      };
+
       // Create the product first
       const { data: productData, error: productError } = await supabase
         .from('products')
