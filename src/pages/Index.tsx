@@ -45,7 +45,7 @@ const EnhancedVideoManager = () => {
 
     if (selectedCategory) {
       artsQuery.eq('arts_categories.name', selectedCategory);
-      youtubeQuery.eq('category', selectedCategory);
+      youtubeQuery.eq('arts_categories.name', selectedCategory);
     }
 
     const [artsData, youtubeData, sessionsData] = await Promise.all([
