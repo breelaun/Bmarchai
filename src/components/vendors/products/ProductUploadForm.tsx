@@ -160,11 +160,11 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <ProductFileUpload files={productFiles} onFilesChange={setProductFiles} />
 
           {/* Embed Section - Always Visible */}
-          <div className="space-y-4 border-t pt-6">
-            <label className="block text-sm font-medium text-gray-700">Embed Content</label>
-            <div className="space-y-4">
+          <div className="space-y-6 border-t pt-6">
+            <label className="block text-lg font-medium text-gray-100">Embed Content</label>
+            <div className="space-y-6">
               <div>
-                <label htmlFor="embed-url" className="block text-sm font-medium text-black">
+                <label htmlFor="embed-url" className="block text-sm font-medium text-gray-100">
                   Embed URL
                 </label>
                 <input
@@ -173,12 +173,12 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   placeholder="https://example.com"
                   value={embedData.url}
                   onChange={(e) => setEmbedData({ ...embedData, url: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  className="mt-1 block w-full rounded-lg bg-black text-white border-gray-700 focus:border-[#f7bd00] focus:ring-[#f7bd00] shadow-sm p-3"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="autoplay-start" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="autoplay-start" className="block text-sm font-medium text-gray-100">
                     Autoplay Start (HH:MM:SS)
                   </label>
                   <input
@@ -187,11 +187,11 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     placeholder="00:00:00"
                     value={embedData.autoplayStart}
                     onChange={(e) => setEmbedData({ ...embedData, autoplayStart: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                    className="mt-1 block w-full rounded-lg bg-black text-white border-gray-700 focus:border-[#f7bd00] focus:ring-[#f7bd00] shadow-sm p-3"
                   />
                 </div>
                 <div>
-                  <label htmlFor="autoplay-end" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="autoplay-end" className="block text-sm font-medium text-gray-100">
                     Autoplay End (HH:MM:SS)
                   </label>
                   <input
@@ -200,7 +200,7 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     placeholder="00:00:00"
                     value={embedData.autoplayEnd}
                     onChange={(e) => setEmbedData({ ...embedData, autoplayEnd: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                    className="mt-1 block w-full rounded-lg bg-black text-white border-gray-700 focus:border-[#f7bd00] focus:ring-[#f7bd00] shadow-sm p-3"
                   />
                 </div>
               </div>
