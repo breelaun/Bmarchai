@@ -26,8 +26,13 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
   const [productFiles, setProductFiles] = useState<ProductFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>();
+  const [embedData, setEmbedData] = useState({
+    url: '',
+    autoplayStart: '',
+    autoplayEnd: ''
+  });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ProductFormData>();
+  const { register, handleSubmit, reset, formState: { errors }, watch } = useForm<ProductFormData>();
 
   const onSubmit = async (data: ProductFormData) => {
     if (!session?.user?.id) {
@@ -81,7 +86,8 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
         productFileUrls.push(publicUrl);
       }
 
-      const { error: insertError } = await supabase
+      // Create the product first
+      const { data: productData, error: productError } = await supabase
         .from('products')
         .insert({
           vendor_id: session.user.id,
@@ -92,9 +98,30 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
           inventory_count: data.inventory_count,
           image_url: imageUrl,
           file_urls: productFileUrls,
-        });
+        })
+        .select()
+        .single();
 
-      if (insertError) throw insertError;
+      if (productError) throw productError;
+
+      // If it's a session, create the session record
+      if (selectedCategory === 'session' && productData) {
+        const { error: sessionError } = await supabase
+          .from('sessions')
+          .insert({
+            vendor_id: session.user.id,
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            duration: '1:00:00', // Default 1 hour duration - adjust as needed
+            max_participants: data.inventory_count,
+            embed_url: embedData.url,
+            autoplay_start: embedData.autoplayStart || null,
+            autoplay_end: embedData.autoplayEnd || null,
+          });
+
+        if (sessionError) throw sessionError;
+      }
 
       toast({
         title: "Success",
@@ -104,7 +131,9 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
       reset();
       setImageFile(null);
       setProductFiles([]);
+      setEmbedData({ url: '', autoplayStart: '', autoplayEnd: '' });
       queryClient.invalidateQueries({ queryKey: ['vendorProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
       onSuccess?.();
 
     } catch (error: any) {
@@ -140,6 +169,9 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
           <ProductFileUpload 
             files={productFiles}
             onFilesChange={setProductFiles}
+            category={selectedCategory}
+            embedData={embedData}
+            onEmbedChange={setEmbedData}
           />
           <Button type="submit" className="w-full" disabled={isUploading}>
             {isUploading ? "Adding Product..." : "Add Product"}
