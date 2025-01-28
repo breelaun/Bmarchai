@@ -167,15 +167,11 @@ const EnhancedVideoManager = () => {
                       variant="ghost"
                       className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-[#f7bd00] hover:text-black transition-colors duration-200 rounded-none"
                       onClick={() => setSelectedCategory(
-                        'arts_categories' in video 
-                          ? video.arts_categories?.name || null
-                          : video.category
+                        video.arts_categories?.name || video.category || 'Uncategorized'
                       )}
                       style={{ writingMode: 'vertical-rl' }}
                     >
-                      {'arts_categories' in video 
-                        ? video.arts_categories?.name || 'Uncategorized'
-                        : video.category}
+                      {video.arts_categories?.name || video.category || 'Uncategorized'}
                     </Button>
                   </div>
                 ))}
