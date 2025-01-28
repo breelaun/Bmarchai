@@ -12,21 +12,15 @@ import ProductDetails from "./components/ProductDetails";
 import PricingInventory from "./components/PricingInventory";
 import CategoryInput from "./components/CategoryInput";
 import ProductFileUpload from "./components/ProductFileUpload";
-import type { ProductFormData, ProductFile, ProductCategory } from "./types";
-import EmbedUrlInput from "./components/EmbedUrlInput";
+import type { ProductFormData, ProductFile } from "./types";
 
-interface ProductUploadFormProps {
-  onSuccess?: () => void;
-}
-
-const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
+const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const session = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [productFiles, setProductFiles] = useState<ProductFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<ProductCategory>();
   const [embedData, setEmbedData] = useState({
     url: '',
     autoplayStart: '',
@@ -95,7 +89,7 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
           name: data.name,
           description: data.description,
           price: data.price,
-          category: selectedCategory,
+          category: data.category,
           inventory_count: data.inventory_count,
           image_url: imageUrl,
           file_urls: productFileUrls,
@@ -105,8 +99,8 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
 
       if (productError) throw productError;
 
-      // If it's a session, create the session record
-      if (selectedCategory === 'session' && productData) {
+      // Add session data if embed fields are filled
+      if (embedData.url) {
         const { error: sessionError } = await supabase
           .from('sessions')
           .insert({
@@ -161,19 +155,58 @@ const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <ProductDetails register={register} errors={errors} />
           <PricingInventory register={register} errors={errors} />
-          <CategoryInput 
-            register={register} 
-            value={selectedCategory}
-            onChange={setSelectedCategory}
-          />
+          <CategoryInput register={register} />
           <ImageUpload onImageChange={setImageFile} imageFile={imageFile} />
-          <ProductFileUpload 
-            files={productFiles}
-            onFilesChange={setProductFiles}
-            category={selectedCategory}
-            embedData={embedData}
-            onEmbedChange={setEmbedData}
-          />
+          <ProductFileUpload files={productFiles} onFilesChange={setProductFiles} />
+
+          {/* Embed Section - Always Visible */}
+          <div className="space-y-4 border-t pt-6">
+            <label className="block text-sm font-medium text-gray-700">Embed Content</label>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="embed-url" className="block text-sm font-medium text-gray-700">
+                  Embed URL
+                </label>
+                <input
+                  id="embed-url"
+                  type="url"
+                  placeholder="https://example.com"
+                  value={embedData.url}
+                  onChange={(e) => setEmbedData({ ...embedData, url: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="autoplay-start" className="block text-sm font-medium text-gray-700">
+                    Autoplay Start (HH:MM:SS)
+                  </label>
+                  <input
+                    id="autoplay-start"
+                    type="text"
+                    placeholder="00:00:00"
+                    value={embedData.autoplayStart}
+                    onChange={(e) => setEmbedData({ ...embedData, autoplayStart: e.target.value })}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="autoplay-end" className="block text-sm font-medium text-gray-700">
+                    Autoplay End (HH:MM:SS)
+                  </label>
+                  <input
+                    id="autoplay-end"
+                    type="text"
+                    placeholder="00:00:00"
+                    value={embedData.autoplayEnd}
+                    onChange={(e) => setEmbedData({ ...embedData, autoplayEnd: e.target.value })}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <Button type="submit" className="w-full" disabled={isUploading}>
             {isUploading ? "Adding Product..." : "Add Product"}
           </Button>
