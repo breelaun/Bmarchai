@@ -4,6 +4,32 @@ import { SqeresBackground } from './SqeresBackground';
 import { SqeresCrosshair } from './SqeresCrosshair';
 import { GameState } from './types';
 
+<SqeresCrosshair containerRef={containerRef} color={gameState.isLocked ? "#ff0000" : "#ffffff"} />
+
+<div 
+  ref={containerRef} // ✅ Ensures crosshair can track movement
+  className="relative w-full h-screen bg-black overflow-hidden"
+  onMouseMove={handleMouseMove}
+>
+  <SqeresBackground speed={0.5} squareSize={40} direction={gameDirection} borderColor="#333" />
+  
+  {/* ✅ Crosshair must be inside the container */}
+  {containerRef.current && <SqeresCrosshair containerRef={containerRef} color={gameState.isLocked ? "#ff0000" : "#ffffff"} />}
+  
+  <div
+    ref={targetRef}
+    className="absolute w-8 h-8 bg-yellow-400 cursor-pointer transform -translate-x-1/2 -translate-y-1/2"
+    style={{
+      left: `${gameState.targetPosition.x}%`,
+      top: `${gameState.targetPosition.y}%`,
+      transition: 'left 0.1s linear, top 0.1s linear',
+    }}
+    onClick={handleTargetHit}
+  />
+</div>
+
+
+
 const SqeresGame: React.FC = () => {
   const [gameState, setGameState] = useState({
     score: 0,
