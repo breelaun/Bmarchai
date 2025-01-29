@@ -1,377 +1,187 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { SqeresBackground } from './SqeresBackground';
-import { EnhancedCrosshair } from './EnhancedCrosshair';
-
-interface PowerUp {
-  type: 'freeze' | 'shield' | 'multishot' | 'extraLife';
-  position: { x: number; y: number };
-  active: boolean;
-  duration?: number;
-}
-
-interface GameState {
-  score: number;
-  highScore: number;
-  lives: number;
-  isPaused: boolean;
-  isGameOver: boolean;
-  targetPosition: { x: number; y: number };
-  enemies: Array<{
-    id: number;
-    position: { x: number; y: number };
-    type: 'normal' | 'fast' | 'teleporting';
-    frozen: boolean;
-  }>;
-  powerUps: PowerUp[];
-  multiplier: number;
-  shield: boolean;
-  multishot: boolean;
-  canWatchAd: boolean;
-  gridSize: number;
-}
+import { SqeresCrosshair } from './SqeresCrosshair';
+import { GameState } from './types';
 
 const SqeresGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
     highScore: parseInt(localStorage.getItem("sqeresHighScore") || "0"),
-    lives: 5,
-    isPaused: false,
-    isGameOver: false,
-    targetPosition: { x: 40, y: 40 },
-    enemies: [{ id: 1, position: { x: 0, y: 0 }, type: 'normal', frozen: false }],
-    powerUps: [],
-    multiplier: 1,
-    shield: false,
-    multishot: false,
-    canWatchAd: true,
-    gridSize: 40,
+    isPaused: true,  // 🛑 Game starts paused!
+    isLocked: false,
+    lives: 5, // 🔴 Player starts with 5 lives
+    targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
+    wallPosition: { x: 50, y: 50 }, 
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
-  const [adModalOpen, setAdModalOpen] = useState(false);
+  const wallRef = useRef<HTMLDivElement>(null);
+  const animationFrameId = useRef<number | null>(null);
+  const [gameDirection, setGameDirection] = useState<"up" | "down" | "left" | "right" | "diagonal">("right");
 
-  // Spawn power-ups periodically
+  // 🟢 Change direction every 5 seconds
   useEffect(() => {
-    if (gameState.isPaused || gameState.isGameOver) return;
+    if (gameState.lives === 0) return; // Stop if no lives
 
-    const spawnPowerUp = () => {
-      const types: PowerUp['type'][] = ['freeze', 'shield', 'multishot', 'extraLife'];
-      const randomType = types[Math.floor(Math.random() * types.length)];
-      
+    const directions: ("up" | "down" | "left" | "right" | "diagonal")[] = ["up", "down", "left", "right", "diagonal"];
+    const changeInterval = setInterval(() => {
+      setGameDirection(directions[Math.floor(Math.random() * directions.length)]);
+    }, 5000);
+
+    return () => clearInterval(changeInterval);
+  }, [gameState.isPaused, gameState.lives]);
+
+  // 🟢 Move target & wall
+  useEffect(() => {
+    if (gameState.lives === 0) return; // Stop movement if game over
+
+    let lastTime = 0;
+    let targetSpeed = Math.random() * 0.8 + 0.5;
+    let wallSpeed = Math.random() * 1.2 + 0.8;
+
+    const moveObjects = (currentTime: number) => {
+      if (gameState.isPaused) return;
+
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+      if (deltaTime === 0) return;
+
+      const getDirection = () => {
+        switch (gameDirection) {
+          case "up": return { x: 0, y: -1 };
+          case "down": return { x: 0, y: 1 };
+          case "left": return { x: -1, y: 0 };
+          case "right": return { x: 1, y: 0 };
+          case "diagonal": return { x: Math.random() < 0.5 ? 1 : -1, y: Math.random() < 0.5 ? 1 : -1 };
+        }
+      };
+
+      const targetDirection = getDirection();
+      const wallDirection = getDirection();
+
       setGameState(prev => ({
         ...prev,
-        powerUps: [...prev.powerUps, {
-          type: randomType,
-          position: {
-            x: Math.random() * 80 + 10,
-            y: Math.random() * 80 + 10
-          },
-          active: true,
-          duration: 10000
-        }]
+        targetPosition: {
+          x: Math.max(0, Math.min(90, prev.targetPosition.x + targetDirection.x * targetSpeed * (deltaTime / 16))),
+          y: Math.max(0, Math.min(90, prev.targetPosition.y + targetDirection.y * targetSpeed * (deltaTime / 16))),
+        },
+        wallPosition: {
+          x: Math.max(0, Math.min(90, prev.wallPosition.x + wallDirection.x * wallSpeed * (deltaTime / 16))),
+          y: Math.max(0, Math.min(90, prev.wallPosition.y + wallDirection.y * wallSpeed * (deltaTime / 16))),
+        }
       }));
+
+      animationFrameId.current = requestAnimationFrame(moveObjects);
     };
 
-    const powerUpInterval = setInterval(spawnPowerUp, 15000);
-    return () => clearInterval(powerUpInterval);
-  }, [gameState.isPaused, gameState.isGameOver]);
+    animationFrameId.current = requestAnimationFrame(moveObjects);
 
-  // Enemy movement and spawning
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, [gameState.isPaused, gameState.targetPosition, gameDirection, gameState.lives]);
+
+  // 🟢 Check collision (Wall touches Target)
   useEffect(() => {
-    if (gameState.isPaused || gameState.isGameOver) return;
+    const checkCollision = () => {
+      const dx = gameState.wallPosition.x - gameState.targetPosition.x;
+      const dy = gameState.wallPosition.y - gameState.targetPosition.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-    const moveEnemies = () => {
-      setGameState(prev => ({
-        ...prev,
-        enemies: prev.enemies.map(enemy => {
-          if (enemy.frozen) return enemy;
-
-          const speed = enemy.type === 'fast' ? 3 : 2;
-          const targetPos = prev.targetPosition;
-          const enemyPos = enemy.position;
-          
-          let newPos;
-          if (enemy.type === 'teleporting' && Math.random() < 0.02) {
-            newPos = {
-              x: Math.random() * 80 + 10,
-              y: Math.random() * 80 + 10
-            };
-          } else {
-            const dx = targetPos.x - enemyPos.x;
-            const dy = targetPos.y - enemyPos.y;
-            const angle = Math.atan2(dy, dx);
-            newPos = {
-              x: enemyPos.x + Math.cos(angle) * speed,
-              y: enemyPos.y + Math.sin(angle) * speed
-            };
-          }
-
-          // Check collision with target
-          const distance = Math.hypot(newPos.x - targetPos.x, newPos.y - targetPos.y);
-          if (distance < 20 && !prev.shield) {
-            setTimeout(() => {
-              setGameState(state => ({
-                ...state,
-                lives: state.lives - 1,
-                isGameOver: state.lives <= 1,
-                shield: false
-              }));
-            }, 0);
-          }
-
-          return {
-            ...enemy,
-            position: newPos
-          };
-        })
-      }));
-    };
-
-    const spawnNewEnemy = () => {
-      if (gameState.enemies.length < 3) {
-        const types: Array<'normal' | 'fast' | 'teleporting'> = ['normal', 'fast', 'teleporting'];
+      if (distance < 5) {
         setGameState(prev => ({
           ...prev,
-          enemies: [...prev.enemies, {
-            id: Date.now(),
-            position: { x: 0, y: 0 },
-            type: types[Math.floor(Math.random() * types.length)],
-            frozen: false
-          }]
+          lives: prev.lives - 1, // 🔴 Lose a life
+          targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 }, 
+          wallPosition: { x: 50, y: 50 }, 
         }));
       }
     };
 
-    const enemyInterval = setInterval(moveEnemies, 50);
-    const spawnInterval = setInterval(spawnNewEnemy, 20000);
-    
-    return () => {
-      clearInterval(enemyInterval);
-      clearInterval(spawnInterval);
-    };
-  }, [gameState.isPaused, gameState.isGameOver]);
+    const interval = setInterval(checkCollision, 100);
+    return () => clearInterval(interval);
+  }, [gameState.wallPosition, gameState.targetPosition, gameState.lives]);
 
-  // Handle power-up collection
-  const collectPowerUp = (powerUp: PowerUp) => {
-    switch (powerUp.type) {
-      case 'freeze':
-        setGameState(prev => ({
-          ...prev,
-          enemies: prev.enemies.map(enemy => ({ ...enemy, frozen: true })),
-          powerUps: prev.powerUps.filter(p => p !== powerUp)
-        }));
-        setTimeout(() => {
-          setGameState(prev => ({
-            ...prev,
-            enemies: prev.enemies.map(enemy => ({ ...enemy, frozen: false }))
-          }));
-        }, powerUp.duration);
-        break;
-      case 'shield':
-        setGameState(prev => ({
-          ...prev,
-          shield: true,
-          powerUps: prev.powerUps.filter(p => p !== powerUp)
-        }));
-        setTimeout(() => {
-          setGameState(prev => ({ ...prev, shield: false }));
-        }, powerUp.duration);
-        break;
-      case 'multishot':
-        setGameState(prev => ({
-          ...prev,
-          multishot: true,
-          powerUps: prev.powerUps.filter(p => p !== powerUp)
-        }));
-        setTimeout(() => {
-          setGameState(prev => ({ ...prev, multishot: false }));
-        }, powerUp.duration);
-        break;
-      case 'extraLife':
-        setGameState(prev => ({
-          ...prev,
-          lives: prev.lives + 1,
-          powerUps: prev.powerUps.filter(p => p !== powerUp)
-        }));
-        break;
+  // 🟢 Handle target hit
+  const handleTargetHit = () => {
+    if (gameState.isPaused || gameState.lives === 0) return;
+
+    const newScore = gameState.score + (gameState.isLocked ? 100 : 50);
+    const newHighScore = Math.max(newScore, gameState.highScore);
+
+    setGameState(prev => ({
+      ...prev,
+      score: newScore,
+      highScore: newHighScore,
+      targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
+    }));
+
+    localStorage.setItem("sqeresHighScore", newHighScore.toString());
+
+    if (targetRef.current) {
+      gsap.to(targetRef.current, {
+        scale: 1.5,
+        opacity: 0,
+        duration: 0.3,
+        onComplete: () => {
+          gsap.set(targetRef.current, { scale: 1, opacity: 1 });
+        },
+      });
     }
   };
 
-  // Handle watching ad for extra life
-  const handleWatchAd = () => {
-    setAdModalOpen(true);
-    // Simulated ad view
-    setTimeout(() => {
-      setAdModalOpen(false);
-      setGameState(prev => ({
-        ...prev,
-        lives: prev.lives + 1,
-        canWatchAd: false
-      }));
-    }, 5000);
-  };
-
-  // Rest of the component (render method)...
   return (
-    <div className="relative w-full h-screen overflow-hidden" ref={containerRef}>
-      <SqeresBackground speed={0.5} squareSize={gameState.gridSize} direction="right" />
-      
-      {containerRef.current && (
-        <EnhancedCrosshair containerRef={containerRef} color="#ffffff" />
-      )}
+    <div className="relative w-full h-screen bg-black overflow-hidden" ref={containerRef}>
+      {/* Background Animation */}
+      <SqeresBackground speed={0.5} squareSize={40} direction={gameDirection} borderColor="#333" />
 
-      {/* Target */}
+      {/* Crosshair */}
+      <SqeresCrosshair containerRef={containerRef} color={gameState.isLocked ? "#ff0000" : "#ffffff"} />
+
+      {/* Moving Target */}
       <div
         ref={targetRef}
         className="absolute w-8 h-8 bg-yellow-400 cursor-pointer transform -translate-x-1/2 -translate-y-1/2"
         style={{
           left: `${gameState.targetPosition.x}%`,
           top: `${gameState.targetPosition.y}%`,
-          boxShadow: gameState.shield ? '0 0 20px #00ff00' : 'none'
+          transition: "left 0.1s linear, top 0.1s linear",
         }}
-        onClick={() => {/* handle target hit */}}
+        onClick={handleTargetHit}
       />
 
-      {/* Enemies */}
-      {gameState.enemies.map(enemy => (
-        <div
-          key={enemy.id}
-          className={`absolute w-8 h-8 transform -translate-x-1/2 -translate-y-1/2 ${
-            enemy.frozen ? 'opacity-50' : ''
-          }`}
-          style={{
-            left: `${enemy.position.x}%`,
-            top: `${enemy.position.y}%`,
-            backgroundColor: enemy.type === 'fast' ? '#ff0000' : 
-                           enemy.type === 'teleporting' ? '#purple' : '#ff4444'
-          }}
-        />
-      ))}
+      {/* Moving Wall */}
+      <div
+        ref={wallRef}
+        className="absolute w-20 h-5 bg-red-600"
+        style={{
+          left: `${gameState.wallPosition.x}%`,
+          top: `${gameState.wallPosition.y}%`,
+          transition: "left 0.1s linear, top 0.1s linear",
+        }}
+      />
 
-      {/* Power-ups */}
-      {gameState.powerUps.map((powerUp, index) => (
-        <div
-          key={index}
-          className="absolute w-6 h-6 cursor-pointer transform -translate-x-1/2 -translate-y-1/2"
-          style={{
-            left: `${powerUp.position.x}%`,
-            top: `${powerUp.position.y}%`,
-            backgroundColor: 
-              powerUp.type === 'freeze' ? '#00ffff' :
-              powerUp.type === 'shield' ? '#00ff00' :
-              powerUp.type === 'multishot' ? '#ffff00' : '#ff69b4'
-          }}
-          onClick={() => collectPowerUp(powerUp)}
-        />
-      ))}
-
-      {/* HUD */}
+      {/* UI */}
       <div className="absolute top-4 left-4 text-white space-y-2">
         <div>Score: {gameState.score}</div>
         <div>High Score: {gameState.highScore}</div>
-        <div>Lives: {'❤️'.repeat(gameState.lives)}</div>
-        <div>Multiplier: x{gameState.multiplier}</div>
-        <div className="flex flex-col gap-2">
+        <div>Lives: {gameState.lives}</div>
+
+        {gameState.lives > 0 ? (
           <button
             className="px-4 py-2 bg-white/10 rounded hover:bg-white/20"
             onClick={() => setGameState(prev => ({ ...prev, isPaused: !prev.isPaused }))}
           >
-            {gameState.isPaused ? "Resume" : "Pause"}
+            {gameState.isPaused ? "Start" : "Pause"}
           </button>
-          {gameState.lives < 3 && gameState.canWatchAd && (
-            <button
-              className="px-4 py-2 bg-green-500/30 rounded hover:bg-green-500/40 flex items-center gap-2"
-              onClick={handleWatchAd}
-            >
-              <span>👀</span> Watch Ad for Extra Life
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Power-up Status */}
-      <div className="absolute top-4 right-4 text-white">
-        {gameState.shield && (
-          <div className="mb-2 px-3 py-1 bg-green-500/30 rounded">
-            🛡️ Shield Active
-          </div>
-        )}
-        {gameState.multishot && (
-          <div className="mb-2 px-3 py-1 bg-yellow-500/30 rounded">
-            🎯 Multishot Active
-          </div>
+        ) : (
+          <div className="text-red-500 font-bold text-lg">Game Over</div>
         )}
       </div>
-
-      {/* Game Over Screen */}
-      {gameState.isGameOver && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-          <div className="text-white text-center p-8 bg-white/10 rounded-lg backdrop-blur-sm">
-            <h2 className="text-4xl mb-4">Game Over!</h2>
-            <p className="text-xl mb-4">Final Score: {gameState.score}</p>
-            {gameState.canWatchAd && (
-              <button
-                className="px-6 py-3 bg-green-500/30 rounded hover:bg-green-500/40 mb-4 w-full"
-                onClick={handleWatchAd}
-              >
-                Watch Ad to Continue
-              </button>
-            )}
-            <button
-              className="px-6 py-3 bg-white/10 rounded hover:bg-white/20 w-full"
-              onClick={() => {
-                setGameState({
-                  score: 0,
-                  highScore: gameState.highScore,
-                  lives: 5,
-                  isPaused: false,
-                  isGameOver: false,
-                  targetPosition: { x: 40, y: 40 },
-                  enemies: [{ id: 1, position: { x: 0, y: 0 }, type: 'normal', frozen: false }],
-                  powerUps: [],
-                  multiplier: 1,
-                  shield: false,
-                  multishot: false,
-                  canWatchAd: true,
-                  gridSize: 40,
-                });
-              }}
-            >
-              Play Again
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Ad Modal */}
-      {adModalOpen && (
-        <div className="absolute inset-0 bg-black/90 flex items-center justify-center">
-          <div className="text-white text-center p-8 bg-white/10 rounded-lg">
-            <h3 className="text-2xl mb-4">Watching Ad...</h3>
-            <div className="w-64 h-48 bg-gray-700 mb-4 flex items-center justify-center">
-              <img 
-                src="/api/placeholder/320/240"
-                alt="Ad Placeholder" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="text-sm">You'll receive an extra life in 5 seconds...</div>
-          </div>
-        </div>
-      )}
-
-      {/* Tutorial Overlay (shown on first play) */}
-      {gameState.score === 0 && !gameState.isGameOver && (
-        <div className="absolute inset-0 bg-black/50 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-center">
-            <p className="text-xl mb-2">🎯 Click the yellow target to score points</p>
-            <p className="text-xl mb-2">⚡ Collect power-ups to help you survive</p>
-            <p className="text-xl">❌ Avoid the red enemies!</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
