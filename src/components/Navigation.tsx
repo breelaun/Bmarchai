@@ -65,6 +65,7 @@ const Navigation = () => {
       submenu: [
         { name: "Streaming", path: "/streaming", icon: <Film className="h-4 w-4 mr-2" /> },
         { name: "Arts", path: "/arts", icon: <Palette className="h-4 w-4 mr-2" /> },
+        { name: "Squares Game", path: "/squares", icon: <Gamepad className="h-4 w-4 mr-2" /> }
       ]
     },
     { name: "CRM", path: "/crm" },
