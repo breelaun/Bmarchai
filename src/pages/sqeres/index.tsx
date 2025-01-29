@@ -7,4 +7,3 @@ export default function SqeresPage() {
     </div>
   );
 }
-export default SqeresPage;
