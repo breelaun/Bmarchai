@@ -10,11 +10,63 @@ const SqeresGame: React.FC = () => {
     highScore: parseInt(localStorage.getItem("sqeresHighScore") || "0"),
     isPaused: true,  // 🛑 Game starts paused!
     isLocked: false,
-    lives: 5, // 🔴 Player starts with 5 lives
-    targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
-    wallPosition: { x: 50, y: 50 }, 
+    lives: 5,  // Keep track of lives
+    targetPositions: [{ x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 }],
+    obstaclePositions: [{ x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 }],
   });
 
+  const handleTargetHit = () => {
+    if (gameState.isPaused) return;
+
+    const newScore = gameState.score + (gameState.isLocked ? 100 : 50);
+    const newHighScore = Math.max(newScore, gameState.highScore);
+  
+    let newTargets = [...gameState.targetPositions];
+    let newObstacles = [...gameState.obstaclePositions];
+
+    if (newScore >= 1000 && newTargets.length === 1) {
+      newTargets.push({ x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
+      newObstacles.push({ x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      score: newScore,
+      highScore: newHighScore,
+      targetPositions: newTargets,
+      obstaclePositions: newObstacles,
+    }));
+
+  {/* Render Multiple Targets */}
+  {gameState.targetPositions.map((target, index) => (
+    <div
+      key={`target-${index}`}
+      className="absolute w-8 h-8 bg-yellow-400 cursor-pointer transform -translate-x-1/2 -translate-y-1/2"
+      style={{
+        left: `${target.x}%`,
+        top: `${target.y}%`,
+        transition: "left 0.1s linear, top 0.1s linear",
+      }}
+      onClick={handleTargetHit}
+    />
+  ))}
+
+  {/* Render Multiple Obstacles */}
+  {gameState.obstaclePositions.map((obstacle, index) => (
+    <div
+      key={`obstacle-${index}`}
+      className="absolute w-10 h-10 bg-red-500 transform -translate-x-1/2 -translate-y-1/2"
+      style={{
+        left: `${obstacle.x}%`,
+        top: `${obstacle.y}%`,
+        transition: "left 0.1s linear, top 0.1s linear",
+      }}
+    />
+  ))}  
+
+  localStorage.setItem("sqeresHighScore", newHighScore.toString());
+};
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
   const wallRef = useRef<HTMLDivElement>(null);
@@ -108,17 +160,26 @@ const SqeresGame: React.FC = () => {
 
   // 🟢 Handle target hit
   const handleTargetHit = () => {
-    if (gameState.isPaused || gameState.lives === 0) return;
+  if (gameState.isPaused) return;
 
-    const newScore = gameState.score + (gameState.isLocked ? 100 : 50);
-    const newHighScore = Math.max(newScore, gameState.highScore);
+  const newScore = gameState.score + (gameState.isLocked ? 100 : 50);
+  const newHighScore = Math.max(newScore, gameState.highScore);
+  
+  let newTargets = [...gameState.targetPositions];
+  let newObstacles = [...gameState.obstaclePositions];
 
-    setGameState(prev => ({
-      ...prev,
-      score: newScore,
-      highScore: newHighScore,
-      targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
-    }));
+  if (newScore >= 1000 && newTargets.length === 1) {
+    newTargets.push({ x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
+    newObstacles.push({ x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 });
+  }
+
+  setGameState(prev => ({
+    ...prev,
+    score: newScore,
+    highScore: newHighScore,
+    targetPositions: newTargets,
+    obstaclePositions: newObstacles,
+  }));
 
     localStorage.setItem("sqeresHighScore", newHighScore.toString());
 
