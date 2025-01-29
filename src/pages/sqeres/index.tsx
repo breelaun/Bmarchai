@@ -1,9 +1,11 @@
 import SqeresGame from '@/components/sqeres/SqeresGame';
 
-export default function SqeresPage() {
+const SqeresPage = () => {
   return (
     <div className="w-full h-screen">
       <SqeresGame />
     </div>
   );
-}
+};
+
+export default SqeresPage;

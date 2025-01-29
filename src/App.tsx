@@ -18,7 +18,6 @@ import CreateBlog from "./pages/blogs/new";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/auth/Profile";
-import React, { useEffect } from "react";
 import StreamingPage from "./pages/streaming";
 import ArtsPage from "./pages/arts";
 import AdminPage from "./pages/admin";
