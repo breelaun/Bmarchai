@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { CartProvider } from "./components/cart/CartProvider";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
@@ -30,6 +30,7 @@ import { supabase } from "./integrations/supabase/client";
 import { VideoProvider } from "@/contexts/VideoPlayerContext";
 import PersistentPlayer from "./components/PersistentPlayer";
 import { useVideo } from "@/contexts/VideoPlayerContext";
+import AppContent from "./AppContent";
 
 const queryClient = new QueryClient();
 
@@ -87,8 +88,7 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 <AppContent />
-              </BrowserRouter>
-            </TooltipProvider>
+              </TooltipProvider>
           </VideoProvider>
         </CartProvider>
       </SessionContextProvider>
