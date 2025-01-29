@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette, MessageSquare } from "lucide-react";
+import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette, MessageSquare, Gamepad2 } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +12,6 @@ import VendorMenu from "./navigation/VendorMenu";
 import AuthButtons from "./navigation/AuthButtons";
 import CartIcon from "./navigation/CartIcon";
 import type { MenuItem, SubMenuItem } from "./navigation/types";
-import { Gamepad2 } from "lucide-react";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
