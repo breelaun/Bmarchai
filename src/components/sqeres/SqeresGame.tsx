@@ -5,68 +5,24 @@ import { SqeresCrosshair } from './SqeresCrosshair';
 import { GameState } from './types';
 
 const SqeresGame: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>({
+  const [gameState, setGameState] = useState({
     score: 0,
-    highScore: parseInt(localStorage.getItem('sqeresHighScore') || '0'),
+    highScore: parseInt(localStorage.getItem("sqeresHighScore") || "0"),
     isPaused: false,
     isLocked: false,
-    targetPosition: {
-      x: Math.random() * 80 + 10,
-      y: Math.random() * 80 + 10,
-    },
+    targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
+    wallPosition: { x: 50, y: 50 }, // 🟢 Wall starts in the center
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
   const lockTimer = useRef<number | null>(null);
   const animationFrameId = useRef<number | null>(null);
-  const [gameDirection, setGameDirection] = useState<'up' | 'down' | 'left' | 'right' | 'diagonal'>('right');
+  const [gameDirection, setGameDirection] = useState<"up" | "down" | "left" | "right" | "diagonal">("right");
 
-  // Target movement effect
+  // 🟢 Direction change every 5 seconds
   useEffect(() => {
-    let lastTime = 0;
-    const targetSpeed = 2;
-    const targetDirection = { x: 1, y: 1 };
-
-    const moveTarget = (currentTime: number) => {
-      if (gameState.isPaused) return;
-      
-      const deltaTime = currentTime - lastTime;
-      lastTime = currentTime;
-
-      if (deltaTime === 0) return;
-
-      setGameState(prev => ({
-        ...prev,
-        targetPosition: {
-          x: Math.max(0, Math.min(90, prev.targetPosition.x + targetDirection.x * targetSpeed * (deltaTime / 16))),
-          y: Math.max(0, Math.min(90, prev.targetPosition.y + targetDirection.y * targetSpeed * (deltaTime / 16)))
-        }
-      }));
-
-      // Bounce logic
-      if (gameState.targetPosition.x <= 0 || gameState.targetPosition.x >= 90) targetDirection.x *= -1;
-      if (gameState.targetPosition.y <= 0 || gameState.targetPosition.y >= 90) targetDirection.y *= -1;
-
-      animationFrameId.current = requestAnimationFrame(moveTarget);
-    };
-
-    animationFrameId.current = requestAnimationFrame(moveTarget);
-
-    return () => {
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-      }
-    };
-  }, [gameState.isPaused, gameState.targetPosition]);
-
-  // Direction change effect
-  useEffect(() => {
-    if (gameState.isPaused) return;
-    
-    const directions: ('up' | 'down' | 'left' | 'right' | 'diagonal')[] = 
-      ['up', 'down', 'left', 'right', 'diagonal'];
-      
+    const directions: ("up" | "down" | "left" | "right" | "diagonal")[] = ["up", "down", "left", "right", "diagonal"];
     const changeInterval = setInterval(() => {
       setGameDirection(directions[Math.floor(Math.random() * directions.length)]);
     }, 5000);
@@ -74,23 +30,72 @@ const SqeresGame: React.FC = () => {
     return () => clearInterval(changeInterval);
   }, [gameState.isPaused]);
 
+  // 🟢 Move target & wall
+  useEffect(() => {
+    let lastTime = 0;
+    let targetSpeed = Math.random() * 3 + 1; // Random speed 1-4
+    let wallSpeed = Math.random() * 2 + 1; // Random speed 1-3
+
+    const moveObjects = (currentTime: number) => {
+      if (gameState.isPaused) return;
+      
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+      if (deltaTime === 0) return;
+
+      // Set movement directions
+      const getDirection = () => {
+        switch (gameDirection) {
+          case "up": return { x: 0, y: -1 };
+          case "down": return { x: 0, y: 1 };
+          case "left": return { x: -1, y: 0 };
+          case "right": return { x: 1, y: 0 };
+          case "diagonal": return { x: Math.random() < 0.5 ? 1 : -1, y: Math.random() < 0.5 ? 1 : -1 };
+        }
+      };
+
+      const targetDirection = getDirection();
+      const wallDirection = getDirection();
+
+      setGameState(prev => ({
+        ...prev,
+        targetPosition: {
+          x: Math.max(0, Math.min(90, prev.targetPosition.x + targetDirection.x * targetSpeed * (deltaTime / 16))),
+          y: Math.max(0, Math.min(90, prev.targetPosition.y + targetDirection.y * targetSpeed * (deltaTime / 16))),
+        },
+        wallPosition: {
+          x: Math.max(0, Math.min(90, prev.wallPosition.x + wallDirection.x * wallSpeed * (deltaTime / 16))),
+          y: Math.max(0, Math.min(90, prev.wallPosition.y + wallDirection.y * wallSpeed * (deltaTime / 16))),
+        }
+      }));
+
+      animationFrameId.current = requestAnimationFrame(moveObjects);
+    };
+
+    animationFrameId.current = requestAnimationFrame(moveObjects);
+
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, [gameState.isPaused, gameState.targetPosition, gameDirection]);
+
+  // 🟢 Handle target hit
   const handleTargetHit = () => {
     if (gameState.isPaused) return;
-    
+
     const newScore = gameState.score + (gameState.isLocked ? 100 : 50);
     const newHighScore = Math.max(newScore, gameState.highScore);
-    
+
     setGameState(prev => ({
       ...prev,
       score: newScore,
       highScore: newHighScore,
-      targetPosition: {
-        x: Math.random() * 80 + 10,
-        y: Math.random() * 80 + 10,
-      }
+      targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
     }));
 
-    localStorage.setItem('sqeresHighScore', newHighScore.toString());
+    localStorage.setItem("sqeresHighScore", newHighScore.toString());
 
     if (targetRef.current) {
       gsap.to(targetRef.current, {
@@ -98,75 +103,37 @@ const SqeresGame: React.FC = () => {
         opacity: 0,
         duration: 0.3,
         onComplete: () => {
-          gsap.set(targetRef.current, {
-            scale: 1,
-            opacity: 1,
-          });
+          gsap.set(targetRef.current, { scale: 1, opacity: 1 });
         },
       });
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (gameState.isPaused || !containerRef.current) return;
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    const mouseX = ((e.clientX - rect.left) / rect.width) * 100;
-    const mouseY = ((e.clientY - rect.top) / rect.height) * 100;
-
-    const distance = Math.sqrt(
-      Math.pow(mouseX - gameState.targetPosition.x, 2) + 
-      Math.pow(mouseY - gameState.targetPosition.y, 2)
-    );
-
-    if (distance < 5) {
-      if (!gameState.isLocked) {
-        lockTimer.current = window.setTimeout(() => {
-          setGameState(prev => ({ ...prev, isLocked: true }));
-          handleTargetHit();
-        }, 500);
-      }
-    } else {
-      if (lockTimer.current) {
-        clearTimeout(lockTimer.current);
-        lockTimer.current = null;
-      }
-      setGameState(prev => ({ ...prev, isLocked: false }));
-    }
-  };
-
   return (
-    <div 
-      className="relative w-full h-screen bg-black overflow-hidden" 
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-    >
-      <div className="absolute inset-0">
-        <SqeresBackground
-          speed={0.5}
-          squareSize={40}
-          direction={gameDirection}
-          borderColor="#333"
-          hoverFillColor="#222"
-        />
-      </div>
-
+    <div className="relative w-full h-screen bg-black overflow-hidden" ref={containerRef}>
+      {/* Moving Target */}
       <div
         ref={targetRef}
         className="absolute w-8 h-8 bg-yellow-400 cursor-pointer transform -translate-x-1/2 -translate-y-1/2"
         style={{
           left: `${gameState.targetPosition.x}%`,
           top: `${gameState.targetPosition.y}%`,
-          transition: 'left 0.1s linear, top 0.1s linear',
+          transition: "left 0.1s linear, top 0.1s linear",
         }}
         onClick={handleTargetHit}
       />
 
-      <SqeresCrosshair
-        containerRef={containerRef}
-        color={gameState.isLocked ? '#ff0000' : '#ffffff'}
+      {/* Moving Wall */}
+      <div
+        className="absolute w-20 h-5 bg-gray-600"
+        style={{
+          left: `${gameState.wallPosition.x}%`,
+          top: `${gameState.wallPosition.y}%`,
+          transition: "left 0.1s linear, top 0.1s linear",
+        }}
       />
 
+      {/* UI */}
       <div className="absolute top-4 left-4 text-white space-y-2">
         <div>Score: {gameState.score}</div>
         <div>High Score: {gameState.highScore}</div>
@@ -174,7 +141,7 @@ const SqeresGame: React.FC = () => {
           className="px-4 py-2 bg-white/10 rounded hover:bg-white/20"
           onClick={() => setGameState(prev => ({ ...prev, isPaused: !prev.isPaused }))}
         >
-          {gameState.isPaused ? 'Resume' : 'Pause'}
+          {gameState.isPaused ? "Resume" : "Pause"}
         </button>
       </div>
     </div>
