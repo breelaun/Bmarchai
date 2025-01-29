@@ -1,31 +1,21 @@
-import { useGame } from './GameContext';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-
-const WordList = () => {
-  const { words, foundWords } = useGame();
-
-  const isWordFound = (word: string) => foundWords.includes(word);
-
-  return (
-    <div className="w-full max-w-lg mx-auto p-4">
-      <h3 className="text-lg font-semibold mb-2">Words to Find:</h3>
-      <ScrollArea className="h-48 rounded-md border p-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {words.map((word) => (
-            <Button
-              key={word}
-              variant="ghost"
-              className={`justify-start ${isWordFound(word) ? 'text-primary line-through' : ''}`}
-              disabled={isWordFound(word)}
-            >
-              {word}
-            </Button>
-          ))}
+const WordList = ({ words, foundWords }) => (
+  <div className="word-list bg-card p-4 rounded-lg shadow-sm">
+    <h3 className="text-lg font-bold mb-4">Words to Find</h3>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+      {words.map((word) => (
+        <div
+          key={word}
+          className={`px-2 py-1 rounded ${
+            foundWords.includes(word)
+              ? 'bg-green-500/20 text-green-500 line-through'
+              : 'bg-secondary/50'
+          }`}
+        >
+          {word}
         </div>
-      </ScrollArea>
+      ))}
     </div>
-  );
-};
+  </div>
+);
 
 export default WordList;
