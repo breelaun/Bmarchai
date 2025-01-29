@@ -57,7 +57,7 @@ const YouTubeEmbedsManager = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("youtube_embeds")
-        .select("id, title, category_id, embed_type, embed_id, active, created_at");
+        .select("id, title, category_id, embed_type, embed_id, active, created_at")
         .order("created_at", { ascending: false });
       
       if (error) throw error;
