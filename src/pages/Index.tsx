@@ -74,6 +74,7 @@ const EnhancedVideoManager = () => {
       const totalItems = lastPage.arts.length + lastPage.youtube.length + lastPage.sessions.length;
       return totalItems === 30 ? allPages.length : undefined;
     },
+    initialPageParam: 0, // ✅ This line fixes the error
   });
 
   useEffect(() => {
