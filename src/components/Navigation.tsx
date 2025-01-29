@@ -12,6 +12,7 @@ import VendorMenu from "./navigation/VendorMenu";
 import AuthButtons from "./navigation/AuthButtons";
 import CartIcon from "./navigation/CartIcon";
 import type { MenuItem, SubMenuItem } from "./navigation/types";
+import { Gamepad } from 'react-icons/fa';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
