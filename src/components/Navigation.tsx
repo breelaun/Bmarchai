@@ -12,6 +12,7 @@ import VendorMenu from "./navigation/VendorMenu";
 import AuthButtons from "./navigation/AuthButtons";
 import CartIcon from "./navigation/CartIcon";
 import type { MenuItem, SubMenuItem } from "./navigation/types";
+import { Gamepad2 } from "lucide-react";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,7 +66,7 @@ const Navigation = () => {
       submenu: [
         { name: "Streaming", path: "/streaming", icon: <Film className="h-4 w-4 mr-2" /> },
         { name: "Arts", path: "/arts", icon: <Palette className="h-4 w-4 mr-2" /> },
-        { name: "Sqeres Game", path: "/sqeres", icon: <gamepad className="h-4 w-4 mr-2" /> }
+        { name: "Sqeres Game", path: "/sqeres", icon: <Gamepad2 className="h-4 w-4 mr-2" /> }
       ]
     },
     { name: "CRM", path: "/crm" },
