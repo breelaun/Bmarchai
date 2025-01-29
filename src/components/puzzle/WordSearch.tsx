@@ -62,10 +62,10 @@ const WordSearch = () => {
 
   const initGame = useCallback(() => {
     const newGrid = createInitialGrid();
-    if (newGrid) {
-      placeWordsInGrid(newGrid, wordPool);
-      fillEmptyCells(newGrid);
-      setGrid(newGrid);
+    const updatedGrid = placeWordsInGrid(newGrid, wordPool);
+    if (updatedGrid) {
+      const finalGrid = fillEmptyCells(updatedGrid);
+      setGrid(finalGrid);
       setScore(500);
       setTimer(0);
       setFoundWords([]);
