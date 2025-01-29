@@ -2,93 +2,107 @@ import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { SqeresBackground } from './SqeresBackground';
 import { SqeresCrosshair } from './SqeresCrosshair';
-import { GameState } from './types';
+
+interface GameState {
+  score: number;
+  highScore: number;
+  lives: number;
+  isPaused: boolean;
+  isGameOver: boolean;
+  targetPosition: { x: number; y: number };
+  enemyPosition: { x: number; y: number };
+  gridSize: number;
+}
 
 const SqeresGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
     highScore: parseInt(localStorage.getItem("sqeresHighScore") || "0"),
+    lives: 3,
     isPaused: false,
-    isLocked: false,
-    targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
-    wallPosition: { x: 50, y: 50 },
+    isGameOver: false,
+    targetPosition: { x: 40, y: 40 },
+    enemyPosition: { x: 0, y: 0 },
+    gridSize: 40,
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
-  const lockTimer = useRef<number | null>(null);
-  const animationFrameId = useRef<number | null>(null);
-  const [gameDirection, setGameDirection] = useState<"up" | "down" | "left" | "right" | "diagonal">("right");
+  const [backgroundColorState, setBackgroundColorState] = useState(0);
+  const colors = ['#000000', '#333333', '#666666', '#999999'];
+  
+  // Calculate grid-based positions
+  const snapToGrid = (position: { x: number; y: number }) => ({
+    x: Math.round(position.x / gameState.gridSize) * gameState.gridSize,
+    y: Math.round(position.y / gameState.gridSize) * gameState.gridSize,
+  });
 
+  // Enemy movement
   useEffect(() => {
-    const directions: ("up" | "down" | "left" | "right" | "diagonal")[] = ["up", "down", "left", "right", "diagonal"];
-    const changeInterval = setInterval(() => {
-      setGameDirection(directions[Math.floor(Math.random() * directions.length)]);
-    }, 5000);
+    if (gameState.isPaused || gameState.isGameOver) return;
 
-    return () => clearInterval(changeInterval);
-  }, [gameState.isPaused]);
-
-  useEffect(() => {
-    let lastTime = 0;
-    let targetSpeed = Math.random() * 0.8 + 0.5;
-    let wallSpeed = Math.random() * 1.2 + 0.8;
-
-    const moveObjects = (currentTime: number) => {
-      if (gameState.isPaused) return;
+    const moveEnemy = () => {
+      const targetPos = gameState.targetPosition;
+      const enemyPos = gameState.enemyPosition;
       
-      const deltaTime = currentTime - lastTime;
-      lastTime = currentTime;
-      if (deltaTime === 0) return;
-
-      const getDirection = () => {
-        switch (gameDirection) {
-          case "up": return { x: 0, y: -1 };
-          case "down": return { x: 0, y: 1 };
-          case "left": return { x: -1, y: 0 };
-          case "right": return { x: 1, y: 0 };
-          case "diagonal": return { x: Math.random() < 0.5 ? 1 : -1, y: Math.random() < 0.5 ? 1 : -1 };
+      // Move enemy towards target
+      const dx = targetPos.x - enemyPos.x;
+      const dy = targetPos.y - enemyPos.y;
+      const angle = Math.atan2(dy, dx);
+      
+      setGameState(prev => {
+        const newX = enemyPos.x + Math.cos(angle) * 2;
+        const newY = enemyPos.y + Math.sin(angle) * 2;
+        
+        // Check collision with target
+        const distance = Math.hypot(newX - targetPos.x, newY - targetPos.y);
+        if (distance < 20) {
+          // Enemy caught the target
+          return {
+            ...prev,
+            lives: prev.lives - 1,
+            isGameOver: prev.lives <= 1,
+            targetPosition: snapToGrid({
+              x: Math.random() * 80 + 10,
+              y: Math.random() * 80 + 10
+            }),
+            enemyPosition: { x: 0, y: 0 }
+          };
         }
-      };
 
-      const targetDirection = getDirection();
-      const wallDirection = getDirection();
-
-      setGameState(prev => ({
-        ...prev,
-        targetPosition: {
-          x: Math.max(0, Math.min(90, prev.targetPosition.x + targetDirection.x * targetSpeed * (deltaTime / 16))),
-          y: Math.max(0, Math.min(90, prev.targetPosition.y + targetDirection.y * targetSpeed * (deltaTime / 16))),
-        },
-        wallPosition: {
-          x: Math.max(0, Math.min(90, prev.wallPosition.x + wallDirection.x * wallSpeed * (deltaTime / 16))),
-          y: Math.max(0, Math.min(90, prev.wallPosition.y + wallDirection.y * wallSpeed * (deltaTime / 16))),
-        }
-      }));
-
-      animationFrameId.current = requestAnimationFrame(moveObjects);
+        return {
+          ...prev,
+          enemyPosition: { x: newX, y: newY }
+        };
+      });
     };
 
-    animationFrameId.current = requestAnimationFrame(moveObjects);
+    const enemyInterval = setInterval(moveEnemy, 50);
+    return () => clearInterval(enemyInterval);
+  }, [gameState.isPaused, gameState.isGameOver, gameState.targetPosition, gameState.enemyPosition]);
 
-    return () => {
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-      }
-    };
-  }, [gameState.isPaused, gameState.targetPosition, gameDirection]);
+  // Background color cycling
+  useEffect(() => {
+    const colorInterval = setInterval(() => {
+      setBackgroundColorState(prev => (prev + 1) % colors.length);
+    }, 5000);
+    return () => clearInterval(colorInterval);
+  }, []);
 
   const handleTargetHit = () => {
-    if (gameState.isPaused) return;
+    if (gameState.isPaused || gameState.isGameOver) return;
 
-    const newScore = gameState.score + (gameState.isLocked ? 100 : 50);
+    const newScore = gameState.score + 50;
     const newHighScore = Math.max(newScore, gameState.highScore);
 
     setGameState(prev => ({
       ...prev,
       score: newScore,
       highScore: newHighScore,
-      targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
+      targetPosition: snapToGrid({
+        x: Math.random() * 80 + 10,
+        y: Math.random() * 80 + 10
+      })
     }));
 
     localStorage.setItem("sqeresHighScore", newHighScore.toString());
@@ -105,14 +119,32 @@ const SqeresGame: React.FC = () => {
     }
   };
 
+  const resetGame = () => {
+    setGameState({
+      ...gameState,
+      score: 0,
+      lives: 3,
+      isGameOver: false,
+      targetPosition: snapToGrid({ x: 40, y: 40 }),
+      enemyPosition: { x: 0, y: 0 }
+    });
+  };
+
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden" ref={containerRef}>
-      <SqeresBackground speed={0.5} squareSize={40} direction={gameDirection} borderColor="#333" />
+    <div className="relative w-full h-screen overflow-hidden" ref={containerRef}>
+      <SqeresBackground 
+        speed={0.5} 
+        squareSize={gameState.gridSize} 
+        direction="right" 
+        borderColor={colors[backgroundColorState]}
+      />
       
       {containerRef.current && (
         <SqeresCrosshair 
           containerRef={containerRef} 
-          color={gameState.isLocked ? "#ff0000" : "#ffffff"} 
+          color="#ffffff"
+          fullscreen={true}
+          showBlur={true}
         />
       )}
 
@@ -122,23 +154,23 @@ const SqeresGame: React.FC = () => {
         style={{
           left: `${gameState.targetPosition.x}%`,
           top: `${gameState.targetPosition.y}%`,
-          transition: "left 0.1s linear, top 0.1s linear",
+          transition: "left 0.3s ease-out, top 0.3s ease-out",
         }}
         onClick={handleTargetHit}
       />
 
       <div
-        className="absolute w-20 h-5 bg-gray-600"
+        className="absolute w-8 h-8 bg-red-600 transform -translate-x-1/2 -translate-y-1/2"
         style={{
-          left: `${gameState.wallPosition.x}%`,
-          top: `${gameState.wallPosition.y}%`,
-          transition: "left 0.1s linear, top 0.1s linear",
+          left: `${gameState.enemyPosition.x}%`,
+          top: `${gameState.enemyPosition.y}%`,
         }}
       />
 
       <div className="absolute top-4 left-4 text-white space-y-2">
         <div>Score: {gameState.score}</div>
         <div>High Score: {gameState.highScore}</div>
+        <div>Lives: {'❤️'.repeat(gameState.lives)}</div>
         <button
           className="px-4 py-2 bg-white/10 rounded hover:bg-white/20"
           onClick={() => setGameState(prev => ({ ...prev, isPaused: !prev.isPaused }))}
@@ -146,6 +178,21 @@ const SqeresGame: React.FC = () => {
           {gameState.isPaused ? "Resume" : "Pause"}
         </button>
       </div>
+
+      {gameState.isGameOver && (
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+          <div className="text-white text-center">
+            <h2 className="text-4xl mb-4">Game Over!</h2>
+            <p className="text-xl mb-4">Final Score: {gameState.score}</p>
+            <button
+              className="px-6 py-3 bg-white/10 rounded hover:bg-white/20"
+              onClick={resetGame}
+            >
+              Play Again
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
