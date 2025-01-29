@@ -14,7 +14,7 @@ import { GameState } from './types';
   <SqeresBackground speed={0.5} squareSize={40} direction={gameDirection} borderColor="#333" />
   
   {/* ✅ Crosshair must be inside the container */}
-  {containerRef.current && <SqeresCrosshair containerRef={containerRef} color={gameState.isLocked ? "#ff0000" : "#ffffff"} />}
+  {containerRef && <SqeresCrosshair containerRef={containerRef} />} color={gameState.isLocked ? "#ff0000" : "#ffffff"} />}
   
   <div
     ref={targetRef}
