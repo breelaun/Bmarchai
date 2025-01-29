@@ -812,6 +812,7 @@ export type Database = {
           is_featured: boolean | null
           name: string
           price: number
+          start_datetime: string | null
           tags: string[] | null
           updated_at: string
           vendor_id: string
@@ -827,6 +828,7 @@ export type Database = {
           is_featured?: boolean | null
           name: string
           price: number
+          start_datetime?: string | null
           tags?: string[] | null
           updated_at?: string
           vendor_id: string
@@ -842,6 +844,7 @@ export type Database = {
           is_featured?: boolean | null
           name?: string
           price?: number
+          start_datetime?: string | null
           tags?: string[] | null
           updated_at?: string
           vendor_id?: string
@@ -1059,9 +1062,12 @@ export type Database = {
       }
       sessions: {
         Row: {
+          autoplay_end: unknown | null
+          autoplay_start: unknown | null
           created_at: string
           description: string | null
           duration: unknown
+          embed_url: string | null
           id: string
           max_participants: number | null
           name: string
@@ -1071,9 +1077,12 @@ export type Database = {
           vendor_id: string
         }
         Insert: {
+          autoplay_end?: unknown | null
+          autoplay_start?: unknown | null
           created_at?: string
           description?: string | null
           duration: unknown
+          embed_url?: string | null
           id?: string
           max_participants?: number | null
           name: string
@@ -1083,9 +1092,12 @@ export type Database = {
           vendor_id: string
         }
         Update: {
+          autoplay_end?: unknown | null
+          autoplay_start?: unknown | null
           created_at?: string
           description?: string | null
           duration?: unknown
+          embed_url?: string | null
           id?: string
           max_participants?: number | null
           name?: string
@@ -1125,6 +1137,24 @@ export type Database = {
           id?: string
           symbol?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      time_options: {
+        Row: {
+          id: number
+          label: string
+          value: unknown
+        }
+        Insert: {
+          id?: number
+          label: string
+          value: unknown
+        }
+        Update: {
+          id?: number
+          label?: string
+          value?: unknown
         }
         Relationships: []
       }
