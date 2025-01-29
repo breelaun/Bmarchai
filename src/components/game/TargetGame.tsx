@@ -3,6 +3,8 @@ import { gsap } from 'gsap';
 import { SqeresBackground } from '../sqeres/SqeresBackground';
 import { SqeresCrosshair } from '../sqeres/SqeresCrosshair';
 
+type GameDirection = 'right' | 'left' | 'up' | 'down' | 'diagonal';
+
 const TargetGame: React.FC = () => {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() => {
@@ -11,7 +13,7 @@ const TargetGame: React.FC = () => {
   });
   const [isPaused, setIsPaused] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const [gameDirection, setGameDirection] = useState<'right' | 'left' | 'up' | 'down' | 'diagonal'>('right');
+  const [gameDirection, setGameDirection] = useState<GameDirection>('right');
   
   const containerRef = useRef<HTMLDivElement | null>(null);
   const targetRef = useRef<HTMLDivElement | null>(null);
@@ -66,7 +68,7 @@ const TargetGame: React.FC = () => {
   useEffect(() => {
     if (isPaused) return;
     
-    const directions = ['up', 'down', 'left', 'right', 'diagonal'];
+    const directions: GameDirection[] = ['up', 'down', 'left', 'right', 'diagonal'];
     const changeInterval = setInterval(() => {
       const newDirection = directions[Math.floor(Math.random() * directions.length)];
       setGameDirection(newDirection);
@@ -75,7 +77,6 @@ const TargetGame: React.FC = () => {
     return () => clearInterval(changeInterval);
   }, [isPaused]);
 
-  // Handle target hit
   const handleTargetHit = () => {
     if (isPaused) return;
     
