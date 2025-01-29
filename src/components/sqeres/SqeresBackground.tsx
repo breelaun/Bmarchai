@@ -56,8 +56,8 @@ export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
           cancelAnimationFrame(requestRef.current);
         }
       };
-    }, [direction, speed]);
-
+    }, [direction, speed, borderColor, hoverFillColor, squareSize]);
+    
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
