@@ -812,6 +812,7 @@ export type Database = {
           is_featured: boolean | null
           name: string
           price: number
+          start_datetime: string | null
           tags: string[] | null
           updated_at: string
           vendor_id: string
@@ -827,6 +828,7 @@ export type Database = {
           is_featured?: boolean | null
           name: string
           price: number
+          start_datetime?: string | null
           tags?: string[] | null
           updated_at?: string
           vendor_id: string
@@ -842,6 +844,7 @@ export type Database = {
           is_featured?: boolean | null
           name?: string
           price?: number
+          start_datetime?: string | null
           tags?: string[] | null
           updated_at?: string
           vendor_id?: string
@@ -1134,6 +1137,24 @@ export type Database = {
           id?: string
           symbol?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      time_options: {
+        Row: {
+          id: number
+          label: string
+          value: unknown
+        }
+        Insert: {
+          id?: number
+          label: string
+          value: unknown
+        }
+        Update: {
+          id?: number
+          label?: string
+          value?: unknown
         }
         Relationships: []
       }
