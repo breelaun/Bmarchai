@@ -1,5 +1,3 @@
-
-
 import { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Grid from '@/components/puzzle/Grid';
@@ -15,7 +13,7 @@ import {
 } from '@/components/puzzle/GameLogic';
 
 const WordSearch = () => {
-  const [grid, setGrid] = useState<Cell[][]>([]);
+  const [grid, setGrid] = useState<Cell[][]>(createInitialGrid());
   const [selectedCells, setSelectedCells] = useState<Cell[]>([]);
   const [foundWords, setFoundWords] = useState<string[]>([]);
   const [score, setScore] = useState<number>(500);
@@ -63,13 +61,15 @@ const WordSearch = () => {
   };
 
   const initGame = useCallback(() => {
-    const grid = createInitialGrid();
-    placeWordsInGrid(grid, wordPool);
-    fillEmptyCells(grid);
-    setGrid(grid);
-    setScore(500);
-    setTimer(0);
-    setFoundWords([]);
+    const newGrid = createInitialGrid();
+    if (newGrid) {
+      placeWordsInGrid(newGrid, wordPool);
+      fillEmptyCells(newGrid);
+      setGrid(newGrid);
+      setScore(500);
+      setTimer(0);
+      setFoundWords([]);
+    }
   }, []);
 
   useEffect(() => {
