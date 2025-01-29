@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { SqeresBackground } from './SqeresBackground';
 import { EnhancedCrosshair } from './EnhancedCrosshair';
+import { SqeresCrosshair } from './SqeresCrosshair';
 
 interface PowerUp {
   type: 'freeze' | 'shield' | 'multishot' | 'extraLife';
