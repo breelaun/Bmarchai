@@ -89,6 +89,7 @@ const App = () => {
               <BrowserRouter>
                 <AppContent />
               </TooltipProvider>
+            <PersistentPlayer/>
           </VideoProvider>
         </CartProvider>
       </SessionContextProvider>
