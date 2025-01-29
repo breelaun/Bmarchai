@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Minimize2, Maximize2, Play, Pause, Volume2, VolumeX, GripVertical } from 'lucide-react';
+import { useVideo } from '@/contexts/VideoPlayerContext';
 
-const PersistentPlayer = ({ videoUrl, title, onClose }) => {
+interface PersistentPlayerProps {
+  videoUrl: string;
+  title: string;
+  onClose: () => void;
+}
+
+const PersistentPlayer: React.FC<PersistentPlayerProps> = ({ videoUrl, title, onClose }) => {
+  const { isPlaying, isMuted, setIsPlaying, setIsMuted } = useVideo();
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
   const [position, setPosition] = useState({ x: null, y: null });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef(null);
@@ -12,17 +18,16 @@ const PersistentPlayer = ({ videoUrl, title, onClose }) => {
   const dragStartPos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Initialize position if not set
     if (position.x === null || position.y === null) {
       setPosition({
-        x: window.innerWidth - (isMinimized ? 280 : 420), // width + margin
-        y: window.innerHeight - (isMinimized ? 160 : 240), // height + margin
+        x: window.innerWidth - (isMinimized ? 280 : 420),
+        y: window.innerHeight - (isMinimized ? 160 : 240),
       });
     }
   }, [isMinimized, position.x, position.y]);
 
   const handleDragStart = (e) => {
-    if (e.target.closest('.controls')) return; // Don't start drag if clicking controls
+    if (e.target.closest('.controls')) return;
     setIsDragging(true);
     dragStartPos.current = {
       x: e.clientX - position.x,
@@ -33,13 +38,12 @@ const PersistentPlayer = ({ videoUrl, title, onClose }) => {
   const handleDrag = (e) => {
     if (!isDragging) return;
 
-    const width = isMinimized ? 256 : 384; // w-64 or w-96
-    const height = isMinimized ? 144 : 224; // h-36 or h-56
+    const width = isMinimized ? 256 : 384;
+    const height = isMinimized ? 144 : 224;
     
     let newX = e.clientX - dragStartPos.current.x;
     let newY = e.clientY - dragStartPos.current.y;
 
-    // Constrain to window bounds
     newX = Math.max(0, Math.min(window.innerWidth - width, newX));
     newY = Math.max(0, Math.min(window.innerHeight - height, newY));
 
@@ -61,7 +65,6 @@ const PersistentPlayer = ({ videoUrl, title, onClose }) => {
     }
   }, [isDragging, isMinimized]);
 
-  // Video control functions from previous version
   const sendMessage = (action) => {
     if (iframeRef.current) {
       try {
@@ -106,7 +109,7 @@ const PersistentPlayer = ({ videoUrl, title, onClose }) => {
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [setIsPlaying]);
 
   const getEmbedUrl = () => {
     let embedUrl = videoUrl;
@@ -130,12 +133,10 @@ const PersistentPlayer = ({ videoUrl, title, onClose }) => {
       }}
       onMouseDown={handleDragStart}
     >
-      {/* Drag Handle */}
       <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center z-30 bg-gradient-to-r from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity">
         <GripVertical className="w-4 h-4 text-white" />
       </div>
 
-      {/* Control Bar */}
       <div className="controls absolute top-0 left-0 right-0 p-2 flex justify-between items-center bg-gradient-to-b from-black/70 to-transparent z-20">
         <div className="text-white text-sm truncate max-w-[70%] pl-6">
           {title}
@@ -170,7 +171,6 @@ const PersistentPlayer = ({ videoUrl, title, onClose }) => {
         </div>
       </div>
       
-      {/* Play/Pause Overlay */}
       <div 
         className={`absolute inset-0 flex items-center justify-center bg-black/40 z-10 transition-opacity duration-200 ${
           isMinimized || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'

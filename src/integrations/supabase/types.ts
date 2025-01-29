@@ -1059,9 +1059,12 @@ export type Database = {
       }
       sessions: {
         Row: {
+          autoplay_end: unknown | null
+          autoplay_start: unknown | null
           created_at: string
           description: string | null
           duration: unknown
+          embed_url: string | null
           id: string
           max_participants: number | null
           name: string
@@ -1071,9 +1074,12 @@ export type Database = {
           vendor_id: string
         }
         Insert: {
+          autoplay_end?: unknown | null
+          autoplay_start?: unknown | null
           created_at?: string
           description?: string | null
           duration: unknown
+          embed_url?: string | null
           id?: string
           max_participants?: number | null
           name: string
@@ -1083,9 +1089,12 @@ export type Database = {
           vendor_id: string
         }
         Update: {
+          autoplay_end?: unknown | null
+          autoplay_start?: unknown | null
           created_at?: string
           description?: string | null
           duration?: unknown
+          embed_url?: string | null
           id?: string
           max_participants?: number | null
           name?: string
