@@ -2,27 +2,93 @@ import React, { useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search, X } from 'lucide-react';
+import { Loader2, Search, X, Calendar, Clock, Youtube } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { useVideo } from "@/contexts/VideoPlayerContext";
+import { formatToLocalTime } from '@/utils/timezone';
 
-interface Embed {
+interface BaseEmbed {
   id: string;
   title: string;
+  embed_url?: string;
+  embed_id?: string;
+  embed_type?: string;
+}
+
+interface ArtsEmbed extends BaseEmbed {
   category: string;
-  embed_url: string;
   arts_categories: {
     name: string;
   } | null;
 }
 
-const Index = () => {
+interface YouTubeEmbed extends BaseEmbed {
+  category: string;
+  active: boolean;
+}
+
+interface SessionEmbed extends BaseEmbed {
+  start_time: string;
+  duration: string;
+  description: string;
+  vendor_id: string;
+}
+
+const EnhancedVideoManager = () => {
   const { setActiveVideo } = useVideo();
   const { ref: bottomRef, inView } = useInView();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+
+  const fetchVideos = async ({ pageParam = 0 }) => {
+    const startIndex = pageParam * 10;
+    const endIndex = startIndex + 9;
+    
+    const artsQuery = supabase
+      .from('arts_embeds')
+      .select('*, arts_categories(name)')
+      .order('created_at', { ascending: false });
+
+    const youtubeQuery = supabase
+      .from('youtube_embeds')
+      .select('*')
+      .eq('active', true)
+      .order('created_at', { ascending: false });
+
+    const sessionsQuery = supabase
+      .from('sessions')
+      .select('*')
+      .gte('start_time', new Date().toISOString())
+      .order('start_time', { ascending: true });
+
+    if (searchQuery) {
+      artsQuery.ilike('title', `%${searchQuery}%`);
+      youtubeQuery.ilike('title', `%${searchQuery}%`);
+      sessionsQuery.ilike('name', `%${searchQuery}%`);
+    }
+
+    if (selectedCategory) {
+      artsQuery.eq('arts_categories.name', selectedCategory);
+      youtubeQuery.eq('category', selectedCategory);
+    }
+
+    const [artsData, youtubeData, sessionsData] = await Promise.all([
+      artsQuery.range(startIndex, endIndex),
+      youtubeQuery.range(startIndex, endIndex),
+      sessionsQuery.range(startIndex, endIndex),
+    ]);
+
+    return {
+      arts: artsData.data || [],
+      youtube: youtubeData.data || [],
+      sessions: sessionsData.data || [],
+    };
+  };
 
   const {
     data,
@@ -31,32 +97,11 @@ const Index = () => {
     hasNextPage,
     isFetchingNextPage
   } = useInfiniteQuery({
-    queryKey: ['embeds', selectedCategory, searchQuery],
-    initialPageParam: 0,
-    queryFn: async ({ pageParam }) => {
-      const startIndex = Number(pageParam) * 10;
-      const endIndex = startIndex + 9;
-      
-      let query = supabase
-        .from('arts_embeds')
-        .select('*, arts_categories(name)')
-        .order('created_at', { ascending: false })
-        .range(startIndex, endIndex);
-
-      if (selectedCategory) {
-        query = query.eq('arts_categories.name', selectedCategory);
-      }
-
-      if (searchQuery) {
-        query = query.ilike('title', `%${searchQuery}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as Embed[];
-    },
+    queryKey: ['all-videos', selectedCategory, searchQuery, activeTab],
+    queryFn: fetchVideos,
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === 10 ? allPages.length : undefined;
+      const totalItems = lastPage.arts.length + lastPage.youtube.length + lastPage.sessions.length;
+      return totalItems === 30 ? allPages.length : undefined;
     },
   });
 
@@ -66,39 +111,81 @@ const Index = () => {
     }
   }, [inView, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
-  const embeds = data?.pages.flat() ?? [];
+  const handleVideoClick = (video: ArtsEmbed | YouTubeEmbed | SessionEmbed) => {
+    const embedUrl = 'embed_url' in video 
+      ? video.embed_url 
+      : 'embed_id' in video 
+        ? `https://www.youtube.com/embed/${video.embed_id}`
+        : null;
 
-  const handleVideoClick = (embed: Embed) => {
-    setActiveVideo({
-      url: embed.embed_url,
-      title: embed.title
-    });
+    if (embedUrl) {
+      setActiveVideo({
+        url: embedUrl,
+        title: video.title
+      });
+    }
+  };
+
+  const renderVideoCard = (video: ArtsEmbed | YouTubeEmbed | SessionEmbed) => {
+    const isYouTube = 'embed_id' in video && video.embed_id;
+    const thumbnailUrl = isYouTube 
+      ? `https://img.youtube.com/vi/${video.embed_id}/maxresdefault.jpg`
+      : null;
+
+    return (
+      <Card key={video.id} className="hover:bg-accent/5">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-4">
+            {isYouTube ? (
+              <div className="w-48 flex-shrink-0">
+                <div className="relative aspect-video">
+                  <img
+                    src={thumbnailUrl}
+                    alt={video.title}
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                  <Youtube className="absolute bottom-2 right-2 h-6 w-6 text-red-600" />
+                </div>
+                <Badge variant="outline" className="mt-2 w-full justify-center">
+                  {'category' in video ? video.category : 'Uncategorized'}
+                </Badge>
+              </div>
+            ) : null}
+            <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(video)}>
+              <h3 className="font-semibold">{video.title}</h3>
+              <div className="aspect-video w-full mt-2">
+                <iframe
+                  src={video.embed_url || `https://www.youtube.com/embed/${video.embed_id}`}
+                  className="w-full h-full pointer-events-none"
+                  allowFullScreen
+                  title={video.title}
+                />
+              </div>
+            </div>
+            {!isYouTube && (
+              <Button
+                variant="ghost"
+                className="ml-4"
+                onClick={() => setSelectedCategory(
+                  'arts_categories' in video 
+                    ? video.arts_categories?.name || null
+                    : 'category' in video ? video.category : null
+                )}
+              >
+                {'arts_categories' in video 
+                  ? video.arts_categories?.name || 'Uncategorized'
+                  : 'category' in video ? video.category : 'Uncategorized'}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Banner - Full width container */}
-      <section className="relative w-full h-[500px] md:h-[750px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/50">
-          <img 
-            src="/lovable-uploads/Banner01.jpg" 
-            alt="Hero Banner" 
-            className="w-full h-full object-cover -z-10"
-          />
-        </div>
-        <div className="relative h-full flex flex-col justify-center px-4 md:px-12 max-w-3xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold font-heading mb-4">
-            Your Ultimate Platform for
-            <span className="text-gradient"> Fitness & Sports</span>
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8">
-            Transform your fitness journey with personalized meal plans, workout tracking, and expert guidance.
-          </p>
-        </div>
-      </section>
-
-      {/* Filter Section */}
-      <div className="mx-auto py-4 px-4">
+    <div className="space-y-8">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4">
         <div className="flex items-center gap-4 mb-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -110,61 +197,75 @@ const Index = () => {
             />
           </div>
           {selectedCategory && (
-            <Badge 
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
+            <Badge variant="secondary" className="flex items-center gap-1">
               {selectedCategory}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => setSelectedCategory(null)}
-              />
+              <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedCategory(null)} />
             </Badge>
           )}
         </div>
       </div>
 
-      {/* Infinite Scroll Container */}
-      <div className="w-full">
-        <div className="flex flex-col">
-          {embeds.map((embed) => (
-            <div 
-              key={embed.id} 
-              className="relative flex items-stretch border-y border-muted py-2" // my-4 adds margin top and bottom
-            >
-              <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(embed)}>
-                <div className="aspect-video w-full">
-                  <iframe
-                    src={encodeURI(embed.embed_url)}
-                    className="w-full h-full pointer-events-none" // Prevent iframe from capturing clicks
-                    allowFullScreen
-                    title={embed.title}
-                  />
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-[#f7bd00] hover:text-black transition-colors duration-200 rounded-none"
-                onClick={() => setSelectedCategory(embed.arts_categories?.name || null)}
-                style={{ 
-                  writingMode: 'vertical-rl'
-                }}
-              >
-                {embed.arts_categories?.name || 'Uncategorized'}
-              </Button>
-            </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="all">All Videos</TabsTrigger>
+          <TabsTrigger value="sessions">Upcoming Sessions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="space-y-4">
+          {data?.pages.map((page, i) => (
+            <React.Fragment key={i}>
+              {[...page.arts, ...page.youtube].map((video) => renderVideoCard(video))}
+            </React.Fragment>
           ))}
-          
-          {/* Loading indicator */}
-          <div ref={bottomRef} className="py-4 flex justify-center">
-            {isFetchingNextPage && (
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            )}
-          </div>
-        </div>
+        </TabsContent>
+
+        <TabsContent value="sessions" className="space-y-4">
+          {data?.pages.map((page, i) => (
+            <React.Fragment key={i}>
+              {page.sessions.map((session) => (
+                <Card key={session.id} className="hover:bg-accent/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold">{session.name}</h3>
+                        <p className="text-sm text-muted-foreground">{session.description}</p>
+                        <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {formatToLocalTime(session.start_time, 'UTC')}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            Duration: {session.duration}
+                          </span>
+                        </div>
+                        {session.embed_url && (
+                          <div className="aspect-video w-full mt-4 cursor-pointer" onClick={() => handleVideoClick(session)}>
+                            <iframe
+                              src={session.embed_url}
+                              className="w-full h-full pointer-events-none"
+                              allowFullScreen
+                              title={session.name}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </React.Fragment>
+          ))}
+        </TabsContent>
+      </Tabs>
+
+      <div ref={bottomRef} className="py-4 flex justify-center">
+        {isFetchingNextPage && (
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        )}
       </div>
     </div>
   );
 };
 
-export default Index;
+export default EnhancedVideoManager;
