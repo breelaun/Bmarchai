@@ -14,7 +14,7 @@ export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
   const numSquaresY = useRef<number>(0);
   const gridOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [hoveredSquare, setHoveredSquare] = useState<{ x: number; y: number } | null>(null);
-  const effectiveSpeed = Math.max(speed * 0.5, 0.1); // Slower animation
+  const effectiveSpeed = Math.max(speed * 0.5, 0.1);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,38 +29,6 @@ export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
       numSquaresX.current = Math.ceil(canvas.width / squareSize) + 1;
       numSquaresY.current = Math.ceil(canvas.height / squareSize) + 1;
     };
-
-    useEffect(() => {
-      const updateAnimation = () => {
-        if (!canvasRef.current) return;
-
-        switch (direction) {
-          case 'right': gridOffset.current.x -= effectiveSpeed; break;
-          case 'left': gridOffset.current.x += effectiveSpeed; break;
-          case 'up': gridOffset.current.y += effectiveSpeed; break;
-          case 'down': gridOffset.current.y -= effectiveSpeed; break;
-          case 'diagonal':
-            gridOffset.current.x -= effectiveSpeed;
-            gridOffset.current.y -= effectiveSpeed;
-            break;
-        }
-
-        drawGrid();
-        requestRef.current = requestAnimationFrame(updateAnimation);
-      };
-
-      requestRef.current = requestAnimationFrame(updateAnimation);
-
-      return () => {
-        if (requestRef.current) {
-          cancelAnimationFrame(requestRef.current);
-        }
-      };
-    }, [direction, speed, borderColor, hoverFillColor, squareSize]);
-    
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
 
     const drawGrid = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -103,7 +71,6 @@ export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
     };
 
     const updateAnimation = () => {
-      const effectiveSpeed = Math.max(speed, 0.1);
       switch (direction) {
         case 'right':
           gridOffset.current.x = (gridOffset.current.x - effectiveSpeed + squareSize) % squareSize;
@@ -145,9 +112,11 @@ export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
       setHoveredSquare(null);
     };
 
+    window.addEventListener('resize', resizeCanvas);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
-
+    
+    resizeCanvas();
     requestRef.current = requestAnimationFrame(updateAnimation);
 
     return () => {
@@ -158,7 +127,7 @@ export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [direction, speed, borderColor, hoverFillColor, squareSize]);
+  }, [direction, speed, borderColor, hoverFillColor, squareSize, effectiveSpeed]);
 
   return (
     <canvas 

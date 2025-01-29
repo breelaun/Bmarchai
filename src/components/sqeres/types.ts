@@ -20,4 +20,8 @@ export interface GameState {
     x: number;
     y: number;
   };
+  wallPosition: {
+    x: number;
+    y: number;
+  };
 }
