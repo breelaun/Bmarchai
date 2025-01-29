@@ -1,23 +1,36 @@
-import { Button } from "@/components/ui/button";
+import { useGame } from './GameContext';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 
-const Controls = ({ onHint, onRiddle, onReveal, score, timer }) => (
-  <div className="controls flex flex-wrap gap-2 items-center justify-between bg-card p-4 rounded-lg shadow-sm">
-    <div className="flex flex-wrap gap-2">
-      <Button variant="outline" onClick={onHint}>
-        Hint
-      </Button>
-      <Button variant="outline" onClick={onRiddle}>
-        Riddle
-      </Button>
-      <Button variant="outline" onClick={onReveal}>
-        Reveal Word
-      </Button>
+const Controls = () => {
+  const { words, foundWords, setFoundWords } = useGame();
+
+  const handleRevealWord = () => {
+    const remainingWords = words.filter(word => !foundWords.includes(word));
+    if (remainingWords.length > 0) {
+      const randomWord = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+      setFoundWords([...foundWords, randomWord]);
+      toast({
+        title: "Word Revealed",
+        description: `The word "${randomWord}" has been revealed!`,
+      });
+    }
+  };
+
+  const handleReset = () => {
+    setFoundWords([]);
+    toast({
+      title: "Game Reset",
+      description: "All progress has been cleared.",
+    });
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2 justify-center p-4">
+      <Button onClick={handleRevealWord}>Reveal Word</Button>
+      <Button variant="outline" onClick={handleReset}>Reset Game</Button>
     </div>
-    <div className="flex gap-4 items-center text-sm md:text-base">
-      <div className="score font-medium">Score: {score}</div>
-      <div className="timer font-medium">Time: {timer}s</div>
-    </div>
-  </div>
-);
+  );
+};
 
 export default Controls;

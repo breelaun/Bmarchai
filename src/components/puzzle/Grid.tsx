@@ -1,35 +1,31 @@
-import { Cell } from './types';
+import { useGame } from './GameContext';
 
-interface GridProps {
-  grid: Cell[][];
-  onCellClick: (cell: Cell) => void;
-  onCellMouseDown: (cell: Cell) => void;
-  onCellMouseEnter: (cell: Cell) => void;
-  onCellMouseUp: () => void;
-}
+const Grid = () => {
+  const { grid, selectedCells, setSelectedCells, currentWord, setCurrentWord } = useGame();
 
-const Grid = ({ grid, onCellClick, onCellMouseDown, onCellMouseEnter, onCellMouseUp }: GridProps) => {
+  const handleCellClick = (row: number, col: number) => {
+    const newSelectedCells = [[row, col]];
+    setSelectedCells(newSelectedCells);
+    setCurrentWord(grid[row][col]);
+  };
+
+  const isCellSelected = (row: number, col: number) => {
+    return selectedCells.some(([r, c]) => r === row && c === col);
+  };
+
   return (
-    <div className="w-full max-w-[600px] mx-auto">
-      <div className="grid grid-cols-15 gap-0.5 md:gap-1">
+    <div className="w-full max-w-lg mx-auto p-4">
+      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${grid[0]?.length || 0}, minmax(0, 1fr))` }}>
         {grid.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
-            <div
+            <button
               key={`${rowIndex}-${colIndex}`}
-              className={`
-                aspect-square flex items-center justify-center text-xs md:text-base lg:text-lg font-bold cursor-pointer
-                ${cell.isSelected ? 'bg-primary text-primary-foreground' : 'bg-secondary'}
-                ${cell.isFound ? 'bg-green-500 text-white' : ''}
-                hover:bg-primary/80 hover:text-primary-foreground
-                transition-colors rounded
-              `}
-              onClick={() => onCellClick(cell)}
-              onMouseDown={() => onCellMouseDown(cell)}
-              onMouseEnter={() => onCellMouseEnter(cell)}
-              onMouseUp={onCellMouseUp}
+              className={`aspect-square flex items-center justify-center text-lg sm:text-xl font-bold rounded
+                ${isCellSelected(rowIndex, colIndex) ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'}`}
+              onClick={() => handleCellClick(rowIndex, colIndex)}
             >
-              {cell.text}
-            </div>
+              {cell}
+            </button>
           ))
         )}
       </div>
