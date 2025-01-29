@@ -11,7 +11,6 @@ interface GameContextType {
   setGrid: (grid: string[][]) => void;
   setSelectedCells: (cells: number[][]) => void;
   setCurrentWord: (word: string) => void;
-  addFoundWord: (word: string) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -22,10 +21,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [grid, setGrid] = useState<string[][]>([]);
   const [selectedCells, setSelectedCells] = useState<number[][]>([]);
   const [currentWord, setCurrentWord] = useState('');
-
-  const addFoundWord = (word: string) => {
-    setFoundWords((prev) => [...prev, word]);
-  };
 
   return (
     <GameContext.Provider
@@ -40,7 +35,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setGrid,
         setSelectedCells,
         setCurrentWord,
-        addFoundWord,
       }}
     >
       {children}

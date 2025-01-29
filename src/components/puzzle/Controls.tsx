@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
 const Controls = () => {
-  const { words, foundWords, setFoundWords } = useGame();
+  const { words, foundWords, setFoundWords, grid } = useGame();
 
   const handleRevealWord = () => {
     const remainingWords = words.filter(word => !foundWords.includes(word));
