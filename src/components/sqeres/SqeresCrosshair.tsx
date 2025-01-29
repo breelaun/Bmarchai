@@ -20,10 +20,10 @@ export const SqeresCrosshair: React.FC<CrosshairProps> = ({
       const y = e.clientY - rect.top;
 
       gsap.to(crosshair, {
-        duration: 0.2,
+        duration: 0.1,
         x,
         y,
-        ease: "power2.out"
+        ease: "power3.out"
       });
     };
 
