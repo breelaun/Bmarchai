@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette, MessageSquare, Puzzle } from "lucide-react";
+import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette, MessageSquare } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -65,16 +65,15 @@ const Navigation = () => {
       submenu: [
         { name: "Streaming", path: "/streaming", icon: <Film className="h-4 w-4 mr-2" /> },
         { name: "Arts", path: "/arts", icon: <Palette className="h-4 w-4 mr-2" /> },
-        { name: "Puzzle Game", path: "/puzzle", icon: <Puzzle className="h-4 w-4 mr-2" /> },
-        { name: "Blogs", path: "/blogs", icon: <MessageSquare className="h-4 w-4 mr-2" /> },
       ]
     },
-    { name: "CRM", path: "/crm", icon: <Store className="h-4 w-4 mr-2" /> },
-    { name: "Chat", path: "/chat", icon: <MessageSquare className="h-4 w-4 mr-2" /> },
+    { name: "CRM", path: "/crm" },
+    { name: "Blogs", path: "/blogs" },
+    { name: "Chat", path: "/chat" },
   ];
 
   if (profile?.admin) {
-    menuItems.push({ name: "Admin", path: "/admin", icon: <Store className="h-4 w-4 mr-2" /> });
+    menuItems.push({ name: "Admin", path: "/admin" });
   }
 
   const vendorSubmenu: SubMenuItem[] = [

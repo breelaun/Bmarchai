@@ -5,7 +5,6 @@ export interface ProductFormData {
   category: ProductCategory;
   inventory_count: number;
   is_featured: boolean;
-  embedUrl?: string;
 }
 
 export type ProductCategory = 'Books' | 'Clothing' | 'Consultation' | 'Ebook' | 'Photo' | 'Podcast' | 'Session';
@@ -23,10 +22,4 @@ export interface ProductFilters {
 export interface ProductFile {
   file: File;
   type: string;
-}
-
-export interface EmbedData {
-  url: string;
-  autoplayStart?: string;
-  autoplayEnd?: string;
 }

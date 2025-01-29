@@ -12,7 +12,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { YouTubeEmbedsList } from "./YouTubeEmbedsList";
-import type { ArtsCategory, YouTubeEmbed } from "./types";
+import type { ArtsCategory } from "./types";
+
+interface YouTubeEmbed {
+  id: string;
+  title: string;
+  category_id: string;
+  embed_type: 'channel' | 'playlist' | 'video';
+  embed_id: string;
+  active: boolean;
+  end_date?: string;
+  arts_categories?: {
+    name: string;
+  };
+}
 
 const YouTubeEmbedsManager = () => {
   const { toast } = useToast();

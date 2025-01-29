@@ -12,27 +12,22 @@ import ProductDetails from "./components/ProductDetails";
 import PricingInventory from "./components/PricingInventory";
 import CategoryInput from "./components/CategoryInput";
 import ProductFileUpload from "./components/ProductFileUpload";
-import type { ProductFormData, ProductFile } from "./types";
+import type { ProductFormData, ProductFile, ProductCategory } from "./types";
 
-const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+interface ProductUploadFormProps {
+  onSuccess?: () => void;
+}
+
+const ProductUploadForm = ({ onSuccess }: ProductUploadFormProps) => {
   const session = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [productFiles, setProductFiles] = useState<ProductFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [embedData, setEmbedData] = useState({
-    url: "",
-    autoplayStart: "",
-    autoplayEnd: "",
-  });
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory>();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProductFormData>();
-
-  const validateTimeFormat = (time: string): boolean => {
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/;
-    return timeRegex.test(time);
-  };
 
   const onSubmit = async (data: ProductFormData) => {
     if (!session?.user?.id) {
@@ -44,9 +39,6 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       return;
     }
 
-    const fallbackStartTime = "00:00:00";
-    const fallbackEndTime = "00:00:10";
-
     setIsUploading(true);
 
     try {
@@ -55,17 +47,17 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
       // Upload product image
       if (imageFile) {
-        const fileExt = imageFile.name.split(".").pop();
+        const fileExt = imageFile.name.split('.').pop();
         const filePath = `${session.user.id}/${crypto.randomUUID()}.${fileExt}`;
 
         const { error: uploadError, data: uploadData } = await supabase.storage
-          .from("products")
+          .from('products')
           .upload(filePath, imageFile);
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-          .from("products")
+          .from('products')
           .getPublicUrl(filePath);
 
         imageUrl = publicUrl;
@@ -73,58 +65,36 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
       // Upload product files
       for (const productFile of productFiles) {
-        const fileExt = productFile.file.name.split(".").pop();
+        const fileExt = productFile.file.name.split('.').pop();
         const filePath = `${session.user.id}/files/${crypto.randomUUID()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
-          .from("products")
+          .from('products')
           .upload(filePath, productFile.file);
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-          .from("products")
+          .from('products')
           .getPublicUrl(filePath);
 
         productFileUrls.push(publicUrl);
       }
 
-      // Create the product first
-      const { data: productData, error: productError } = await supabase
-        .from("products")
+      const { error: insertError } = await supabase
+        .from('products')
         .insert({
           vendor_id: session.user.id,
           name: data.name,
           description: data.description,
           price: data.price,
-          category: data.category,
+          category: selectedCategory,
           inventory_count: data.inventory_count,
           image_url: imageUrl,
           file_urls: productFileUrls,
-        })
-        .select()
-        .single();
+        });
 
-      if (productError) throw productError;
-
-      // Add session data if embed fields are filled
-      if (embedData.url) {
-        const { error: sessionError } = await supabase
-          .from("sessions")
-          .insert({
-            vendor_id: session.user.id,
-            name: data.name,
-            description: data.description,
-            price: data.price,
-            duration: "1:00:00", // Default 1 hour duration
-            max_participants: data.inventory_count,
-            embed_url: embedData.url,
-            autoplay_start: embedData.autoplayStart || fallbackStartTime,
-            autoplay_end: embedData.autoplayEnd || fallbackEndTime,
-          });
-
-        if (sessionError) throw sessionError;
-      }
+      if (insertError) throw insertError;
 
       toast({
         title: "Success",
@@ -134,12 +104,11 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       reset();
       setImageFile(null);
       setProductFiles([]);
-      setEmbedData({ url: "", autoplayStart: "", autoplayEnd: "" });
-      queryClient.invalidateQueries({ queryKey: ["vendorProducts"] });
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      queryClient.invalidateQueries({ queryKey: ['vendorProducts'] });
       onSuccess?.();
+
     } catch (error: any) {
-      console.error("Error adding product:", error);
+      console.error('Error adding product:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -162,68 +131,16 @@ const ProductUploadForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <ProductDetails register={register} errors={errors} />
           <PricingInventory register={register} errors={errors} />
-          <CategoryInput register={register} />
+          <CategoryInput 
+            register={register} 
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+          />
           <ImageUpload onImageChange={setImageFile} imageFile={imageFile} />
-          <ProductFileUpload files={productFiles} onFilesChange={setProductFiles} />
-
-          {/* Embed Section - Always Visible */}
-          <div className="space-y-6 border-t pt-6">
-            <label className="block text-lg font-medium text-gray-100">Embed Content</label>
-            <div className="space-y-6">
-              <div>
-                <label htmlFor="embed-url" className="block text-sm font-medium text-gray-100">
-                  Embed URL
-                </label>
-                <input
-                  id="embed-url"
-                  type="url"
-                  placeholder="https://example.com"
-                  value={embedData.url}
-                  onChange={(e) => setEmbedData({ ...embedData, url: e.target.value })}
-                  className="mt-1 block w-full rounded-lg bg-black text-white border-gray-700 focus:border-[#f7bd00] focus:ring-[#f7bd00] shadow-sm p-3"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="autoplay-start" className="block text-sm font-medium text-gray-100">
-                    Autoplay Start (HH:MM:SS)
-                  </label>
-                  <input
-                    id="autoplay-start"
-                    type="text"
-                    placeholder="00:00:00"
-                    value={embedData.autoplayStart}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (validateTimeFormat(value) || value === "") {
-                        setEmbedData({ ...embedData, autoplayStart: value });
-                      }
-                    }}
-                    className="mt-1 block w-full rounded-lg bg-black text-white border-gray-700 focus:border-[#f7bd00] focus:ring-[#f7bd00] shadow-sm p-3"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="autoplay-end" className="block text-sm font-medium text-gray-100">
-                    Autoplay End (HH:MM:SS)
-                  </label>
-                  <input
-                    id="autoplay-end"
-                    type="text"
-                    placeholder="00:00:00"
-                    value={embedData.autoplayEnd}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (validateTimeFormat(value) || value === "") {
-                        setEmbedData({ ...embedData, autoplayEnd: value });
-                      }
-                    }}
-                    className="mt-1 block w-full rounded-lg bg-black text-white border-gray-700 focus:border-[#f7bd00] focus:ring-[#f7bd00] shadow-sm p-3"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
+          <ProductFileUpload 
+            files={productFiles}
+            onFilesChange={setProductFiles}
+          />
           <Button type="submit" className="w-full" disabled={isUploading}>
             {isUploading ? "Adding Product..." : "Add Product"}
           </Button>
