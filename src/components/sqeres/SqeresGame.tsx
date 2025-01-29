@@ -59,8 +59,8 @@ const SqeresGame: React.FC = () => {
   // 🟢 Move target & wall
   useEffect(() => {
     let lastTime = 0;
-    let targetSpeed = Math.random() * 1.5 + 0.5; // Random speed 1-4
-    let wallSpeed = Math.random() * 2 + 1; // Random speed 1-3
+    let targetSpeed = Math.random() * 0.8 + 0.5; // Speed 0.5 to 1.3
+    let wallSpeed = Math.random() * 1.2 + 0.8;  // Speed 0.8 to 2
 
     const moveObjects = (currentTime: number) => {
       if (gameState.isPaused) return;
