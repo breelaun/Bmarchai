@@ -31,6 +31,7 @@ import { VideoProvider } from "@/contexts/VideoPlayerContext";
 import PersistentPlayer from "./components/PersistentPlayer";
 import { useVideo } from "@/contexts/VideoPlayerContext";
 import SqeresPage from "./pages/sqeres";
+import ChatPage from "./pages/chat";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const AppContent = () => {
           <Route path="/sessions" element={<SessionsPage />} />
           <Route path="/crm" element={<CRMPage />} />
           <Route path="/sqeres" element={<SqeresPage />} />
+          <Route path="/chat" element={<ChatPage />} />
         </Routes>
       </main>
       <Footer />
