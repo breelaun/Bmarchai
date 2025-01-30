@@ -6,7 +6,7 @@ import { AnalyticsDashboard } from "@/components/crm/analytics/AnalyticsDashboar
 import TrainingDashboard from "@/components/crm/training/TrainingDashboard";
 import DocumentEditor from "@/components/crm/DocumentEditor";
 import FinancialEditor from "@/components/crm/FinancialEditor";
-import StockMarket from "@/components/crm/StockMarket";
+import { StockMarket } from "@/components/crm/StockMarket";
 
 const CRMPage = () => {
   return (
@@ -52,7 +52,7 @@ const CRMPage = () => {
         </TabsContent>
         
         <TabsContent value="stocks">
-          <StockMarket symbol="AAPL" />
+          <StockMarket defaultSymbol="AAPL" />
         </TabsContent>
       </Tabs>
     </div>

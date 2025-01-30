@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Users, Calendar } from "lucide-react";
 import { TeamForm } from "./TeamForm";
 import { TeamMembersList } from "./TeamMembersList";
-import TeamCalendar from "@/components/TeamCalendar";
+import { TeamCalendar } from "../TeamCalendar";
 
 export const TeamsList = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState<any>(null);
 
   const { data: teams = [], isLoading } = useQuery({
     queryKey: ["teams"],
