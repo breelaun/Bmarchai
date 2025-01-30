@@ -7,7 +7,7 @@ import { CheckInsList } from "./check-ins/CheckInsList";
 import { MembershipPlans } from "./memberships/MembershipPlans";
 import { Users, CalendarCheck, Dumbbell, ClipboardList } from "lucide-react";
 
-export const GymDashboard = () => {
+const GymDashboard = () => {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

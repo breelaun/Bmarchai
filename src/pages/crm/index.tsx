@@ -7,7 +7,7 @@ import TrainingDashboard from "@/components/crm/training/TrainingDashboard";
 import DocumentEditor from "@/components/crm/DocumentEditor";
 import FinancialEditor from "@/components/crm/FinancialEditor";
 import { StockMarket } from "@/components/crm/StockMarket";
-import { GymDashboard } from "@/components/crm/gym/GymDashboard";
+import GymDashboard from "@/components/crm/gym/GymDashboard";
 import { ContactProfile } from "@/components/crm/contacts/ContactProfile";
 
 const CRMPage = () => {
