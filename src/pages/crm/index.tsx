@@ -3,16 +3,26 @@ import ClientList from "@/components/crm/ClientList";
 import TaskList from "@/components/crm/TaskList";
 import { TeamsList } from "@/components/crm/teams/TeamsList";
 import { AnalyticsDashboard } from "@/components/crm/analytics/AnalyticsDashboard";
+import TrainingDashboard from "@/components/crm/training/TrainingDashboard";
+import { DocumentEditor } from "@/components/crm/DocumentEditor";
+import { FinancialEditor } from "@/components/crm/FinancialEditor";
+import { StockMarket } from "@/components/crm/StockMarket";
+import { LeadPipeline } from "@/components/crm/pipeline/LeadPipeline";
 
 const CRMPage = () => {
   return (
     <div className="container py-6">
       <Tabs defaultValue="clients">
-        <TabsList>
+        <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-2">
           <TabsTrigger value="clients">Clients</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="training">Training</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="financial">Financial</TabsTrigger>
+          <TabsTrigger value="stocks">Stocks</TabsTrigger>
+          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
         </TabsList>
         <TabsContent value="clients">
           <ClientList />
@@ -25,6 +35,21 @@ const CRMPage = () => {
         </TabsContent>
         <TabsContent value="analytics">
           <AnalyticsDashboard />
+        </TabsContent>
+        <TabsContent value="training">
+          <TrainingDashboard />
+        </TabsContent>
+        <TabsContent value="documents">
+          <DocumentEditor />
+        </TabsContent>
+        <TabsContent value="financial">
+          <FinancialEditor />
+        </TabsContent>
+        <TabsContent value="stocks">
+          <StockMarket />
+        </TabsContent>
+        <TabsContent value="pipeline">
+          <LeadPipeline />
         </TabsContent>
       </Tabs>
     </div>
