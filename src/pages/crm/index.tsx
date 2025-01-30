@@ -7,6 +7,8 @@ import TrainingDashboard from "@/components/crm/training/TrainingDashboard";
 import DocumentEditor from "@/components/crm/DocumentEditor";
 import FinancialEditor from "@/components/crm/FinancialEditor";
 import { StockMarket } from "@/components/crm/StockMarket";
+import { GymDashboard } from "@/components/crm/gym/GymDashboard";
+import { ContactProfile } from "@/components/crm/contacts/ContactProfile";
 
 const CRMPage = () => {
   return (
@@ -21,6 +23,8 @@ const CRMPage = () => {
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="stocks">Stocks</TabsTrigger>
+          <TabsTrigger value="gym">Gym</TabsTrigger>
+          <TabsTrigger value="contacts">Contacts</TabsTrigger>
         </TabsList>
 
         <TabsContent value="clients">
@@ -53,6 +57,14 @@ const CRMPage = () => {
 
         <TabsContent value="stocks">
           <StockMarket defaultSymbol="AAPL" />
+        </TabsContent>
+
+        <TabsContent value="gym">
+          <GymDashboard />
+        </TabsContent>
+
+        <TabsContent value="contacts">
+          <ContactProfile />
         </TabsContent>
       </Tabs>
     </div>
