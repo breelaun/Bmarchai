@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClientList } from "@/components/crm/ClientList";
-import { TaskList } from "@/components/crm/TaskList";
+import ClientList from "@/components/crm/ClientList";
+import TaskList from "@/components/crm/TaskList";
 import { TeamsList } from "@/components/crm/teams/TeamsList";
 import { AnalyticsDashboard } from "@/components/crm/analytics/AnalyticsDashboard";
 

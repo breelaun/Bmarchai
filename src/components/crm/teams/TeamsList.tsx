@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Users, Calendar } from "lucide-react";
 import { TeamForm } from "./TeamForm";
 import { TeamMembersList } from "./TeamMembersList";
-import { TeamCalendar } from "./TeamCalendar";
+import TeamCalendar from "@/components/crm/TeamCalendar";
 
 export const TeamsList = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
