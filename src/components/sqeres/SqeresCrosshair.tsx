@@ -1,52 +1,55 @@
-import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import React, { useEffect, useState } from 'react';
 
-interface SqeresBackgroundProps {
-  speed: number;
-  squareSize: number;
-  direction: "right";
-  borderColor: string;
+interface SqeresCrosshairProps {
+  containerRef: React.RefObject<HTMLDivElement>;
+  color: string;
 }
 
-export const SqeresCrosshair: React.FC<SqeresBackgroundProps> = ({
-  speed,
-  squareSize,
-  direction,
-  borderColor
-}) => {
-  const crosshairRef = useRef<HTMLDivElement | null>(null);
+export const SqeresCrosshair: React.FC<SqeresCrosshairProps> = ({ containerRef, color }) => {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const tl = gsap.timeline({ repeat: -1 });
-    if (crosshairRef.current) {
-      tl.to(crosshairRef.current, {
-        x: direction === "right" ? "+=100" : "-=100",
-        duration: speed,
-        ease: "power1.inOut",
-      })
-      .to(crosshairRef.current, {
-        x: 0,
-        duration: speed,
-        ease: "power1.inOut",
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      
+      const rect = containerRef.current.getBoundingClientRect();
+      setPosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
       });
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('mousemove', handleMouseMove);
     }
-  }, [speed, direction]);
+
+    return () => {
+      if (container) {
+        container.removeEventListener('mousemove', handleMouseMove);
+      }
+    };
+  }, [containerRef]);
 
   return (
-    <div
-      ref={crosshairRef}
+    <div 
+      className="pointer-events-none absolute"
       style={{
-        width: squareSize,
-        height: squareSize,
-        border: `2px solid ${borderColor}`,
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
+        left: position.x,
+        top: position.y,
+        transform: 'translate(-50%, -50%)'
       }}
-    />
+    >
+      <div className="relative">
+        <div 
+          className="absolute w-8 h-px"
+          style={{ backgroundColor: color }}
+        />
+        <div 
+          className="absolute h-8 w-px"
+          style={{ backgroundColor: color }}
+        />
+      </div>
+    </div>
   );
 };
-
-// ✅ Ensure it's properly exported
-export default SqeresCrosshair;

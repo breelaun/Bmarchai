@@ -5,13 +5,15 @@ interface SqeresBackgroundProps {
   squareSize: number;
   direction: "up" | "down" | "left" | "right" | "diagonal";
   borderColor: string;
+  hoverFillColor?: string;
 }
 
 export const SqeresBackground: React.FC<SqeresBackgroundProps> = ({ 
   speed, 
   squareSize, 
   direction, 
-  borderColor 
+  borderColor,
+  hoverFillColor 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
