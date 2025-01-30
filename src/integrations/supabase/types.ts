@@ -1075,6 +1075,56 @@ export type Database = {
           },
         ]
       }
+      guest_passes: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          guest_name: string
+          id: string
+          pass_type: string | null
+          phone: string | null
+          referred_by: string | null
+          status: string | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          guest_name: string
+          id?: string
+          pass_type?: string | null
+          phone?: string | null
+          referred_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          guest_name?: string
+          id?: string
+          pass_type?: string | null
+          phone?: string | null
+          referred_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_passes_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "gym_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gym_classes: {
         Row: {
           capacity: number
@@ -1220,6 +1270,47 @@ export type Database = {
           },
         ]
       }
+      gym_trainers: {
+        Row: {
+          certification_details: Json | null
+          created_at: string | null
+          hourly_rate: number | null
+          id: string
+          specializations: string[] | null
+          status: Database["public"]["Enums"]["trainer_status"] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          certification_details?: Json | null
+          created_at?: string | null
+          hourly_rate?: number | null
+          id?: string
+          specializations?: string[] | null
+          status?: Database["public"]["Enums"]["trainer_status"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          certification_details?: Json | null
+          created_at?: string | null
+          hourly_rate?: number | null
+          id?: string
+          specializations?: string[] | null
+          status?: Database["public"]["Enums"]["trainer_status"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_trainers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_scores: {
         Row: {
           client_id: string | null
@@ -1301,6 +1392,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "member_check_ins_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "gym_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_progress: {
+        Row: {
+          bmi: number | null
+          body_fat_percentage: number | null
+          created_at: string | null
+          id: string
+          measurement_date: string | null
+          measurements: Json | null
+          member_id: string | null
+          muscle_mass: number | null
+          notes: string | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          created_at?: string | null
+          id?: string
+          measurement_date?: string | null
+          measurements?: Json | null
+          member_id?: string | null
+          muscle_mass?: number | null
+          notes?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          created_at?: string | null
+          id?: string
+          measurement_date?: string | null
+          measurements?: Json | null
+          member_id?: string | null
+          muscle_mass?: number | null
+          notes?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_progress_member_id_fkey"
             columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "gym_members"
@@ -1940,6 +2081,57 @@ export type Database = {
           },
         ]
       }
+      trainer_sessions: {
+        Row: {
+          created_at: string | null
+          duration: unknown | null
+          id: string
+          member_id: string | null
+          notes: string | null
+          session_date: string | null
+          status: Database["public"]["Enums"]["session_status"] | null
+          trainer_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration?: unknown | null
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+          session_date?: string | null
+          status?: Database["public"]["Enums"]["session_status"] | null
+          trainer_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration?: unknown | null
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+          session_date?: string | null
+          status?: Database["public"]["Enums"]["session_status"] | null
+          trainer_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_sessions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "gym_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trainer_sessions_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "gym_trainers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_payouts: {
         Row: {
           amount: number
@@ -2204,6 +2396,8 @@ export type Database = {
         | "Photo"
         | "Podcast"
         | "Session"
+      session_status: "scheduled" | "completed" | "cancelled" | "no_show"
+      trainer_status: "active" | "inactive" | "on_leave"
       user_role: "user" | "admin"
     }
     CompositeTypes: {
