@@ -149,7 +149,10 @@ const EnhancedVideoManager = () => {
           <div className="flex flex-col">
             {data?.pages.map((page, i) => (
               <React.Fragment key={i}>
-                {[...page.arts, ...page.youtube].map((video) => (
+                {[...page.arts, ...page.youtube]
+                  .filter(video => !selectedCategory || 
+                    (video.arts_categories?.name === selectedCategory))
+                  .map((video) => (
                   <div 
                     key={video.id} 
                     className="relative flex items-stretch border-y border-muted py-2"
@@ -167,12 +170,10 @@ const EnhancedVideoManager = () => {
                     <Button
                       variant="ghost"
                       className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-[#f7bd00] hover:text-black transition-colors duration-200 rounded-none"
-                      onClick={() => setSelectedCategory(
-                        video.arts_categories?.name || video.category || 'Uncategorized'
-                      )}
+                      onClick={() => setSelectedCategory(video.arts_categories?.name)}
                       style={{ writingMode: 'vertical-rl' }}
                     >
-                      {video.arts_categories?.name || video.category || 'Uncategorized'}
+                      {video.arts_categories?.name || 'Uncategorized'}
                     </Button>
                   </div>
                 ))}
