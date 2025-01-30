@@ -4,8 +4,8 @@ import TaskList from "@/components/crm/TaskList";
 import { TeamsList } from "@/components/crm/teams/TeamsList";
 import { AnalyticsDashboard } from "@/components/crm/analytics/AnalyticsDashboard";
 import TrainingDashboard from "@/components/crm/training/TrainingDashboard";
-import { DocumentEditor } from "@/components/crm/DocumentEditor";
-import { FinancialEditor } from "@/components/crm/FinancialEditor";
+import DocumentEditor from "@/components/crm/DocumentEditor";
+import FinancialEditor from "@/components/crm/FinancialEditor";
 import { StockMarket } from "@/components/crm/StockMarket";
 import { LeadPipeline } from "@/components/crm/pipeline/LeadPipeline";
 
