@@ -42,6 +42,21 @@ export function ClientForm() {
     },
   });
 
+  const addField = (fieldName: 'emails' | 'phones') => {
+    const currentValues = form.getValues(fieldName);
+    if (currentValues.length < 3) {
+      form.setValue(fieldName, [...currentValues, '']);
+    }
+  };
+
+  const removeField = (fieldName: 'emails' | 'phones', index: number) => {
+    const currentValues = form.getValues(fieldName);
+    form.setValue(
+      fieldName,
+      currentValues.filter((_, i) => i !== index)
+    );
+  };
+
   const onSubmit = async (data: ClientFormData) => {
     setIsSubmitting(true);
     try {
