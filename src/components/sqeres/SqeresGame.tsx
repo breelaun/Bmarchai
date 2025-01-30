@@ -200,6 +200,14 @@ const SqeresGame: React.FC = () => {
     }));
   };
 
+  // Add a pauseGame function for clarity
+  const togglePause = () => {
+    setGameState(prev => ({
+      ...prev,
+      isPaused: !prev.isPaused
+    }));
+  };
+  
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden" ref={containerRef}>
       <SqeresBackground 
@@ -289,17 +297,22 @@ const SqeresGame: React.FC = () => {
           <div className="capitalize">{gameState.currentWeapon.name}</div>
         </div>
 
-        {gameState.lives > 0 ? (
+        {gameState.lives > 0 && !gameState.tutorial && !gameState.readyToStart && (
           <button
             className="px-4 py-2 bg-white/10 rounded hover:bg-white/20"
-            onClick={() => setGameState(prev => ({ ...prev, isPaused: !prev.isPaused }))}
+            onClick={togglePause}
           >
-            {gameState.isPaused ? "Start" : "Pause"}
+            {gameState.isPaused ? "Resume" : "Pause"}
           </button>
-        ) : (
+        )}
+        
+        {gameState.lives === 0 && (
           <div className="text-red-500 font-bold text-lg">Game Over</div>
         )}
       </div>
+
+      {/* Only show movement and allow interactions when not paused */}
+      {!gameState.isPaused && /* ... game elements ... */}
     </div>
   );
 };
