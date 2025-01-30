@@ -48,13 +48,16 @@ export const AdList = () => {
   }
 
   const getStatusVariant = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "active":
         return "secondary";
       case "draft":
         return "outline";
-      default:
+      case "expired":
+      case "inactive":
         return "destructive";
+      default:
+        return "default";
     }
   };
 
