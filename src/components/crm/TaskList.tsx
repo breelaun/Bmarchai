@@ -39,8 +39,8 @@ const TaskList = () => {
         .from('crm_tasks')
         .select(`
           *,
-          dependencies:crm_task_dependencies(
-            dependent_on_task:crm_tasks(id, title)
+          dependencies:crm_task_dependencies!crm_task_dependencies_task_id_fkey(
+            dependent_on_task:crm_tasks!crm_task_dependencies_dependent_on_task_id_fkey(id, title)
           )
         `)
         .order('due_date', { ascending: true });
@@ -65,7 +65,6 @@ const TaskList = () => {
 
   const createTask = useMutation({
     mutationFn: async (data: TaskFormData) => {
-      // First create the task
       const { data: task, error: taskError } = await supabase
         .from('crm_tasks')
         .insert([{
@@ -81,7 +80,6 @@ const TaskList = () => {
 
       if (taskError) throw taskError;
 
-      // If there's a dependency, create it
       if (data.dependent_on_task_id) {
         const { error: depError } = await supabase
           .from('crm_task_dependencies')
