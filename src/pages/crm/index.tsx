@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import StockMarket from "@/components/crm/StockMarket";
 import TaskList from "@/components/crm/TaskList";
 import ClientList from "@/components/crm/ClientList";
+import TeamCalendar from "@/components/crm/TeamCalendar";
 import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
 
 const CRMPage = () => {
@@ -15,6 +16,7 @@ const CRMPage = () => {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="clients">Clients</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="market">Market</TabsTrigger>
         </TabsList>
@@ -36,6 +38,10 @@ const CRMPage = () => {
 
         <TabsContent value="tasks">
           <TaskList />
+        </TabsContent>
+
+        <TabsContent value="calendar">
+          <TeamCalendar />
         </TabsContent>
 
         <TabsContent value="analytics">
