@@ -47,3 +47,6 @@ export const SqeresCrosshair: React.FC<SqeresBackgroundProps> = ({
     />
   );
 };
+
+// ✅ Ensure it's properly exported
+export default SqeresCrosshair;
