@@ -587,6 +587,54 @@ export type Database = {
           },
         ]
       }
+      class_bookings: {
+        Row: {
+          attended: boolean | null
+          booking_date: string
+          cancelled_at: string | null
+          class_id: string
+          created_at: string
+          id: string
+          member_id: string
+          status: string | null
+        }
+        Insert: {
+          attended?: boolean | null
+          booking_date: string
+          cancelled_at?: string | null
+          class_id: string
+          created_at?: string
+          id?: string
+          member_id: string
+          status?: string | null
+        }
+        Update: {
+          attended?: boolean | null
+          booking_date?: string
+          cancelled_at?: string | null
+          class_id?: string
+          created_at?: string
+          id?: string
+          member_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_bookings_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "gym_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_bookings_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "gym_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_activities: {
         Row: {
           client_id: string
@@ -1027,6 +1075,151 @@ export type Database = {
           },
         ]
       }
+      gym_classes: {
+        Row: {
+          capacity: number
+          class_type: Database["public"]["Enums"]["class_type"]
+          created_at: string
+          description: string | null
+          duration: unknown
+          id: string
+          instructor_id: string | null
+          name: string
+          room: string | null
+          schedule: Json
+          updated_at: string
+        }
+        Insert: {
+          capacity: number
+          class_type: Database["public"]["Enums"]["class_type"]
+          created_at?: string
+          description?: string | null
+          duration: unknown
+          id?: string
+          instructor_id?: string | null
+          name: string
+          room?: string | null
+          schedule: Json
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          class_type?: Database["public"]["Enums"]["class_type"]
+          created_at?: string
+          description?: string | null
+          duration?: unknown
+          id?: string
+          instructor_id?: string | null
+          name?: string
+          room?: string | null
+          schedule?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_classes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_equipment: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          last_maintenance_date: string | null
+          maintenance_history: Json[] | null
+          name: string
+          next_maintenance_date: string | null
+          purchase_date: string | null
+          status: Database["public"]["Enums"]["equipment_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_maintenance_date?: string | null
+          maintenance_history?: Json[] | null
+          name: string
+          next_maintenance_date?: string | null
+          purchase_date?: string | null
+          status?: Database["public"]["Enums"]["equipment_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_maintenance_date?: string | null
+          maintenance_history?: Json[] | null
+          name?: string
+          next_maintenance_date?: string | null
+          purchase_date?: string | null
+          status?: Database["public"]["Enums"]["equipment_status"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gym_members: {
+        Row: {
+          created_at: string
+          emergency_contact: Json | null
+          end_date: string | null
+          goals: string[] | null
+          health_info: Json | null
+          id: string
+          measurements: Json | null
+          membership_plan_id: string | null
+          notes: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["membership_status"] | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          emergency_contact?: Json | null
+          end_date?: string | null
+          goals?: string[] | null
+          health_info?: Json | null
+          id?: string
+          measurements?: Json | null
+          membership_plan_id?: string | null
+          notes?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["membership_status"] | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          emergency_contact?: Json | null
+          end_date?: string | null
+          goals?: string[] | null
+          health_info?: Json | null
+          id?: string
+          measurements?: Json | null
+          membership_plan_id?: string | null
+          notes?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["membership_status"] | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_members_membership_plan_id_fkey"
+            columns: ["membership_plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_scores: {
         Row: {
           client_id: string | null
@@ -1079,6 +1272,74 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      member_check_ins: {
+        Row: {
+          check_in_time: string
+          check_out_time: string | null
+          created_at: string
+          id: string
+          member_id: string
+        }
+        Insert: {
+          check_in_time?: string
+          check_out_time?: string | null
+          created_at?: string
+          id?: string
+          member_id: string
+        }
+        Update: {
+          check_in_time?: string
+          check_out_time?: string | null
+          created_at?: string
+          id?: string
+          member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_check_ins_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "gym_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      membership_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration: unknown
+          features: Json | null
+          frequency: Database["public"]["Enums"]["payment_frequency"]
+          id: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration: unknown
+          features?: Json | null
+          frequency: Database["public"]["Enums"]["payment_frequency"]
+          id?: string
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration?: unknown
+          features?: Json | null
+          frequency?: Database["public"]["Enums"]["payment_frequency"]
+          id?: string
+          name?: string
+          price?: number
           updated_at?: string
         }
         Relationships: []
@@ -1923,7 +2184,11 @@ export type Database = {
     }
     Enums: {
       activity_type: "stage_change" | "communication" | "task" | "note"
+      class_type: "group" | "personal" | "specialty"
       communication_type: "email" | "phone" | "meeting" | "note"
+      equipment_status: "available" | "in_use" | "maintenance" | "retired"
+      membership_status: "active" | "expired" | "cancelled" | "frozen"
+      payment_frequency: "monthly" | "quarterly" | "yearly" | "lifetime"
       payment_provider: "stripe" | "paypal" | "google_pay"
       payment_status:
         | "pending"
