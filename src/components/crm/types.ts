@@ -12,6 +12,12 @@ export type ClientFormData = {
   };
   notes?: string;
   contactType: 'client' | 'contact' | 'lead';
+  lead_source_id?: string;
+  lead_stage?: 'new' | 'contacted' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost';
+  lead_temperature?: 'cold' | 'warm' | 'hot';
+  expected_value?: number;
+  probability?: number;
+  next_follow_up?: string;
 };
 
 export type MultiFieldProps = {
@@ -20,10 +26,10 @@ export type MultiFieldProps = {
   values: string[];
   onAdd: (fieldName: 'emails' | 'phones') => void;
   onRemove: (fieldName: 'emails' | 'phones', index: number) => void;
-  form: any; // We'll keep this as any for now since it's from react-hook-form
+  form: any;
   type: 'email' | 'tel';
 };
 
 export type SocialLinksFieldsProps = {
-  form: any; // We'll keep this as any for now since it's from react-hook-form
+  form: any;
 };

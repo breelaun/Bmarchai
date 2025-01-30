@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiField } from "./MultiField";
 import { SocialLinksFields } from "./SocialLinksFields";
+import { LeadFields } from "./LeadFields";
 import type { ClientFormData } from "./types";
 
 export function ClientForm() {
@@ -35,6 +36,9 @@ export function ClientForm() {
       },
       notes: "",
       contactType: "lead",
+      lead_stage: "new",
+      lead_temperature: "warm",
+      probability: 0,
     },
   });
 
@@ -60,6 +64,12 @@ export function ClientForm() {
           social_links: socialLinks,
           notes: data.notes,
           contact_type: data.contactType,
+          lead_source_id: data.lead_source_id,
+          lead_stage: data.lead_stage,
+          lead_temperature: data.lead_temperature,
+          expected_value: data.expected_value,
+          probability: data.probability,
+          next_follow_up: data.next_follow_up,
         },
       ]);
 
@@ -84,20 +94,7 @@ export function ClientForm() {
     }
   };
 
-  const addField = (fieldName: 'emails' | 'phones') => {
-    const currentFields = form.getValues(fieldName) || [];
-    if (currentFields.length < 3) {
-      form.setValue(fieldName, [...currentFields, '']);
-    }
-  };
-
-  const removeField = (fieldName: 'emails' | 'phones', index: number) => {
-    const currentFields = form.getValues(fieldName) || [];
-    form.setValue(
-      fieldName,
-      currentFields.filter((_, i) => i !== index)
-    );
-  };
+  const contactType = form.watch("contactType");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -202,6 +199,8 @@ export function ClientForm() {
               <FormLabel>Social Media Links</FormLabel>
               <SocialLinksFields form={form} />
             </div>
+
+            {contactType === "lead" && <LeadFields form={form} />}
 
             <FormField
               control={form.control}

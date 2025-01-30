@@ -635,10 +635,16 @@ export type Database = {
           contact_type: string | null
           created_at: string | null
           emails: string[] | null
+          expected_value: number | null
           id: string
+          lead_source_id: string | null
+          lead_stage: string | null
+          lead_temperature: string | null
           name: string
+          next_follow_up: string | null
           notes: string | null
           phone: string | null
+          probability: number | null
           social_links: Json | null
           status: string | null
           updated_at: string | null
@@ -650,10 +656,16 @@ export type Database = {
           contact_type?: string | null
           created_at?: string | null
           emails?: string[] | null
+          expected_value?: number | null
           id?: string
+          lead_source_id?: string | null
+          lead_stage?: string | null
+          lead_temperature?: string | null
           name: string
+          next_follow_up?: string | null
           notes?: string | null
           phone?: string | null
+          probability?: number | null
           social_links?: Json | null
           status?: string | null
           updated_at?: string | null
@@ -665,10 +677,16 @@ export type Database = {
           contact_type?: string | null
           created_at?: string | null
           emails?: string[] | null
+          expected_value?: number | null
           id?: string
+          lead_source_id?: string | null
+          lead_stage?: string | null
+          lead_temperature?: string | null
           name?: string
+          next_follow_up?: string | null
           notes?: string | null
           phone?: string | null
+          probability?: number | null
           social_links?: Json | null
           status?: string | null
           updated_at?: string | null
@@ -676,6 +694,13 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_clients_lead_source_id_fkey"
+            columns: ["lead_source_id"]
+            isOneToOne: false
+            referencedRelation: "lead_sources"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_clients_vendor_id_fkey"
             columns: ["vendor_id"]
@@ -850,6 +875,62 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lead_scores: {
+        Row: {
+          client_id: string | null
+          criteria: Json | null
+          id: string
+          last_updated: string
+          score: number
+        }
+        Insert: {
+          client_id?: string | null
+          criteria?: Json | null
+          id?: string
+          last_updated?: string
+          score?: number
+        }
+        Update: {
+          client_id?: string | null
+          criteria?: Json | null
+          id?: string
+          last_updated?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_scores_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_sources: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       order_items: {
         Row: {
