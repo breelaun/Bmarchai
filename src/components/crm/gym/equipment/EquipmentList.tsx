@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Tool } from "lucide-react";
+import { Loader2, Wrench } from "lucide-react";
 
 export const EquipmentList = () => {
   const { data: equipment, isLoading } = useQuery({
@@ -31,7 +31,7 @@ export const EquipmentList = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Equipment</h2>
         <Button>
-          <Tool className="h-4 w-4 mr-2" />
+          <Wrench className="h-4 w-4 mr-2" />
           Add Equipment
         </Button>
       </div>
