@@ -64,7 +64,7 @@ const CRMPage = () => {
         </TabsContent>
 
         <TabsContent value="contacts">
-          <ContactProfile />
+          <ContactProfile clientId="default" />
         </TabsContent>
       </Tabs>
     </div>

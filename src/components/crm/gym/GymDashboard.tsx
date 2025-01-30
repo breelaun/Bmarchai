@@ -5,9 +5,9 @@ import { ClassesList } from "./classes/ClassesList";
 import { EquipmentList } from "./equipment/EquipmentList";
 import { CheckInsList } from "./check-ins/CheckInsList";
 import { MembershipPlans } from "./memberships/MembershipPlans";
-import { Users, CalendarCheck, Dumbbell, ClipboardList, CreditCard } from "lucide-react";
+import { Users, CalendarCheck, Dumbbell, ClipboardList } from "lucide-react";
 
-const GymDashboard = () => {
+export const GymDashboard = () => {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
