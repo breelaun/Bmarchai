@@ -23,18 +23,24 @@ interface EventFormData {
   category?: string;
 }
 
-const TeamCalendar = () => {
+interface TeamCalendarProps {
+  teamId: string;
+  onClose: () => void;
+}
+
+const TeamCalendar = ({ teamId, onClose }: TeamCalendarProps) => {
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const form = useForm<EventFormData>();
 
   const { data: events, isLoading } = useQuery({
-    queryKey: ['team-calendar-events'],
+    queryKey: ['team-calendar-events', teamId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('team_calendar_events')
         .select('*')
+        .eq('team_id', teamId)
         .order('start_time', { ascending: true });
 
       if (error) throw error;
@@ -47,18 +53,14 @@ const TeamCalendar = () => {
       const { error } = await supabase
         .from('team_calendar_events')
         .insert([{
-          title: data.title,
-          description: data.description,
-          start_time: data.start_time,
-          end_time: data.end_time,
-          all_day: data.all_day,
-          category: data.category,
+          ...data,
+          team_id: teamId,
         }]);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['team-calendar-events'] });
+      queryClient.invalidateQueries({ queryKey: ['team-calendar-events', teamId] });
       setIsAddingEvent(false);
       form.reset();
       toast({
@@ -89,16 +91,49 @@ const TeamCalendar = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Team Calendar</h2>
-        <Dialog open={isAddingEvent} onOpenChange={setIsAddingEvent}>
-          <DialogTrigger asChild>
-            <Button>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle className="flex justify-between items-center">
+            <span>Team Calendar</span>
+            <Button onClick={() => setIsAddingEvent(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Event
             </Button>
-          </DialogTrigger>
+          </DialogTitle>
+        </DialogHeader>
+
+        <Card>
+          <CardContent className="p-4">
+            <Calendar
+              mode="single"
+              selected={new Date()}
+              className="rounded-md border"
+            />
+            <div className="mt-4 space-y-2">
+              {events?.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex items-center justify-between p-2 rounded-lg border bg-card"
+                >
+                  <div>
+                    <p className="font-medium">{event.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(event.start_time), "PPP")}
+                    </p>
+                  </div>
+                  {event.category && (
+                    <span className="text-sm px-2 py-1 rounded-full bg-primary/10">
+                      {event.category}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Dialog open={isAddingEvent} onOpenChange={setIsAddingEvent}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Event</DialogTitle>
@@ -209,38 +244,8 @@ const TeamCalendar = () => {
             </Form>
           </DialogContent>
         </Dialog>
-      </div>
-
-      <Card>
-        <CardContent className="p-4">
-          <Calendar
-            mode="single"
-            selected={new Date()}
-            className="rounded-md border"
-          />
-          <div className="mt-4 space-y-2">
-            {events?.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center justify-between p-2 rounded-lg border bg-card"
-              >
-                <div>
-                  <p className="font-medium">{event.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {format(new Date(event.start_time), "PPP")}
-                  </p>
-                </div>
-                {event.category && (
-                  <span className="text-sm px-2 py-1 rounded-full bg-primary/10">
-                    {event.category}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
