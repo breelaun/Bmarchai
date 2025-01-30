@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { SqeresBackground } from './SqeresBackground';
-import { SqeresCrosshair } from './SqeresCrosshair';
+import SqeresCrosshair from './SqeresCrosshair';
 import type { GameState } from './types';
 
 const SqeresGame: React.FC = () => {
@@ -11,7 +11,6 @@ const SqeresGame: React.FC = () => {
     isPaused: false,
     isLocked: false,
     targetPosition: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 },
-    wallPosition: { x: 50, y: 50 },
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,19 +50,8 @@ const SqeresGame: React.FC = () => {
       }
     };
 
-    const moveWall = () => {
-      setGameState(prev => ({
-        ...prev,
-        wallPosition: {
-          x: Math.random() * 80 + 10,
-          y: Math.random() * 80 + 10
-        }
-      }));
-    };
-
     const gameInterval = setInterval(() => {
       moveTarget();
-      moveWall();
     }, 2000);
 
     return () => clearInterval(gameInterval);
@@ -74,7 +62,7 @@ const SqeresGame: React.FC = () => {
 
     setGameState(prev => {
       const newScore = prev.score + 1;
-      const newHighScore = Math.max(newHighScore, prev.highScore);
+      const newHighScore = Math.max(newScore, prev.highScore);
       localStorage.setItem("sqeresHighScore", newHighScore.toString());
       
       return {
@@ -118,7 +106,12 @@ const SqeresGame: React.FC = () => {
       ref={containerRef}
       onMouseMove={handleMouseMove}
     >
-      <SqeresBackground speed={0.5} squareSize={40} direction={gameDirection} borderColor="#333" />
+      <SqeresBackground 
+        speed={0.5} 
+        squareSize={40} 
+        direction={gameDirection} 
+        borderColor="#333"
+      />
       
       {containerRef.current && (
         <SqeresCrosshair 
@@ -136,15 +129,6 @@ const SqeresGame: React.FC = () => {
           transition: "left 0.1s linear, top 0.1s linear",
         }}
         onClick={handleTargetHit}
-      />
-
-      <div
-        className="absolute w-20 h-5 bg-gray-600"
-        style={{
-          left: `${gameState.wallPosition.x}%`,
-          top: `${gameState.wallPosition.y}%`,
-          transition: "left 0.1s linear, top 0.1s linear",
-        }}
       />
 
       <div className="absolute top-4 left-4 text-white space-y-2">
