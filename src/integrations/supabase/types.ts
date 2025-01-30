@@ -2059,147 +2059,6 @@ export type Database = {
           },
         ]
       }
-      team_games: {
-        Row: {
-          created_at: string | null
-          game_date: string
-          id: string
-          is_home_game: boolean | null
-          location: string | null
-          notes: string | null
-          opponent: string
-          result: string | null
-          team_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          game_date: string
-          id?: string
-          is_home_game?: boolean | null
-          location?: string | null
-          notes?: string | null
-          opponent: string
-          result?: string | null
-          team_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          game_date?: string
-          id?: string
-          is_home_game?: boolean | null
-          location?: string | null
-          notes?: string | null
-          opponent?: string
-          result?: string | null
-          team_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_games_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      team_members: {
-        Row: {
-          contact_email: string | null
-          contact_phone: string | null
-          created_at: string | null
-          full_name: string
-          id: string
-          jersey_number: number | null
-          joined_date: string | null
-          position: string | null
-          role: Database["public"]["Enums"]["team_role"]
-          status: Database["public"]["Enums"]["player_status"] | null
-          team_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string | null
-          full_name: string
-          id?: string
-          jersey_number?: number | null
-          joined_date?: string | null
-          position?: string | null
-          role: Database["public"]["Enums"]["team_role"]
-          status?: Database["public"]["Enums"]["player_status"] | null
-          team_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string | null
-          full_name?: string
-          id?: string
-          jersey_number?: number | null
-          joined_date?: string | null
-          position?: string | null
-          role?: Database["public"]["Enums"]["team_role"]
-          status?: Database["public"]["Enums"]["player_status"] | null
-          team_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_members_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      teams: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          logo_url: string | null
-          name: string
-          sport: Database["public"]["Enums"]["sport_type"]
-          updated_at: string | null
-          vendor_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          logo_url?: string | null
-          name: string
-          sport: Database["public"]["Enums"]["sport_type"]
-          updated_at?: string | null
-          vendor_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          logo_url?: string | null
-          name?: string
-          sport?: Database["public"]["Enums"]["sport_type"]
-          updated_at?: string | null
-          vendor_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "teams_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "vendor_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       time_options: {
         Row: {
           id: number
@@ -2611,7 +2470,6 @@ export type Database = {
         | "completed"
         | "failed"
         | "refunded"
-      player_status: "active" | "inactive" | "injured" | "suspended"
       product_category:
         | "Books"
         | "Clothing"
@@ -2621,23 +2479,6 @@ export type Database = {
         | "Podcast"
         | "Session"
       session_status: "scheduled" | "completed" | "cancelled" | "no_show"
-      sport_type:
-        | "football"
-        | "basketball"
-        | "baseball"
-        | "soccer"
-        | "volleyball"
-        | "tennis"
-        | "rugby"
-        | "cricket"
-      team_role:
-        | "coach"
-        | "player"
-        | "assistant"
-        | "medical"
-        | "ball_kid"
-        | "water_kid"
-        | "media"
       trainer_status: "active" | "inactive" | "on_leave"
       user_role: "user" | "admin"
     }

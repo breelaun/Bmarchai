@@ -1,55 +1,67 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ClientList from "@/components/crm/ClientList";
+import { Card } from "@/components/ui/card";
+import StockMarket from "@/components/crm/StockMarket";
 import TaskList from "@/components/crm/TaskList";
-import { TeamsList } from "@/components/crm/teams/TeamsList";
-import { AnalyticsDashboard } from "@/components/crm/analytics/AnalyticsDashboard";
+import ClientList from "@/components/crm/ClientList";
+import TeamCalendar from "@/components/crm/TeamCalendar";
+import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
+import GymDashboard from "@/components/crm/gym/GymDashboard";
 import TrainingDashboard from "@/components/crm/training/TrainingDashboard";
-import DocumentEditor from "@/components/crm/DocumentEditor";
-import FinancialEditor from "@/components/crm/FinancialEditor";
-import { StockMarket } from "@/components/crm/StockMarket";
-import { LeadPipeline } from "@/components/crm/pipeline/LeadPipeline";
 
 const CRMPage = () => {
   return (
-    <div className="container py-6">
-      <Tabs defaultValue="clients">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-2">
+    <div className="container mx-auto p-4 space-y-4">
+      <h1 className="text-2xl font-bold">CRM Dashboard</h1>
+      
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="clients">Clients</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="teams">Teams</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="market">Market</TabsTrigger>
+          <TabsTrigger value="gym">Gym</TabsTrigger>
           <TabsTrigger value="training">Training</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-          <TabsTrigger value="stocks">Stocks</TabsTrigger>
-          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="p-4">
+              <ClientList />
+            </Card>
+            <Card className="p-4">
+              <TaskList />
+            </Card>
+          </div>
+        </TabsContent>
+
         <TabsContent value="clients">
           <ClientList />
         </TabsContent>
+
         <TabsContent value="tasks">
           <TaskList />
         </TabsContent>
-        <TabsContent value="teams">
-          <TeamsList />
+
+        <TabsContent value="calendar">
+          <TeamCalendar />
         </TabsContent>
+
         <TabsContent value="analytics">
           <AnalyticsDashboard />
         </TabsContent>
+
+        <TabsContent value="market">
+          <StockMarket defaultSymbol="AAPL" />
+        </TabsContent>
+
+        <TabsContent value="gym">
+          <GymDashboard />
+        </TabsContent>
+
         <TabsContent value="training">
           <TrainingDashboard />
-        </TabsContent>
-        <TabsContent value="documents">
-          <DocumentEditor />
-        </TabsContent>
-        <TabsContent value="financial">
-          <FinancialEditor />
-        </TabsContent>
-        <TabsContent value="stocks">
-          <StockMarket />
-        </TabsContent>
-        <TabsContent value="pipeline">
-          <LeadPipeline />
         </TabsContent>
       </Tabs>
     </div>
