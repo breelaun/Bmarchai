@@ -12,10 +12,6 @@ export const MembersList = () => {
         .from("gym_members")
         .select(`
           *,
-          user:user_id (
-            full_name,
-            avatar_url
-          ),
           membership_plans (
             name,
             price
@@ -50,7 +46,7 @@ export const MembersList = () => {
         {members?.map((member) => (
           <Card key={member.id}>
             <CardHeader>
-              <CardTitle>{member.user?.full_name}</CardTitle>
+              <CardTitle>{member.full_name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm text-muted-foreground">
