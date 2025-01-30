@@ -23,7 +23,12 @@ interface EventFormData {
   category?: string;
 }
 
-const TeamCalendar = () => {
+interface TeamCalendarProps {
+  teamId: string;
+  onClose: () => void;
+}
+
+export const TeamCalendar = ({ teamId, onClose }: TeamCalendarProps) => {
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -243,5 +248,3 @@ const TeamCalendar = () => {
     </div>
   );
 };
-
-export default TeamCalendar;
