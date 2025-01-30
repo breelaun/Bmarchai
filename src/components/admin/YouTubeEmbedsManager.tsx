@@ -14,7 +14,7 @@ import {
 import { YouTubeEmbedsList } from "./YouTubeEmbedsList";
 import type { ArtsCategory, YouTubeEmbed } from "./types";
 
-const YouTubeEmbedsManager = () => {
+export const YouTubeEmbedsManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
@@ -213,5 +213,3 @@ const YouTubeEmbedsManager = () => {
     </div>
   );
 };
-
-export default YouTubeEmbedsManager;

@@ -22,11 +22,12 @@ export const AdManager = () => {
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null);
 
   const handleEditClick = (ad: Advertisement) => {
+    // Convert string dates to Date objects when setting the selected ad
     setSelectedAd({
       ...ad,
       start_date: new Date(ad.start_date),
       end_date: new Date(ad.end_date),
-    } as any);
+    });
     setIsDialogOpen(true);
   };
 
