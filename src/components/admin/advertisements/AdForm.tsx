@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,15 +35,21 @@ interface AdFormData {
   media_url?: string;
   start_date: Date;
   end_date: Date;
+  status?: string;
 }
 
-export const AdForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+interface AdFormProps {
+  onSuccess?: () => void;
+  initialData?: AdFormData & { id: string };
+}
+
+export const AdForm = ({ onSuccess, initialData }: AdFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<AdFormData>({
-    defaultValues: {
+    defaultValues: initialData || {
       name: "",
       description: "",
       ad_type: "banner",
@@ -51,23 +57,43 @@ export const AdForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       media_url: "",
       start_date: new Date(),
       end_date: new Date(),
+      status: "draft",
     },
   });
 
   const onSubmit = async (data: AdFormData) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("advertisements").insert({
-        ...data,
-        status: "draft",
-      });
+      if (initialData?.id) {
+        // Update existing advertisement
+        const { error } = await supabase
+          .from("advertisements")
+          .update({
+            ...data,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", initialData.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Advertisement created successfully",
-      });
+        toast({
+          title: "Success",
+          description: "Advertisement updated successfully",
+        });
+      } else {
+        // Create new advertisement
+        const { error } = await supabase.from("advertisements").insert({
+          ...data,
+          status: "draft",
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Advertisement created successfully",
+        });
+      }
 
       queryClient.invalidateQueries({ queryKey: ["advertisements"] });
       form.reset();
@@ -250,7 +276,13 @@ export const AdForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         </div>
 
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating..." : "Create Advertisement"}
+          {isSubmitting
+            ? initialData
+              ? "Updating..."
+              : "Creating..."
+            : initialData
+            ? "Update Advertisement"
+            : "Create Advertisement"}
         </Button>
       </form>
     </Form>

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle, Pencil } from "lucide-react";
 import { format } from "date-fns";
 
 interface Advertisement {
@@ -21,16 +21,18 @@ interface Advertisement {
   status: string;
   start_date: string;
   end_date: string;
+  description: string;
+  content: string;
+  media_url?: string;
 }
 
 interface AdListProps {
   filter?: string;
   onCreateClick?: () => void;
+  onEditClick?: (ad: Advertisement) => void;
 }
 
-export const AdList = ({ filter, onCreateClick }: AdListProps) => {
-  const [selectedAd, setSelectedAd] = useState<string | null>(null);
-
+export const AdList = ({ filter, onCreateClick, onEditClick }: AdListProps) => {
   const { data: ads, isLoading } = useQuery({
     queryKey: ["advertisements", filter],
     queryFn: async () => {
@@ -115,9 +117,10 @@ export const AdList = ({ filter, onCreateClick }: AdListProps) => {
               <TableCell>
                 <Button
                   variant="ghost"
-                  onClick={() => setSelectedAd(ad.id)}
+                  onClick={() => onEditClick?.(ad)}
+                  className="h-8 w-8 p-0"
                 >
-                  Edit
+                  <Pencil className="h-4 w-4" />
                 </Button>
               </TableCell>
             </TableRow>
