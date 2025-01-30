@@ -587,6 +587,99 @@ export type Database = {
           },
         ]
       }
+      client_activities: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          created_by: string | null
+          description: string
+          id: string
+          metadata: Json | null
+          type: Database["public"]["Enums"]["activity_type"]
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          id?: string
+          metadata?: Json | null
+          type: Database["public"]["Enums"]["activity_type"]
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          id?: string
+          metadata?: Json | null
+          type?: Database["public"]["Enums"]["activity_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_activities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_communications: {
+        Row: {
+          client_id: string
+          content: string | null
+          created_at: string | null
+          created_by: string | null
+          date: string | null
+          id: string
+          subject: string | null
+          type: Database["public"]["Enums"]["communication_type"]
+        }
+        Insert: {
+          client_id: string
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          date?: string | null
+          id?: string
+          subject?: string | null
+          type: Database["public"]["Enums"]["communication_type"]
+        }
+        Update: {
+          client_id?: string
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          date?: string | null
+          id?: string
+          subject?: string | null
+          type?: Database["public"]["Enums"]["communication_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_communications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_communications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communication_logs: {
         Row: {
           client_id: string | null
@@ -1714,6 +1807,8 @@ export type Database = {
       }
     }
     Enums: {
+      activity_type: "stage_change" | "communication" | "task" | "note"
+      communication_type: "email" | "phone" | "meeting" | "note"
       payment_provider: "stripe" | "paypal" | "google_pay"
       payment_status:
         | "pending"

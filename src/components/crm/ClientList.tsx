@@ -2,14 +2,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Mail, Phone, Trash2, Globe, Building2, FileText } from "lucide-react";
+import { Loader2, Mail, Phone, Trash2, Globe, Building2 } from "lucide-react";
 import { ClientForm } from "./ClientForm";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { ContactProfile } from "./contacts/ContactProfile";
+import { useState } from "react";
 
 const ClientList = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   const { data: clients, isLoading } = useQuery({
     queryKey: ['clients'],
@@ -39,6 +42,9 @@ const ClientList = () => {
       });
 
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      if (selectedClientId === id) {
+        setSelectedClientId(null);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -69,6 +75,22 @@ const ClientList = () => {
     }
   };
 
+  if (selectedClientId) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            onClick={() => setSelectedClientId(null)}
+          >
+            ← Back to List
+          </Button>
+        </div>
+        <ContactProfile clientId={selectedClientId} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -78,7 +100,11 @@ const ClientList = () => {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {clients?.map((client) => (
-          <Card key={client.id}>
+          <Card 
+            key={client.id} 
+            className="cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => setSelectedClientId(client.id)}
+          >
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
               <div>
                 <CardTitle className="text-lg font-semibold">{client.name}</CardTitle>
@@ -93,7 +119,10 @@ const ClientList = () => {
                 variant="ghost"
                 size="icon"
                 className="text-destructive hover:text-destructive/90"
-                onClick={() => handleDelete(client.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(client.id);
+                }}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -114,6 +143,7 @@ const ClientList = () => {
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {client.website}
                   </a>
@@ -128,6 +158,7 @@ const ClientList = () => {
                       <a 
                         href={`mailto:${email}`}
                         className="text-primary hover:underline"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {email}
                       </a>
@@ -142,16 +173,10 @@ const ClientList = () => {
                   <a 
                     href={`tel:${client.phone}`}
                     className="text-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {client.phone}
                   </a>
-                </div>
-              )}
-
-              {client.notes && (
-                <div className="flex items-start gap-2 text-sm mt-2">
-                  <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <p className="text-muted-foreground">{client.notes}</p>
                 </div>
               )}
             </CardContent>
