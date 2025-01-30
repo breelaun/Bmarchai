@@ -12,7 +12,7 @@ export const MembersList = () => {
         .from("gym_members")
         .select(`
           *,
-          profiles:user_id (
+          user:user_id (
             full_name,
             avatar_url
           ),
@@ -50,7 +50,7 @@ export const MembersList = () => {
         {members?.map((member) => (
           <Card key={member.id}>
             <CardHeader>
-              <CardTitle>{member.profiles?.full_name}</CardTitle>
+              <CardTitle>{member.user?.full_name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm text-muted-foreground">
