@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Menu, Hash, Users } from "lucide-react";
+import { Menu, Hash, Users, Package } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -12,6 +12,7 @@ import UserProfile from "./components/UserProfile";
 import MessageList from "./components/MessageList";
 import MessageInput from "./components/MessageInput";
 import MembersList from "./components/MembersList";
+import ProductsList from "./components/ProductsList";
 import type { Channel, Message } from "./types";
 
 const ChatLayout = () => {
@@ -25,7 +26,9 @@ const ChatLayout = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showSidebar, setShowSidebar] = useState(!isMobile);
   const [showMembers, setShowMembers] = useState(!isMobile);
+  const [showProducts, setShowProducts] = useState(!isMobile);
   const [channelMembers, setChannelMembers] = useState<any[]>([]);
+  const [channelProducts, setChannelProducts] = useState<any[]>([]);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -77,6 +80,34 @@ const ChatLayout = () => {
       setChannelMembers(membersData);
     } catch (error) {
       console.error("Error fetching channel members:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedChannel) return;
+    fetchChannelProducts();
+  }, [selectedChannel]);
+
+  const fetchChannelProducts = async () => {
+    try {
+      const { data: productsData, error: productsError } = await supabase
+        .from("chat_channel_products")
+        .select(`
+          *,
+          products (
+            id,
+            name,
+            description,
+            price,
+            image_url
+          )
+        `)
+        .eq("channel_id", selectedChannel);
+
+      if (productsError) throw productsError;
+      setChannelProducts(productsData);
+    } catch (error) {
+      console.error("Error fetching channel products:", error);
     }
   };
 
@@ -189,6 +220,14 @@ const ChatLayout = () => {
               variant="ghost" 
               size="icon" 
               className="text-[#949BA4] hover:text-white"
+              onClick={() => setShowProducts(!showProducts)}
+            >
+              <Package className="w-5 h-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-[#949BA4] hover:text-white"
               onClick={() => setShowMembers(!showMembers)}
             >
               <Users className="w-5 h-5" />
@@ -209,6 +248,14 @@ const ChatLayout = () => {
         session={session}
         isMobile={isMobile}
         showMembers={showMembers}
+      />
+
+      <ProductsList
+        products={channelProducts}
+        session={session}
+        isMobile={isMobile}
+        showProducts={showProducts}
+        channelId={selectedChannel}
       />
     </div>
   );
