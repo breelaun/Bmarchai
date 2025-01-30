@@ -420,32 +420,86 @@ export type Database = {
           },
         ]
       }
+      chat_channel_products: {
+        Row: {
+          added_at: string | null
+          channel_id: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_featured: boolean | null
+          product_id: number | null
+        }
+        Insert: {
+          added_at?: string | null
+          channel_id?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_featured?: boolean | null
+          product_id?: number | null
+        }
+        Update: {
+          added_at?: string | null
+          channel_id?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_featured?: boolean | null
+          product_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_channel_products_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_channel_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_channels: {
         Row: {
+          active_products: Json[] | null
+          channel_type: string | null
           created_at: string
           description: string | null
           id: string
           is_public: boolean | null
           name: string
           owner_id: string
+          stream_config: Json | null
           updated_at: string
         }
         Insert: {
+          active_products?: Json[] | null
+          channel_type?: string | null
           created_at?: string
           description?: string | null
           id?: string
           is_public?: boolean | null
           name: string
           owner_id: string
+          stream_config?: Json | null
           updated_at?: string
         }
         Update: {
+          active_products?: Json[] | null
+          channel_type?: string | null
           created_at?: string
           description?: string | null
           id?: string
           is_public?: boolean | null
           name?: string
           owner_id?: string
+          stream_config?: Json | null
           updated_at?: string
         }
         Relationships: [
@@ -454,6 +508,47 @@ export type Database = {
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_live_sessions: {
+        Row: {
+          channel_id: string | null
+          created_at: string | null
+          ended_at: string | null
+          id: string
+          metadata: Json | null
+          session_type: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          channel_id?: string | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          session_type: string
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          channel_id?: string | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          session_type?: string
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_live_sessions_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
             referencedColumns: ["id"]
           },
         ]

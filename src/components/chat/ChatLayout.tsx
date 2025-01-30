@@ -1,43 +1,24 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Hash, Settings, Users, MessageSquare, Video, Phone, PlusCircle, Smile, AtSign, Gift, ImagePlus, Menu } from "lucide-react";
+import { Menu, Hash, Users } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-interface Channel {
-  id: string;
-  name: string;
-  is_public: boolean;
-}
-
-interface Section {
-  id: string;
-  name: string;
-  channel_id: string;
-}
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id: string;
-  created_at: string;
-  sender?: {
-    username: string;
-    avatar_url: string;
-  };
-}
+import ServerList from "./components/ServerList";
+import ChannelList from "./components/ChannelList";
+import UserProfile from "./components/UserProfile";
+import MessageList from "./components/MessageList";
+import MessageInput from "./components/MessageInput";
+import MembersList from "./components/MembersList";
+import type { Channel, Message } from "./types";
 
 const ChatLayout = () => {
   const session = useSession();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [sections, setSections] = useState<Section[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState("");
@@ -47,38 +28,31 @@ const ChatLayout = () => {
 
   useEffect(() => {
     if (!session?.user?.id) return;
+    fetchChannels();
+  }, [session?.user?.id]);
 
-    const fetchChannels = async () => {
+  const fetchChannels = async () => {
+    try {
       const { data: channelsData, error: channelsError } = await supabase
         .from("chat_channels")
         .select("*")
-        .or(`is_public.eq.true,owner_id.eq.${session.user.id}`);
+        .or(`is_public.eq.true,owner_id.eq.${session?.user?.id}`);
 
-      if (channelsError) {
-        console.error("Error fetching channels:", channelsError);
-        return;
-      }
+      if (channelsError) throw channelsError;
 
       setChannels(channelsData);
-
       if (channelsData.length > 0) {
         setSelectedChannel(channelsData[0].id);
-        const { data: sectionsData, error: sectionsError } = await supabase
-          .from("chat_sections")
-          .select("*")
-          .eq("channel_id", channelsData[0].id);
-
-        if (sectionsError) {
-          console.error("Error fetching sections:", sectionsError);
-          return;
-        }
-
-        setSections(sectionsData);
       }
-    };
-
-    fetchChannels();
-  }, [session?.user?.id]);
+    } catch (error: any) {
+      console.error("Error fetching channels:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load channels",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     if (!selectedChannel || !session?.user?.id || isSubscribed) return;
@@ -96,11 +70,7 @@ const ChatLayout = () => {
         .eq("channel_id", selectedChannel)
         .order("created_at", { ascending: true });
 
-      if (messagesError) {
-        console.error("Error fetching messages:", messagesError);
-        return;
-      }
-
+      if (messagesError) throw messagesError;
       setMessages(messagesData);
     };
 
@@ -155,84 +125,20 @@ const ChatLayout = () => {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-[#313338] mt-16">
-      {/* Server List Sidebar */}
-      <div className={`${isMobile ? (showSidebar ? 'absolute left-0 z-20' : 'hidden') : ''} w-[72px] bg-[#1E1F22] flex flex-col items-center py-3 space-y-2 h-full`}>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full bg-[#313338] hover:bg-primary text-white"
-        >
-          <MessageSquare className="w-5 h-5" />
-        </Button>
-        <div className="w-8 h-[2px] bg-[#35363C] rounded-lg my-2" />
-        {channels.map((channel) => (
-          <Button
-            key={channel.id}
-            variant="ghost"
-            size="icon"
-            className="rounded-full bg-[#313338] hover:bg-primary text-white"
-            onClick={() => setSelectedChannel(channel.id)}
-          >
-            <Hash className="w-5 h-5" />
-          </Button>
-        ))}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full bg-[#313338] hover:bg-emerald-600 text-emerald-500"
-        >
-          <Plus className="w-5 h-5" />
-        </Button>
-      </div>
-
-      {/* Channel List */}
-      <div className={`${isMobile ? (showSidebar ? 'absolute left-[72px] z-20' : 'hidden') : ''} w-60 bg-[#2B2D31] flex flex-col h-full`}>
-        <div className="p-4 border-b border-[#1F2023] shadow">
-          <h2 className="font-semibold text-white">Channels</h2>
-        </div>
-        <ScrollArea className="flex-1">
-          <div className="p-2 space-y-[2px]">
-            {channels.map((channel) => (
-              <Button
-                key={channel.id}
-                variant={selectedChannel === channel.id ? "secondary" : "ghost"}
-                className="w-full justify-start text-[#949BA4] hover:text-white"
-                onClick={() => setSelectedChannel(channel.id)}
-              >
-                <Hash className="w-4 h-4 mr-2" />
-                {channel.name}
-              </Button>
-            ))}
-          </div>
-        </ScrollArea>
-        <div className="p-4 bg-[#232428] mt-auto">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={session?.user?.user_metadata?.avatar_url} />
-              <AvatarFallback>
-                {session?.user?.email?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <p className="text-sm text-white font-medium">
-                {session?.user?.email?.split("@")[0]}
-              </p>
-              <p className="text-xs text-[#949BA4]">Online</p>
-            </div>
-            <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
-                <Video className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
-                <Phone className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ServerList
+        channels={channels}
+        selectedChannel={selectedChannel}
+        onChannelSelect={setSelectedChannel}
+        isMobile={isMobile}
+        showSidebar={showSidebar}
+      />
+      <ChannelList
+        channels={channels}
+        selectedChannel={selectedChannel}
+        onChannelSelect={setSelectedChannel}
+        isMobile={isMobile}
+        showSidebar={showSidebar}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col bg-[#313338] relative">
@@ -266,77 +172,19 @@ const ChatLayout = () => {
           </div>
         </div>
 
-        {/* Messages Area */}
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className="flex items-start gap-3 group">
-                <Avatar className="h-10 w-10 shrink-0">
-                  <AvatarImage src={message.sender?.avatar_url} />
-                  <AvatarFallback>
-                    {message.sender?.username?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="font-medium text-white">
-                      {message.sender?.username}
-                    </span>
-                    <span className="text-xs text-[#949BA4]">
-                      {new Date(message.created_at).toLocaleTimeString()}
-                    </span>
-                  </div>
-                  <p className="text-[#DBDEE1] break-words">{message.content}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-
-        {/* Message Input */}
-        <div className="p-4">
-          <form onSubmit={handleSendMessage} className="relative">
-            <Input
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              placeholder="Message #general"
-              className="bg-[#383A40] border-none text-white placeholder:text-[#949BA4] pr-32"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white hidden sm:inline-flex">
-                <PlusCircle className="h-5 w-5" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white hidden sm:inline-flex">
-                <Gift className="h-5 w-5" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
-                <ImagePlus className="h-5 w-5" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
-                <Smile className="h-5 w-5" />
-              </Button>
-            </div>
-          </form>
-        </div>
+        <MessageList messages={messages} />
+        <MessageInput
+          messageInput={messageInput}
+          setMessageInput={setMessageInput}
+          handleSendMessage={handleSendMessage}
+        />
       </div>
 
-      {/* Members Sidebar */}
-      <div className={`${isMobile ? (showMembers ? 'absolute right-0 z-20' : 'hidden') : ''} w-60 bg-[#2B2D31] p-4 h-full`}>
-        <h3 className="text-[#949BA4] font-semibold mb-4">Online</h3>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={session?.user?.user_metadata?.avatar_url} />
-              <AvatarFallback>
-                {session?.user?.email?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-[#949BA4] truncate">
-              {session?.user?.email?.split("@")[0]}
-            </span>
-          </div>
-        </div>
-      </div>
+      <MembersList
+        session={session}
+        isMobile={isMobile}
+        showMembers={showMembers}
+      />
     </div>
   );
 };
