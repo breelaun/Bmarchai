@@ -25,6 +25,7 @@ const ChatLayout = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showSidebar, setShowSidebar] = useState(!isMobile);
   const [showMembers, setShowMembers] = useState(!isMobile);
+  const [channelMembers, setChannelMembers] = useState<any[]>([]);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -51,6 +52,31 @@ const ChatLayout = () => {
         description: "Failed to load channels",
         variant: "destructive",
       });
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedChannel) return;
+    fetchChannelMembers();
+  }, [selectedChannel]);
+
+  const fetchChannelMembers = async () => {
+    try {
+      const { data: membersData, error: membersError } = await supabase
+        .from("chat_members")
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            avatar_url
+          )
+        `)
+        .eq("channel_id", selectedChannel);
+
+      if (membersError) throw membersError;
+      setChannelMembers(membersData);
+    } catch (error) {
+      console.error("Error fetching channel members:", error);
     }
   };
 
@@ -140,9 +166,7 @@ const ChatLayout = () => {
         showSidebar={showSidebar}
       />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col bg-[#313338] relative">
-        {/* Channel Header */}
         <div className="h-12 border-b border-[#1F2023] flex items-center justify-between px-4">
           {isMobile && (
             <Button
@@ -181,6 +205,7 @@ const ChatLayout = () => {
       </div>
 
       <MembersList
+        members={channelMembers}
         session={session}
         isMobile={isMobile}
         showMembers={showMembers}
