@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Star, Trash2 } from 'lucide-react';
+import type { StockChartProps } from '@/types/stock';
 
 interface StockData {
   symbol: string;
@@ -15,6 +16,17 @@ interface StockData {
   changePercent: number;
 }
 
+// Export the StockChart component
+export const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
+  return (
+    <div>
+      <h2>Stock Chart for {symbol}</h2>
+      {/* Add chart implementation here */}
+    </div>
+  );
+};
+
+// Export the main StockMarket component as default
 const StockMarket = () => {
   const session = useSession();
   const { toast } = useToast();
