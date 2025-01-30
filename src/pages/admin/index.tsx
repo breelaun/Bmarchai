@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArtsSection } from "@/components/admin/ArtsSection";
 import { AdManager } from "@/components/admin/advertisements/AdManager";
+import { YouTubeEmbedsManager } from "@/components/admin/YouTubeEmbedsManager";
 
 const AdminPage = () => {
   return (
@@ -9,6 +10,7 @@ const AdminPage = () => {
         <TabsList>
           <TabsTrigger value="arts">Arts Management</TabsTrigger>
           <TabsTrigger value="ads">Advertisement Management</TabsTrigger>
+          <TabsTrigger value="youtube">YouTube Embeds</TabsTrigger>
         </TabsList>
 
         <TabsContent value="arts">
@@ -17,6 +19,10 @@ const AdminPage = () => {
 
         <TabsContent value="ads">
           <AdManager />
+        </TabsContent>
+
+        <TabsContent value="youtube">
+          <YouTubeEmbedsManager />
         </TabsContent>
       </Tabs>
     </div>
