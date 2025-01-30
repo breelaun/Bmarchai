@@ -23,17 +23,31 @@ interface Advertisement {
   end_date: string;
 }
 
-export const AdList = () => {
+interface AdListProps {
+  filter?: string;
+  onCreateClick?: () => void;
+}
+
+export const AdList = ({ filter, onCreateClick }: AdListProps) => {
   const [selectedAd, setSelectedAd] = useState<string | null>(null);
 
   const { data: ads, isLoading } = useQuery({
-    queryKey: ["advertisements"],
+    queryKey: ["advertisements", filter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("advertisements")
         .select("*")
         .order("created_at", { ascending: false });
 
+      if (filter === "active") {
+        query = query.eq("status", "active");
+      } else if (filter === "scheduled") {
+        query = query.eq("status", "scheduled");
+      } else if (filter === "completed") {
+        query = query.eq("status", "completed");
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as Advertisement[];
     },
@@ -65,7 +79,7 @@ export const AdList = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Advertisements</h2>
-        <Button>
+        <Button onClick={onCreateClick}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Create New Ad
         </Button>
