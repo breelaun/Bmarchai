@@ -4,30 +4,14 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AdList } from "./AdList";
 import { AdForm } from "./AdForm";
 import { Card, CardContent } from "@/components/ui/card";
-
-interface Advertisement {
-  id: string;
-  name: string;
-  description: string;
-  ad_type: string;
-  content: string;
-  media_url?: string;
-  start_date: string;
-  end_date: string;
-  status: string;
-}
+import { Advertisement } from "../types";
 
 export const AdManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null);
 
   const handleEditClick = (ad: Advertisement) => {
-    // Convert string dates to Date objects when setting the selected ad
-    setSelectedAd({
-      ...ad,
-      start_date: new Date(ad.start_date),
-      end_date: new Date(ad.end_date),
-    });
+    setSelectedAd(ad);
     setIsDialogOpen(true);
   };
 

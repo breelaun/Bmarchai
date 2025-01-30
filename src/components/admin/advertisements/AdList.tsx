@@ -13,18 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, PlusCircle, Pencil } from "lucide-react";
 import { format } from "date-fns";
-
-interface Advertisement {
-  id: string;
-  name: string;
-  ad_type: string;
-  status: string;
-  start_date: string;
-  end_date: string;
-  description: string;
-  content: string;
-  media_url?: string;
-}
+import { Advertisement } from "../types";
 
 interface AdListProps {
   filter?: string;
@@ -51,7 +40,13 @@ export const AdList = ({ filter, onCreateClick, onEditClick }: AdListProps) => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Advertisement[];
+      
+      // Convert date strings to Date objects
+      return data.map(ad => ({
+        ...ad,
+        start_date: new Date(ad.start_date),
+        end_date: new Date(ad.end_date)
+      })) as Advertisement[];
     },
   });
 
@@ -109,10 +104,10 @@ export const AdList = ({ filter, onCreateClick, onEditClick }: AdListProps) => {
                 </Badge>
               </TableCell>
               <TableCell>
-                {format(new Date(ad.start_date), "MMM d, yyyy")}
+                {format(ad.start_date, "MMM d, yyyy")}
               </TableCell>
               <TableCell>
-                {format(new Date(ad.end_date), "MMM d, yyyy")}
+                {format(ad.end_date, "MMM d, yyyy")}
               </TableCell>
               <TableCell>
                 <Button
