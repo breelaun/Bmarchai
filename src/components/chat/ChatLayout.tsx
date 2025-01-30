@@ -5,8 +5,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Hash, Settings, Users, MessageSquare, Video, Phone, PlusCircle, Smile, AtSign, Gift, ImagePlus } from "lucide-react";
+import { Plus, Hash, Settings, Users, MessageSquare, Video, Phone, PlusCircle, Smile, AtSign, Gift, ImagePlus, Menu } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Channel {
   id: string;
@@ -34,12 +35,15 @@ interface Message {
 const ChatLayout = () => {
   const session = useSession();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(!isMobile);
+  const [showMembers, setShowMembers] = useState(!isMobile);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -152,7 +156,7 @@ const ChatLayout = () => {
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-[#313338] mt-16">
       {/* Server List Sidebar */}
-      <div className="w-[72px] bg-[#1E1F22] flex flex-col items-center py-3 space-y-2">
+      <div className={`${isMobile ? (showSidebar ? 'absolute left-0 z-20' : 'hidden') : ''} w-[72px] bg-[#1E1F22] flex flex-col items-center py-3 space-y-2 h-full`}>
         <Button
           variant="ghost"
           size="icon"
@@ -182,7 +186,7 @@ const ChatLayout = () => {
       </div>
 
       {/* Channel List */}
-      <div className="w-60 bg-[#2B2D31] flex flex-col">
+      <div className={`${isMobile ? (showSidebar ? 'absolute left-[72px] z-20' : 'hidden') : ''} w-60 bg-[#2B2D31] flex flex-col h-full`}>
         <div className="p-4 border-b border-[#1F2023] shadow">
           <h2 className="font-semibold text-white">Channels</h2>
         </div>
@@ -231,9 +235,19 @@ const ChatLayout = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-[#313338]">
+      <div className="flex-1 flex flex-col bg-[#313338] relative">
         {/* Channel Header */}
         <div className="h-12 border-b border-[#1F2023] flex items-center justify-between px-4">
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mr-2"
+              onClick={() => setShowSidebar(!showSidebar)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
           <div className="flex items-center space-x-2">
             <Hash className="w-5 h-5 text-[#949BA4]" />
             <h3 className="font-semibold text-white">
@@ -241,7 +255,12 @@ const ChatLayout = () => {
             </h3>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-[#949BA4] hover:text-white"
+              onClick={() => setShowMembers(!showMembers)}
+            >
               <Users className="w-5 h-5" />
             </Button>
           </div>
@@ -252,14 +271,14 @@ const ChatLayout = () => {
           <div className="space-y-4">
             {messages.map((message) => (
               <div key={message.id} className="flex items-start gap-3 group">
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-10 w-10 shrink-0">
                   <AvatarImage src={message.sender?.avatar_url} />
                   <AvatarFallback>
                     {message.sender?.username?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-baseline gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 flex-wrap">
                     <span className="font-medium text-white">
                       {message.sender?.username}
                     </span>
@@ -267,7 +286,7 @@ const ChatLayout = () => {
                       {new Date(message.created_at).toLocaleTimeString()}
                     </span>
                   </div>
-                  <p className="text-[#DBDEE1]">{message.content}</p>
+                  <p className="text-[#DBDEE1] break-words">{message.content}</p>
                 </div>
               </div>
             ))}
@@ -281,13 +300,13 @@ const ChatLayout = () => {
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
               placeholder="Message #general"
-              className="bg-[#383A40] border-none text-white placeholder:text-[#949BA4]"
+              className="bg-[#383A40] border-none text-white placeholder:text-[#949BA4] pr-32"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
+              <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white hidden sm:inline-flex">
                 <PlusCircle className="h-5 w-5" />
               </Button>
-              <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
+              <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white hidden sm:inline-flex">
                 <Gift className="h-5 w-5" />
               </Button>
               <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
@@ -302,7 +321,7 @@ const ChatLayout = () => {
       </div>
 
       {/* Members Sidebar */}
-      <div className="w-60 bg-[#2B2D31] p-4">
+      <div className={`${isMobile ? (showMembers ? 'absolute right-0 z-20' : 'hidden') : ''} w-60 bg-[#2B2D31] p-4 h-full`}>
         <h3 className="text-[#949BA4] font-semibold mb-4">Online</h3>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -312,7 +331,7 @@ const ChatLayout = () => {
                 {session?.user?.email?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-[#949BA4]">
+            <span className="text-[#949BA4] truncate">
               {session?.user?.email?.split("@")[0]}
             </span>
           </div>
