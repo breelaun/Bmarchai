@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { SqeresBackground } from './SqeresBackground';
 import { SqeresCrosshair } from './SqeresCrosshair';
+import {EnhancedCrosshair} from './EnhancedCrosshair';
 
 interface Position {
   x: number;
