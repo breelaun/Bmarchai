@@ -803,44 +803,102 @@ export type Database = {
           },
         ]
       }
+      crm_task_dependencies: {
+        Row: {
+          created_at: string | null
+          dependent_on_task_id: string
+          id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dependent_on_task_id: string
+          id?: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dependent_on_task_id?: string
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_task_dependencies_dependent_on_task_id_fkey"
+            columns: ["dependent_on_task_id"]
+            isOneToOne: false
+            referencedRelation: "crm_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_task_dependencies_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "crm_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_tasks: {
         Row: {
+          assigned_to: string | null
+          category: string | null
           client_id: string | null
+          completion_percentage: number | null
           created_at: string | null
           description: string | null
           due_date: string | null
           id: string
+          is_milestone: boolean | null
           priority: string | null
+          start_date: string | null
           status: string | null
           title: string
           updated_at: string | null
           vendor_id: string | null
         }
         Insert: {
+          assigned_to?: string | null
+          category?: string | null
           client_id?: string | null
+          completion_percentage?: number | null
           created_at?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
+          is_milestone?: boolean | null
           priority?: string | null
+          start_date?: string | null
           status?: string | null
           title: string
           updated_at?: string | null
           vendor_id?: string | null
         }
         Update: {
+          assigned_to?: string | null
+          category?: string | null
           client_id?: string | null
+          completion_percentage?: number | null
           created_at?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
+          is_milestone?: boolean | null
           priority?: string | null
+          start_date?: string | null
           status?: string | null
           title?: string
           updated_at?: string | null
           vendor_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_tasks_client_id_fkey"
             columns: ["client_id"]
@@ -1510,6 +1568,63 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      team_calendar_events: {
+        Row: {
+          all_day: boolean | null
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_time: string
+          id: string
+          start_time: string
+          title: string
+          updated_at: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          all_day?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          start_time: string
+          title: string
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          all_day?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          start_time?: string
+          title?: string
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_calendar_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_calendar_events_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_options: {
         Row: {
