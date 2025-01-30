@@ -1,21 +1,24 @@
-import { Card } from "@/components/ui/card";
-import ArtsSection from "@/components/admin/ArtsSection";
-import YouTubeEmbedsManager from "@/components/admin/YouTubeEmbedsManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArtsSection } from "@/components/admin/ArtsSection";
+import { AdManager } from "@/components/admin/advertisements/AdManager";
 
 const AdminPage = () => {
   return (
-    <div className="container mx-auto p-4 space-y-8">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-      
-      <div className="grid gap-8">
-        <Card className="p-6">
-          <ArtsSection />
-        </Card>
+    <div className="container py-8">
+      <Tabs defaultValue="arts" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="arts">Arts Management</TabsTrigger>
+          <TabsTrigger value="ads">Advertisement Management</TabsTrigger>
+        </TabsList>
 
-        <Card className="p-6">
-          <YouTubeEmbedsManager />
-        </Card>
-      </div>
+        <TabsContent value="arts">
+          <ArtsSection />
+        </TabsContent>
+
+        <TabsContent value="ads">
+          <AdManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

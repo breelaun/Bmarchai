@@ -9,6 +9,191 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ad_analytics: {
+        Row: {
+          ad_id: string | null
+          city: string | null
+          clicks: number | null
+          conversions: number | null
+          country: string | null
+          created_at: string
+          date: string
+          device_type: string | null
+          id: string
+          views: number | null
+        }
+        Insert: {
+          ad_id?: string | null
+          city?: string | null
+          clicks?: number | null
+          conversions?: number | null
+          country?: string | null
+          created_at?: string
+          date: string
+          device_type?: string | null
+          id?: string
+          views?: number | null
+        }
+        Update: {
+          ad_id?: string | null
+          city?: string | null
+          clicks?: number | null
+          conversions?: number | null
+          country?: string | null
+          created_at?: string
+          date?: string
+          device_type?: string | null
+          id?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_analytics_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "advertisements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_placements: {
+        Row: {
+          ad_id: string | null
+          created_at: string
+          id: string
+          page_path: string
+          position: string
+        }
+        Insert: {
+          ad_id?: string | null
+          created_at?: string
+          id?: string
+          page_path: string
+          position: string
+        }
+        Update: {
+          ad_id?: string | null
+          created_at?: string
+          id?: string
+          page_path?: string
+          position?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_placements_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "advertisements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_targeting: {
+        Row: {
+          ad_id: string | null
+          age_max: number | null
+          age_min: number | null
+          center_location: unknown | null
+          city: string[] | null
+          country: string[] | null
+          created_at: string
+          gender: string[] | null
+          id: string
+          interests: string[] | null
+          radius_miles: number | null
+          state: string[] | null
+        }
+        Insert: {
+          ad_id?: string | null
+          age_max?: number | null
+          age_min?: number | null
+          center_location?: unknown | null
+          city?: string[] | null
+          country?: string[] | null
+          created_at?: string
+          gender?: string[] | null
+          id?: string
+          interests?: string[] | null
+          radius_miles?: number | null
+          state?: string[] | null
+        }
+        Update: {
+          ad_id?: string | null
+          age_max?: number | null
+          age_min?: number | null
+          center_location?: unknown | null
+          city?: string[] | null
+          country?: string[] | null
+          created_at?: string
+          gender?: string[] | null
+          id?: string
+          interests?: string[] | null
+          radius_miles?: number | null
+          state?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_targeting_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "advertisements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advertisements: {
+        Row: {
+          ad_type: string
+          content: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string
+          id: string
+          media_url: string | null
+          name: string
+          start_date: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          ad_type: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          media_url?: string | null
+          name: string
+          start_date: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ad_type?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          media_url?: string | null
+          name?: string
+          start_date?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advertisements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       "App Editors": {
         Row: {
           created_at: string
