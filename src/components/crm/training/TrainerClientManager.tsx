@@ -83,7 +83,7 @@ export const TrainerClientManager = () => {
         .eq("status", "active");
 
       if (error) throw error;
-      return data;
+      return data as TrainerClient[];
     },
     enabled: !!selectedTrainer,
   });
