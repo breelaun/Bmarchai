@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, User, DollarSign, Award, Calendar } from "lucide-react";
 
 export const TrainersList = () => {
   const { data: trainers, isLoading } = useQuery({
@@ -32,37 +33,66 @@ export const TrainersList = () => {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {trainers?.map((trainer) => (
-        <Card key={trainer.id}>
-          <CardHeader>
-            <CardTitle>{trainer.user?.full_name}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Status: {trainer.status}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Rate: ${trainer.hourly_rate}/hour
-            </p>
-            {trainer.specializations && (
-              <div>
-                <p className="text-sm font-medium">Specializations:</p>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {trainer.specializations.map((spec: string) => (
-                    <span
-                      key={spec}
-                      className="text-xs bg-secondary px-2 py-1 rounded-full"
-                    >
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-semibold">Trainers</h2>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {trainers?.map((trainer) => (
+          <Card key={trainer.id} className="hover:border-primary/50 transition-colors">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                {trainer.user?.full_name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {trainer.specializations && trainer.specializations.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {trainer.specializations.map((spec: string, index: number) => (
+                    <Badge key={index} variant="secondary">
                       {spec}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
+              )}
+              
+              {trainer.hourly_rate && (
+                <div className="flex items-center gap-2 text-sm">
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <span>${trainer.hourly_rate}/hour</span>
+                </div>
+              )}
+
+              {trainer.certification_details && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Award className="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    {Object.entries(trainer.certification_details)
+                      .map(([key, value]) => `${key}: ${value}`)
+                      .join(", ")}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span>
+                  Joined {new Date(trainer.created_at).toLocaleDateString()}
+                </span>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+
+              <Badge 
+                variant={trainer.status === 'active' ? 'default' : 'secondary'}
+                className="mt-2"
+              >
+                {trainer.status}
+              </Badge>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };

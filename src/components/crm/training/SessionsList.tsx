@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Calendar, Clock, User, ClipboardList } from "lucide-react";
 
 export const SessionsList = () => {
   const { data: sessions, isLoading } = useQuery({
@@ -46,9 +47,13 @@ export const SessionsList = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Training Sessions</h2>
       </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {sessions?.map((session) => (
-          <Card key={session.id}>
+          <Card 
+            key={session.id}
+            className="hover:border-primary/50 transition-colors"
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
@@ -56,27 +61,37 @@ export const SessionsList = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-sm">
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">Trainer:</span>{" "}
                 {session.trainer?.user?.full_name}
-              </p>
-              <p className="text-sm">
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">Client:</span>{" "}
                 {session.member?.user?.full_name}
-              </p>
-              <p className="text-sm">
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">Duration:</span>{" "}
                 {session.duration}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Status:</span>{" "}
-                <span className="capitalize">{session.status}</span>
-              </p>
+              </div>
+
               {session.notes && (
-                <p className="text-sm">
+                <div className="flex items-center gap-2 text-sm">
+                  <ClipboardList className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">Notes:</span> {session.notes}
-                </p>
+                </div>
               )}
+
+              <Badge 
+                variant={session.status === 'completed' ? 'default' : 'secondary'}
+                className="mt-2"
+              >
+                {session.status}
+              </Badge>
             </CardContent>
           </Card>
         ))}
