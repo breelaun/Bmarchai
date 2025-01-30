@@ -148,13 +148,17 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          embed_code: string | null
           end_date: string
+          file_urls: string[] | null
           id: string
+          media_type: string | null
           media_url: string | null
           name: string
           start_date: string
           status: string | null
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           ad_type: string
@@ -162,13 +166,17 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          embed_code?: string | null
           end_date: string
+          file_urls?: string[] | null
           id?: string
+          media_type?: string | null
           media_url?: string | null
           name: string
           start_date: string
           status?: string | null
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           ad_type?: string
@@ -176,13 +184,17 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          embed_code?: string | null
           end_date?: string
+          file_urls?: string[] | null
           id?: string
+          media_type?: string | null
           media_url?: string | null
           name?: string
           start_date?: string
           status?: string | null
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: [
           {

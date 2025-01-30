@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, PlusCircle, Pencil } from "lucide-react";
+import { Loader2, PlusCircle, Pencil, Image, Video, Code, Layout } from "lucide-react";
 import { format } from "date-fns";
 import { Advertisement } from "../types";
 
@@ -41,7 +41,6 @@ export const AdList = ({ filter, onCreateClick, onEditClick }: AdListProps) => {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Convert date strings to Date objects
       return data.map(ad => ({
         ...ad,
         start_date: new Date(ad.start_date),
@@ -49,6 +48,19 @@ export const AdList = ({ filter, onCreateClick, onEditClick }: AdListProps) => {
       })) as Advertisement[];
     },
   });
+
+  const getAdTypeIcon = (type: string) => {
+    switch (type) {
+      case 'banner':
+        return <Image className="h-4 w-4" />;
+      case 'video':
+        return <Video className="h-4 w-4" />;
+      case 'embed':
+        return <Code className="h-4 w-4" />;
+      default:
+        return <Layout className="h-4 w-4" />;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -97,7 +109,12 @@ export const AdList = ({ filter, onCreateClick, onEditClick }: AdListProps) => {
           {ads?.map((ad) => (
             <TableRow key={ad.id}>
               <TableCell>{ad.name}</TableCell>
-              <TableCell className="capitalize">{ad.ad_type}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  {getAdTypeIcon(ad.ad_type)}
+                  <span className="capitalize">{ad.ad_type}</span>
+                </div>
+              </TableCell>
               <TableCell>
                 <Badge variant={getStatusVariant(ad.status)}>
                   {ad.status}
