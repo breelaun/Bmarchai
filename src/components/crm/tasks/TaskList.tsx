@@ -1,21 +1,23 @@
-import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { TaskForm, TaskFormData } from './TaskForm';
-import { TaskCard } from './TaskCard';
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { TaskCard } from "./TaskCard";
+import { TaskForm } from "./TaskForm";
 
-const TaskList = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+export const TaskList = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
 
-  const { data: tasks, isLoading } = useQuery({
+  const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crm_tasks')
         .select(`
           *,
+          client:crm_clients(id, name),
           dependencies:crm_task_dependencies!crm_task_dependencies_task_id_fkey(
             dependent_on_task:crm_tasks!crm_task_dependencies_dependent_on_task_id_fkey(id, title)
           )
@@ -27,66 +29,50 @@ const TaskList = () => {
     },
   });
 
-  const createTask = useMutation({
-    mutationFn: async (data: TaskFormData) => {
-      const { data: task, error: taskError } = await supabase
-        .from('crm_tasks')
-        .insert([{
-          title: data.title,
-          description: data.description,
-          due_date: data.due_date,
-          priority: data.priority,
-        }])
-        .select()
-        .single();
+  const handleEdit = (task: any) => {
+    setSelectedTask(task);
+    setIsFormOpen(true);
+  };
 
-      if (taskError) throw taskError;
-
-      if (data.dependent_on_task_id) {
-        const { error: depError } = await supabase
-          .from('crm_task_dependencies')
-          .insert([{
-            task_id: task.id,
-            dependent_on_task_id: data.dependent_on_task_id,
-          }]);
-
-        if (depError) throw depError;
-      }
-
-      return task;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast({
-        title: 'Task created',
-        description: 'Your task has been created successfully.',
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'Failed to create task: ' + error.message,
-        variant: 'destructive',
-      });
-    },
-  });
+  const handleCloseForm = () => {
+    setSelectedTask(null);
+    setIsFormOpen(false);
+  };
 
   if (isLoading) {
     return <div>Loading tasks...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <TaskForm
-        onSubmit={(data) => createTask.mutate(data)}
-        existingTasks={tasks}
-        isSubmitting={createTask.isPending}
-      />
-      <div className="space-y-4">
-        {tasks?.map((task) => (
-          <TaskCard key={task.id} task={task} />
-        ))}
+    <div>
+      <div className="mb-4 flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Tasks</h2>
+        <Button onClick={() => setIsFormOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Task
+        </Button>
       </div>
+
+      <div className="space-y-4">
+        {tasks.map((task: any) => (
+          <TaskCard
+            key={task.id}
+            task={task}
+            onEdit={handleEdit}
+          />
+        ))}
+        {tasks.length === 0 && (
+          <p className="text-center text-muted-foreground">
+            No tasks found. Create one to get started!
+          </p>
+        )}
+      </div>
+
+      <TaskForm
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        initialData={selectedTask}
+      />
     </div>
   );
 };
