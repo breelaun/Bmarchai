@@ -47,6 +47,17 @@ export const AdList = () => {
     );
   }
 
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "active":
+        return "secondary";
+      case "draft":
+        return "outline";
+      default:
+        return "destructive";
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -74,15 +85,7 @@ export const AdList = () => {
               <TableCell>{ad.name}</TableCell>
               <TableCell className="capitalize">{ad.ad_type}</TableCell>
               <TableCell>
-                <Badge
-                  variant={
-                    ad.status === "active"
-                      ? "success"
-                      : ad.status === "draft"
-                      ? "secondary"
-                      : "destructive"
-                  }
-                >
+                <Badge variant={getStatusVariant(ad.status)}>
                   {ad.status}
                 </Badge>
               </TableCell>

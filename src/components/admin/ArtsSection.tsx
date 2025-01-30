@@ -6,7 +6,7 @@ import { EmbedForm } from "./EmbedForm";
 import { EmbedsList } from "./EmbedsList";
 import type { ArtsEmbed } from "./types";
 
-const ArtsSection = () => {
+export const ArtsSection = () => {
   const [selectedEmbed, setSelectedEmbed] = useState<ArtsEmbed | null>(null);
 
   // Fetch categories
@@ -65,5 +65,3 @@ const ArtsSection = () => {
     </div>
   );
 };
-
-export default ArtsSection;
