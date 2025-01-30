@@ -6,6 +6,7 @@ import ClientList from "@/components/crm/ClientList";
 import TeamCalendar from "@/components/crm/TeamCalendar";
 import AnalyticsDashboard from "@/components/crm/analytics/AnalyticsDashboard";
 import GymDashboard from "@/components/crm/gym/GymDashboard";
+import TrainingDashboard from "@/components/crm/training/TrainingDashboard";
 
 const CRMPage = () => {
   return (
@@ -21,6 +22,7 @@ const CRMPage = () => {
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="market">Market</TabsTrigger>
           <TabsTrigger value="gym">Gym</TabsTrigger>
+          <TabsTrigger value="training">Training</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -56,6 +58,10 @@ const CRMPage = () => {
 
         <TabsContent value="gym">
           <GymDashboard />
+        </TabsContent>
+
+        <TabsContent value="training">
+          <TrainingDashboard />
         </TabsContent>
       </Tabs>
     </div>
