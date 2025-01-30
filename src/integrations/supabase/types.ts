@@ -1217,14 +1217,18 @@ export type Database = {
       gym_members: {
         Row: {
           created_at: string
+          email: string | null
           emergency_contact: Json | null
           end_date: string | null
+          full_name: string | null
           goals: string[] | null
           health_info: Json | null
           id: string
           measurements: Json | null
           membership_plan_id: string | null
           notes: string | null
+          owner_id: string | null
+          phone: string | null
           start_date: string
           status: Database["public"]["Enums"]["membership_status"] | null
           updated_at: string
@@ -1232,14 +1236,18 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string | null
           emergency_contact?: Json | null
           end_date?: string | null
+          full_name?: string | null
           goals?: string[] | null
           health_info?: Json | null
           id?: string
           measurements?: Json | null
           membership_plan_id?: string | null
           notes?: string | null
+          owner_id?: string | null
+          phone?: string | null
           start_date: string
           status?: Database["public"]["Enums"]["membership_status"] | null
           updated_at?: string
@@ -1247,14 +1255,18 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string | null
           emergency_contact?: Json | null
           end_date?: string | null
+          full_name?: string | null
           goals?: string[] | null
           health_info?: Json | null
           id?: string
           measurements?: Json | null
           membership_plan_id?: string | null
           notes?: string | null
+          owner_id?: string | null
+          phone?: string | null
           start_date?: string
           status?: Database["public"]["Enums"]["membership_status"] | null
           updated_at?: string
@@ -1268,14 +1280,25 @@ export type Database = {
             referencedRelation: "membership_plans"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gym_members_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gym_trainers: {
         Row: {
           certification_details: Json | null
           created_at: string | null
+          email: string | null
+          full_name: string | null
           hourly_rate: number | null
           id: string
+          owner_id: string | null
+          phone: string | null
           specializations: string[] | null
           status: Database["public"]["Enums"]["trainer_status"] | null
           updated_at: string | null
@@ -1284,8 +1307,12 @@ export type Database = {
         Insert: {
           certification_details?: Json | null
           created_at?: string | null
+          email?: string | null
+          full_name?: string | null
           hourly_rate?: number | null
           id?: string
+          owner_id?: string | null
+          phone?: string | null
           specializations?: string[] | null
           status?: Database["public"]["Enums"]["trainer_status"] | null
           updated_at?: string | null
@@ -1294,8 +1321,12 @@ export type Database = {
         Update: {
           certification_details?: Json | null
           created_at?: string | null
+          email?: string | null
+          full_name?: string | null
           hourly_rate?: number | null
           id?: string
+          owner_id?: string | null
+          phone?: string | null
           specializations?: string[] | null
           status?: Database["public"]["Enums"]["trainer_status"] | null
           updated_at?: string | null
@@ -1303,8 +1334,8 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "gym_trainers_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "gym_trainers_owner_id_fkey"
+            columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
