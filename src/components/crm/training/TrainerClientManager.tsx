@@ -13,6 +13,17 @@ import {
 } from "@/components/ui/select";
 import { Loader2, UserPlus, Users } from "lucide-react";
 
+type TrainerClient = {
+  id: string;
+  client: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  start_date: string;
+  status: string;
+};
+
 export const TrainerClientManager = () => {
   const [selectedTrainer, setSelectedTrainer] = useState<string>("");
   const [selectedClient, setSelectedClient] = useState<string>("");
@@ -53,7 +64,7 @@ export const TrainerClientManager = () => {
     enabled: !!selectedTrainer,
   });
 
-  const { data: trainerClients, isLoading: loadingTrainerClients } = useQuery({
+  const { data: trainerClients, isLoading: loadingTrainerClients } = useQuery<TrainerClient[]>({
     queryKey: ["trainer-clients", selectedTrainer],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -189,9 +200,9 @@ export const TrainerClientManager = () => {
                       className="flex items-center justify-between rounded-lg border p-3"
                     >
                       <div>
-                        <span className="font-medium">{tc.client?.full_name}</span>
+                        <span className="font-medium">{tc.client.full_name}</span>
                         <p className="text-sm text-muted-foreground">
-                          {tc.client?.email}
+                          {tc.client.email}
                         </p>
                       </div>
                       <span className="text-sm text-muted-foreground">
