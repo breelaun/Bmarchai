@@ -423,32 +423,45 @@ export type Database = {
       chat_channel_products: {
         Row: {
           added_at: string | null
+          added_by: string | null
           channel_id: string | null
           created_at: string | null
           display_order: number | null
           id: string
+          is_active: boolean | null
           is_featured: boolean | null
           product_id: number | null
         }
         Insert: {
           added_at?: string | null
+          added_by?: string | null
           channel_id?: string | null
           created_at?: string | null
           display_order?: number | null
           id?: string
+          is_active?: boolean | null
           is_featured?: boolean | null
           product_id?: number | null
         }
         Update: {
           added_at?: string | null
+          added_by?: string | null
           channel_id?: string | null
           created_at?: string | null
           display_order?: number | null
           id?: string
+          is_active?: boolean | null
           is_featured?: boolean | null
           product_id?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_channel_products_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_channel_products_channel_id_fkey"
             columns: ["channel_id"]
