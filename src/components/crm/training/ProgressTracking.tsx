@@ -14,7 +14,7 @@ export const ProgressTracking = () => {
           member:member_id (
             id,
             user_id,
-            profiles:user_id (
+            user:user_id (
               full_name
             )
           )
@@ -45,7 +45,7 @@ export const ProgressTracking = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
-                {record.member?.profiles?.full_name}
+                {record.member?.user?.full_name}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">

@@ -14,14 +14,14 @@ export const SessionsList = () => {
           trainer:trainer_id (
             id,
             user_id,
-            profiles:user_id (
+            user:user_id (
               full_name
             )
           ),
           member:member_id (
             id,
             user_id,
-            profiles:user_id (
+            user:user_id (
               full_name
             )
           )
@@ -58,11 +58,11 @@ export const SessionsList = () => {
             <CardContent className="space-y-2">
               <p className="text-sm">
                 <span className="font-medium">Trainer:</span>{" "}
-                {session.trainer?.profiles?.full_name}
+                {session.trainer?.user?.full_name}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Client:</span>{" "}
-                {session.member?.profiles?.full_name}
+                {session.member?.user?.full_name}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Duration:</span>{" "}
