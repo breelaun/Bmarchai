@@ -135,11 +135,16 @@ const TeamCalendar = () => {
                   <FormField
                     control={form.control}
                     name="start_time"
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...field } }) => (
                       <FormItem>
                         <FormLabel>Start Time</FormLabel>
                         <FormControl>
-                          <Input type="datetime-local" {...field} />
+                          <Input 
+                            type="datetime-local" 
+                            {...field}
+                            value={value ? value.toISOString().slice(0, 16) : ''}
+                            onChange={(e) => onChange(new Date(e.target.value))}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -148,11 +153,16 @@ const TeamCalendar = () => {
                   <FormField
                     control={form.control}
                     name="end_time"
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...field } }) => (
                       <FormItem>
                         <FormLabel>End Time</FormLabel>
                         <FormControl>
-                          <Input type="datetime-local" {...field} />
+                          <Input 
+                            type="datetime-local" 
+                            {...field}
+                            value={value ? value.toISOString().slice(0, 16) : ''}
+                            onChange={(e) => onChange(new Date(e.target.value))}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
