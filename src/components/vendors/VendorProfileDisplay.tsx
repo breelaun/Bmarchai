@@ -28,16 +28,18 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
   const { socialLinks, aboutMe, enableReviews, enableFeatured } = vendorData;
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const session = useSession();
+  const params = useParams();
+  const effectiveVendorId = vendorId || (params.id !== 'profile' ? params.id : session?.user?.id);
 
   const { data: profile, refetch } = useQuery({
-    queryKey: ['profile', vendorId],
+    queryKey: ['profile', effectiveVendorId],
     queryFn: async () => {
-      if (!vendorId) return null;
+      if (!effectiveVendorId) return null;
       
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', vendorId)
+        .eq('id', effectiveVendorId)
         .maybeSingle();
 
       if (error) {
@@ -47,24 +49,23 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
 
       return data as Profile;
     },
-    enabled: !!vendorId
+    enabled: !!effectiveVendorId
   });
 
   useEffect(() => {
-    if (!vendorId || !session?.user?.id) return;
-    setIsOwnProfile(session.user.id === vendorId);
-  }, [vendorId, session?.user?.id]);
+    if (!effectiveVendorId || !session?.user?.id) return;
+    setIsOwnProfile(session.user.id === effectiveVendorId);
+  }, [effectiveVendorId, session?.user?.id]);
 
   return (
     <div className="vendor-profile space-y-6">
-      {/* Action buttons container - Moved above the banner for proper z-index */}
-      {vendorId && (
+      {effectiveVendorId && (
         <div className="relative z-10 flex justify-end gap-2 px-4 py-2">
           {isOwnProfile && (
             <EditVendorProfileButton />
           )}
-          {session?.user?.id && session.user.id !== vendorId && (
-            <AddContactButton targetUserId={vendorId} />
+          {session?.user?.id && session.user.id !== effectiveVendorId && (
+            <AddContactButton targetUserId={effectiveVendorId} />
           )}
         </div>
       )}
