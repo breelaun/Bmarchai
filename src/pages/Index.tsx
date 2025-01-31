@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVideo } from "@/contexts/VideoPlayerContext";
+import { motion } from "framer-motion";
 
 const EnhancedVideoManager = () => {
   const { setActiveVideo } = useVideo();
@@ -98,7 +99,12 @@ const EnhancedVideoManager = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Banner */}
-      <section className="relative w-full h-[500px] md:h-[750px] overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative w-full h-[500px] md:h-[750px] overflow-hidden glass-background"
+      >
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/50">
           <img 
             src="/lovable-uploads/Banner01.jpg" 
@@ -107,109 +113,137 @@ const EnhancedVideoManager = () => {
           />
         </div>
         <div className="relative h-full flex flex-col justify-center px-4 md:px-12 max-w-3xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold font-heading mb-4">
+          <motion.h1 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-3xl sm:text-4xl md:text-6xl font-bold font-heading mb-4"
+          >
             Your Ultimate Platform for
             <span className="text-gradient"> Fitness & Sports</span>
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8">
+          </motion.h1>
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8"
+          >
             Transform your fitness journey with personalized meal plans, workout tracking, and expert guidance.
-          </p>
+          </motion.p>
         </div>
-      </section>
+      </motion.section>
 
       {/* Filter Section */}
       <div className="mx-auto py-4 px-4">
-        <div className="flex items-center gap-4 mb-4">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="glass-panel p-4 flex items-center gap-4 mb-4"
+        >
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search videos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 bg-transparent"
             />
           </div>
           {selectedCategory && (
-            <Badge variant="secondary" className="flex items-center gap-1">
+            <Badge variant="secondary" className="flex items-center gap-1 glass-panel-dark">
               {selectedCategory}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedCategory(null)} />
             </Badge>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {/* Simple Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="all">All Videos</TabsTrigger>
-          <TabsTrigger value="sessions">Upcoming Sessions</TabsTrigger>
-        </TabsList>
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="glass-panel p-4"
+      >
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="glass-panel-dark">
+            <TabsTrigger value="all">All Videos</TabsTrigger>
+            <TabsTrigger value="sessions">Upcoming Sessions</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="all">
-          <div className="flex flex-col">
-            {data?.pages.map((page, i) => (
-              <React.Fragment key={i}>
-                {[...page.arts, ...page.youtube]
-                  .filter(video => !selectedCategory || 
-                    (video.arts_categories?.name === selectedCategory))
-                  .map((video) => (
-                  <div 
-                    key={video.id} 
-                    className="relative flex items-stretch border-y border-muted py-2"
-                  >
-                    <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(video)}>
-                      <div className="aspect-video w-full">
-                        <iframe
-                          src={video.embed_url || `https://www.youtube.com/embed/${video.embed_id}`}
-                          className="w-full h-full pointer-events-none"
-                          allowFullScreen
-                          title={video.title}
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-[#f7bd00] hover:text-black transition-colors duration-200 rounded-none"
-                      onClick={() => setSelectedCategory(video.arts_categories?.name)}
-                      style={{ writingMode: 'vertical-rl' }}
+          <TabsContent value="all">
+            <div className="flex flex-col space-y-4">
+              {data?.pages.map((page, i) => (
+                <React.Fragment key={i}>
+                  {[...page.arts, ...page.youtube]
+                    .filter(video => !selectedCategory || 
+                      (video.arts_categories?.name === selectedCategory))
+                    .map((video) => (
+                    <motion.div 
+                      key={video.id} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="relative flex items-stretch glass-panel"
                     >
-                      {video.arts_categories?.name || 'Uncategorized'}
-                    </Button>
-                  </div>
-                ))}
-              </React.Fragment>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="sessions">
-          <div className="flex flex-col">
-            {data?.pages.map((page, i) => (
-              <React.Fragment key={i}>
-                {page.sessions.map((session) => (
-                  <div 
-                    key={session.id} 
-                    className="relative flex items-stretch border-y border-muted py-2"
-                  >
-                    <div className="flex-1 cursor-pointer" onClick={() => handleVideoClick(session)}>
-                      <div className="aspect-video w-full">
-                        {session.embed_url && (
+                      <div className="flex-1 cursor-pointer p-4" onClick={() => handleVideoClick(video)}>
+                        <div className="aspect-video w-full rounded-lg overflow-hidden">
                           <iframe
-                            src={session.embed_url}
+                            src={video.embed_url || `https://www.youtube.com/embed/${video.embed_id}`}
                             className="w-full h-full pointer-events-none"
                             allowFullScreen
-                            title={session.name}
+                            title={video.title}
                           />
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </React.Fragment>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+                      <Button
+                        variant="ghost"
+                        className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center glass-panel-dark hover:bg-[#f7bd00] hover:text-black transition-colors duration-200 rounded-none"
+                        onClick={() => setSelectedCategory(video.arts_categories?.name)}
+                        style={{ writingMode: 'vertical-rl' }}
+                      >
+                        {video.arts_categories?.name || 'Uncategorized'}
+                      </Button>
+                    </motion.div>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="sessions">
+            <div className="flex flex-col space-y-4">
+              {data?.pages.map((page, i) => (
+                <React.Fragment key={i}>
+                  {page.sessions.map((session) => (
+                    <motion.div 
+                      key={session.id} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="relative flex items-stretch glass-panel"
+                    >
+                      <div className="flex-1 cursor-pointer p-4" onClick={() => handleVideoClick(session)}>
+                        <div className="aspect-video w-full rounded-lg overflow-hidden">
+                          {session.embed_url && (
+                            <iframe
+                              src={session.embed_url}
+                              className="w-full h-full pointer-events-none"
+                              allowFullScreen
+                              title={session.name}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </motion.div>
 
       {/* Loading indicator */}
       <div ref={bottomRef} className="py-4 flex justify-center">
