@@ -34,7 +34,7 @@ const ChatLayout = () => {
 
   const gradients = [
     'bg-gradient-to-br from-black via-[#1a1a1a] to-[#1B1500]',
-    'bg-gradient-to-br from-[#f7bd00] via-[#1a1a1a] to-black',
+    'bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]',
     'bg-gradient-to-br from-[#333333] via-[#1a1a1a] to-[#f7bd00]'
   ];
 
