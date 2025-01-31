@@ -6,6 +6,8 @@ import { ContactProfile } from "@/components/crm/contacts/ContactProfile";
 import GymDashboard from "@/components/crm/gym/GymDashboard";
 import TrainingDashboard from "@/components/crm/training/TrainingDashboard";
 import { TeamsList } from "@/components/crm/teams/TeamsList";
+import ClientList from "@/components/crm/ClientList";
+import FinancialEditor from "@/components/crm/FinancialEditor";
 
 export default function CRMPage() {
   return (
@@ -19,6 +21,9 @@ export default function CRMPage() {
           <TabsTrigger value="gym">Gym</TabsTrigger>
           <TabsTrigger value="training">Training</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
+          <TabsTrigger value="leads">Leads</TabsTrigger>
+          <TabsTrigger value="finance">Finance</TabsTrigger>
+          <TabsTrigger value="clients">Clients</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stocks">
@@ -47,6 +52,18 @@ export default function CRMPage() {
 
         <TabsContent value="teams">
           <TeamsList />
+        </TabsContent>
+
+        <TabsContent value="leads">
+          <LeadPipeline />
+        </TabsContent>
+
+        <TabsContent value="finance">
+          <FinancialEditor />
+        </TabsContent>
+
+        <TabsContent value="clients">
+          <ClientList />
         </TabsContent>
       </Tabs>
     </div>
