@@ -10,7 +10,7 @@ export function EditVendorProfileButton({ className }: EditVendorProfileButtonPr
   const navigate = useNavigate();
 
   const handleEditProfile = () => {
-    navigate('/vendor/profile');
+    navigate('/vendor/edit-profile');
   };
 
   return (
