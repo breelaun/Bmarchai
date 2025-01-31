@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import VendorProfileForm from "@/components/vendors/profile/VendorProfileForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton";
 
 export default function VendorProfile() {
   const { data: vendorProfile, isLoading } = useQuery({
