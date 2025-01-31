@@ -878,6 +878,33 @@ export type Database = {
           },
         ]
       }
+      contacts: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["contact_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["contact_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["contact_status"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crm_clients: {
         Row: {
           company: string | null
@@ -2694,6 +2721,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      are_contacts: {
+        Args: {
+          user_a: string
+          user_b: string
+        }
+        Returns: boolean
+      }
       delete_expired_embeds: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2709,6 +2743,7 @@ export type Database = {
       activity_type: "stage_change" | "communication" | "task" | "note"
       class_type: "group" | "personal" | "specialty"
       communication_type: "email" | "phone" | "meeting" | "note"
+      contact_status: "pending" | "accepted" | "blocked"
       equipment_status: "available" | "in_use" | "maintenance" | "retired"
       membership_status: "active" | "expired" | "cancelled" | "frozen"
       payment_frequency: "monthly" | "quarterly" | "yearly" | "lifetime"
