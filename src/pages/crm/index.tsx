@@ -1,4 +1,4 @@
-import { StockMarket } from "@/components/crm/StockMarket";
+import StockMarket from "@/components/crm/StockMarket";
 
 export default function CRMPage() {
   return (

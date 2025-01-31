@@ -16,7 +16,6 @@ interface StockData {
   changePercent: number;
 }
 
-// Export the StockChart component
 export const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
   return (
     <div>
@@ -26,7 +25,6 @@ export const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
   );
 };
 
-// Export the main StockMarket component as default
 const StockMarket = () => {
   const session = useSession();
   const { toast } = useToast();
