@@ -32,6 +32,7 @@ import PersistentPlayer from "./components/PersistentPlayer";
 import { useVideo } from "@/contexts/VideoPlayerContext";
 import SqeresPage from "./pages/sqeres";
 import ChatPage from "./pages/chat";
+import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ const AppContent = () => {
           <Route path="/crm" element={<CRMPage />} />
           <Route path="/sqeres" element={<SqeresPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/vendor/edit-profile" element={<EditVendorProfile />} />
         </Routes>
       </main>
       <Footer />
