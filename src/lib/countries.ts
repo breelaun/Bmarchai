@@ -5,9 +5,9 @@ export const countries = [
   { code: "AU", name: "Australia" },
   { code: "TH", name: "Thailand" },
   { code: "JP", name: "Japan" },
-  { code: "KR", "South Korea" },
+  { code: "KR", name: "South Korea" },
   { code: "SG", name: "Singapore" },
   { code: "MY", name: "Malaysia" },
   { code: "ID", name: "Indonesia" },
-  { code: "IN", name: "India" },
+  { code: "IN", name: "India" }
 ];
