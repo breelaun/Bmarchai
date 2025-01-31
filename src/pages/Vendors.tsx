@@ -5,11 +5,11 @@ import { Search, BadgeCheck, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth"; // Assuming you have an auth hook
+import { useSession } from "@supabase/auth-helpers-react"; // Replace useAuth with useSession
 
 const Vendors = () => {
   const navigate = useNavigate();
-  const { user } = useAuth(); // Get current logged-in user
+  const session = useSession(); // Use useSession instead of useAuth
 
   const { data: vendors, isLoading } = useQuery({
     queryKey: ['vendors'],
@@ -53,7 +53,7 @@ const Vendors = () => {
                 Discover trusted vendors in our marketplace
               </p>
             </div>
-            {user && (
+            {session && (
               <Button 
                 variant="outline" 
                 onClick={handleEditProfile}
@@ -66,8 +66,6 @@ const Vendors = () => {
           </div>
         </div>
 
-        {/* Rest of the existing component remains the same */}
-        {/* Search and Filter Section */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Input
