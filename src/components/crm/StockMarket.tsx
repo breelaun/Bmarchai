@@ -17,7 +17,7 @@ interface StockMarketProps {
   defaultSymbol?: string;
 }
 
-const API_KEY = 'YOUR_POLYGON_API_KEY'; // Replace with your Polygon.io API key
+const API_KEY = import.meta.env.VITE_POLYGON_API_KEY;
 
 const fetchStockData = async (symbol: string, startDate: string, endDate: string) => {
   // Using Polygon.io API
