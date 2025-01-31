@@ -48,7 +48,8 @@ const AppContent = () => {
           <Route path="/vendors" element={<Vendors />} />
           <Route path="/vendors/new" element={<VendorProfile />} />
           <Route path="/vendors/:id" element={<VendorProfile />} />
-          <Route path="/vendors/profile" element={<VendorProfile />} />
+          <Route path="/vendor/profile" element={<VendorProfile />} />
+          <Route path="/vendor/edit-profile" element={<EditVendorProfile />} />
           <Route path="/blogs" element={<BlogsPage />} />
           <Route path="/blogs/new" element={<CreateBlog />} />
           <Route path="/blogs/category/:category" element={<BlogCategory />} />
@@ -67,7 +68,6 @@ const AppContent = () => {
           <Route path="/crm" element={<CRMPage />} />
           <Route path="/sqeres" element={<SqeresPage />} />
           <Route path="/chat" element={<ChatPage />} />
-          <Route path="/vendor/editprofile" element={<EditVendorProfile />} />
         </Routes>
       </main>
       <Footer />
