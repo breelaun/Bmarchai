@@ -5,7 +5,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import VendorHeader from "./profile/VendorHeader";
 import AddContactButton from "../contacts/AddContactButton";
-import { VendorProfileEditModal } from "./profile/VendorProfileEditModal";
+import { EditVendorProfileButton } from "../ui/EditVendorProfileButton";
 import type { Profile } from "@/types/profile";
 
 interface VendorData {
@@ -61,10 +61,7 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
       {vendorId && (
         <div className="relative z-10 flex justify-end gap-2 px-4 py-2">
           {isOwnProfile && profile?.is_vendor && (
-            <VendorProfileEditModal 
-              vendorId={vendorId}
-              onSuccess={refetch}
-            />
+            <EditVendorProfileButton />
           )}
           <AddContactButton targetUserId={vendorId} />
         </div>
