@@ -29,7 +29,6 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const session = useSession();
 
-  // Fetch the user's profile data to get the banner URL
   const { data: profile, refetch } = useQuery({
     queryKey: ['profile', vendorId],
     queryFn: async () => {
@@ -51,7 +50,6 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
     enabled: !!vendorId
   });
 
-  // Check if this is the user's own profile
   useEffect(() => {
     if (!vendorId || !session?.user?.id) return;
     setIsOwnProfile(session.user.id === vendorId);
@@ -59,22 +57,24 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
 
   return (
     <div className="vendor-profile space-y-6">
+      {/* Action buttons container - Moved above the banner for proper z-index */}
+      {vendorId && (
+        <div className="relative z-10 flex justify-end gap-2 px-4 py-2">
+          {isOwnProfile && profile?.is_vendor && (
+            <VendorProfileEditModal 
+              vendorId={vendorId}
+              onSuccess={refetch}
+            />
+          )}
+          <AddContactButton targetUserId={vendorId} />
+        </div>
+      )}
+
       <div className="relative">
         <VendorHeader 
           profile={profile} 
           aboutMe={aboutMe}
         />
-        {vendorId && (
-          <div className="absolute top-4 right-4 flex gap-2">
-            {isOwnProfile && profile?.is_vendor && (
-              <VendorProfileEditModal 
-                vendorId={vendorId}
-                onSuccess={refetch}
-              />
-            )}
-            <AddContactButton targetUserId={vendorId} />
-          </div>
-        )}
       </div>
       
       <div className="container mx-auto px-4">
