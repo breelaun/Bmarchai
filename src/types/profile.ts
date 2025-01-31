@@ -14,5 +14,4 @@ export interface Profile {
   email_notifications: boolean | null;
   sms_notifications: boolean | null;
   two_factor_enabled: boolean | null;
-  default_banner_url?: string;
 }

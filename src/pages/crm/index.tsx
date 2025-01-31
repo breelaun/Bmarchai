@@ -1,12 +1,9 @@
-import React from 'react';
-import StockMarket from '@/components/crm/StockMarket';
+import { StockMarket } from "@/components/crm/StockMarket";
 
-const CRMPage = () => {
+export default function CRMPage() {
   return (
-    <div className="container mx-auto p-4">
-      <StockMarket symbol="AAPL" timeRange="1D" />
+    <div className="container mx-auto py-8">
+      <StockMarket />
     </div>
   );
-};
-
-export default CRMPage;
+}
