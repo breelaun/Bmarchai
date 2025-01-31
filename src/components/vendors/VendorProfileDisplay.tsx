@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,7 @@ interface VendorProfileDisplayProps {
 
 const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProps) => {
   const { socialLinks, aboutMe, enableReviews, enableFeatured } = vendorData;
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   // Fetch the user's profile data to get the banner URL
   const { data: profile, refetch } = useQuery({
@@ -47,9 +49,15 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
     enabled: !!vendorId
   });
 
-  // Get the current user's ID from Supabase session
-  const { data: { user } } = await supabase.auth.getUser();
-  const isOwnProfile = user?.id === vendorId;
+  // Check if this is the user's own profile
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsOwnProfile(user?.id === vendorId);
+    };
+    
+    checkUser();
+  }, [vendorId]);
 
   return (
     <div className="vendor-profile space-y-6">
