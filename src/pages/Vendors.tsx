@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, BadgeCheck, Edit } from "lucide-react";
+import { Search, BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useSession } from "@supabase/auth-helpers-react"; // Replace useAuth with useSession
+import { useSession } from "@supabase/auth-helpers-react";
+import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton";
 
 const Vendors = () => {
   const navigate = useNavigate();
-  const session = useSession(); // Use useSession instead of useAuth
+  const session = useSession();
 
   const { data: vendors, isLoading } = useQuery({
     queryKey: ['vendors'],
@@ -37,10 +38,6 @@ const Vendors = () => {
     navigate(`/vendors/${vendorId}`);
   };
 
-  const handleEditProfile = () => {
-    navigate('/vendors/edit');
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col gap-8">
@@ -54,14 +51,7 @@ const Vendors = () => {
               </p>
             </div>
             {session && (
-              <Button 
-                variant="outline" 
-                onClick={handleEditProfile}
-                className="flex items-center gap-2"
-              >
-                <Edit className="h-4 w-4" />
-                Edit Profile
-              </Button>
+              <EditVendorProfileButton />
             )}
           </div>
         </div>
