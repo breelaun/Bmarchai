@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Session } from '@supabase/auth-helpers-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, Edit, Sync, Check, X } from "lucide-react";
+import { Plus, Minus, Edit, RefreshCw, Check, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -21,9 +21,10 @@ interface ProductsListProps {
   isMobile?: boolean;
   showProducts?: boolean;
   channelId: string | null;
+  showSidebar?: boolean;
 }
 
-const ProductsList = ({ products, session, isMobile, showProducts, channelId }: ProductsListProps) => {
+const ProductsList = ({ products, session, isMobile, showProducts, channelId, showSidebar }: ProductsListProps) => {
   const { toast } = useToast();
   const [vendorProducts, setVendorProducts] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState<string | null>(null);
@@ -173,7 +174,7 @@ const ProductsList = ({ products, session, isMobile, showProducts, channelId }: 
   if (!showProducts) return null;
 
   return (
-    <div className={`${isMobile ? 'absolute right-0 z-20' : ''} w-60 bg-[#2B2D31] flex flex-col h-full`}>
+    <div className={`${isMobile ? (showSidebar ? 'absolute right-0 z-20' : 'hidden') : ''} w-60 bg-[#2B2D31] flex flex-col h-full`}>
       <div className="p-4 border-b border-[#1F2023] shadow">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-white">Products</h2>
@@ -183,7 +184,7 @@ const ProductsList = ({ products, session, isMobile, showProducts, channelId }: 
             onClick={syncWithVendorProducts}
             disabled={isSyncing}
           >
-            <Sync className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
