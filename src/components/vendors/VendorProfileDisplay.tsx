@@ -47,6 +47,10 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
     enabled: !!vendorId
   });
 
+  // Get the current user's ID from Supabase session
+  const { data: { user } } = await supabase.auth.getUser();
+  const isOwnProfile = user?.id === vendorId;
+
   return (
     <div className="vendor-profile space-y-6">
       <div className="relative">
@@ -56,7 +60,7 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
         />
         {vendorId && (
           <div className="absolute top-4 right-4 flex gap-2">
-            {profile?.id === vendorId && (
+            {isOwnProfile && (
               <VendorProfileEditModal 
                 vendorId={vendorId}
                 onSuccess={refetch}
