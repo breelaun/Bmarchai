@@ -33,7 +33,7 @@ const ChatLayout = () => {
   const [activeGradient, setActiveGradient] = useState(0);
 
   const gradients = [
-    'bg-gradient-to-br from-black via-[#1a1a1a] to-[#2d2d2d]',
+    'bg-gradient-to-br from-black via-[#1a1a1a] to-[#1B1500]',
     'bg-gradient-to-br from-[#f7bd00] via-[#1a1a1a] to-black',
     'bg-gradient-to-br from-[#333333] via-[#1a1a1a] to-[#f7bd00]'
   ];
