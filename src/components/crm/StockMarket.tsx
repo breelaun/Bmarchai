@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from '@supabase/auth-helpers-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Star, Trash2 } from 'lucide-react';
-import type { StockChartProps } from '@/types/stock';
-import StockMarket from "@/components/crm/StockMarket";
 
 interface StockData {
   symbol: string;
@@ -16,15 +14,6 @@ interface StockData {
   change: number;
   changePercent: number;
 }
-
-export const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
-  return (
-    <div>
-      <h2>Stock Chart for {symbol}</h2>
-      {/* Add chart implementation here */}
-    </div>
-  );
-};
 
 const StockMarket = () => {
   const session = useSession();
@@ -106,7 +95,17 @@ const StockMarket = () => {
           user_id: session.user.id,
         });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('more than 5 favorite stocks')) {
+          toast({
+            title: 'Error',
+            description: 'You can only have 5 favorite stocks',
+            variant: 'destructive',
+          });
+          return;
+        }
+        throw error;
+      }
 
       fetchFavorites();
       toast({
@@ -209,7 +208,7 @@ const StockMarket = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Favorite Stocks</CardTitle>
+          <CardTitle>Favorite Stocks ({favorites.length}/5)</CardTitle>
         </CardHeader>
         <CardContent>
           {favorites.length === 0 ? (
