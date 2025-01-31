@@ -2535,44 +2535,56 @@ export type Database = {
         Row: {
           banner_data: Json | null
           business_description: string | null
+          business_hours: Json | null
           business_name: string | null
           contact_email: string | null
           country: string | null
           created_at: string
+          current_sale: Json | null
           customizations: Json | null
           id: string
+          locations: Json[] | null
           social_links: Json | null
           template_id: number | null
           timezone: string | null
           updated_at: string
+          website_url: string | null
         }
         Insert: {
           banner_data?: Json | null
           business_description?: string | null
+          business_hours?: Json | null
           business_name?: string | null
           contact_email?: string | null
           country?: string | null
           created_at?: string
+          current_sale?: Json | null
           customizations?: Json | null
           id: string
+          locations?: Json[] | null
           social_links?: Json | null
           template_id?: number | null
           timezone?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Update: {
           banner_data?: Json | null
           business_description?: string | null
+          business_hours?: Json | null
           business_name?: string | null
           contact_email?: string | null
           country?: string | null
           created_at?: string
+          current_sale?: Json | null
           customizations?: Json | null
           id?: string
+          locations?: Json[] | null
           social_links?: Json | null
           template_id?: number | null
           timezone?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Relationships: [
           {
