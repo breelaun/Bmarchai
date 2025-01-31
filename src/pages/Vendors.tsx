@@ -5,7 +5,7 @@ import { Search, BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
-import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton";
+import { Button } from "@/components/ui/button";
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -50,9 +50,6 @@ const Vendors = () => {
                 Discover trusted vendors in our marketplace
               </p>
             </div>
-            {session && (
-              <EditVendorProfileButton />
-            )}
           </div>
         </div>
 
