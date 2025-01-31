@@ -5,6 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton";
 
+<div className="flex justify-between items-center mb-6">
+  <h1 className="text-2xl font-bold">Vendor Profile</h1>
+  <EditVendorProfileButton />
+</div>
+
 export default function VendorProfile() {
   const { data: vendorProfile, isLoading } = useQuery({
     queryKey: ['vendor-profile'],
