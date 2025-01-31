@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Menu, Hash, Users, Package } from "lucide-react";
+import { Menu, Hash, Users, Package, ChevronLeft, MessageSquare, Settings, Home } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -297,46 +297,26 @@ const ChatLayout = () => {
           (showMembers || showProducts) ? 'w-64' : 'w-0'
         } bg-[#1e1f23] border-l border-[#2d2f34] transition-all duration-300 overflow-hidden`}
       >
-        <div className="p-4">
-          <h4 className="text-lg font-semibold text-white mb-4">
-            {showMembers ? 'Members' : 'Products'}
-          </h4>
-          {showMembers && (
-            <div className="space-y-3">
-              {channelMembers.map((member) => (
-                <div key={member.id} className="flex items-center space-x-3">
-                  <img
-                    src={member.profiles?.avatar_url || "/api/placeholder/32/32"}
-                    alt="avatar"
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <span className="text-[#e3e5e8]">
-                    {member.profiles?.username || "Anonymous"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-          {showProducts && (
-            <div className="space-y-3">
-              {channelProducts.map((product) => (
-                <div key={product.id} className="p-3 bg-[#2d2f34] rounded-lg">
-                  <img
-                    src={product.products?.image_url || "/api/placeholder/200/100"}
-                    alt={product.products?.name}
-                    className="w-full h-24 object-cover rounded-md mb-2"
-                  />
-                  <h5 className="text-white font-medium">
-                    {product.products?.name}
-                  </h5>
-                  <p className="text-[#a6adb7] text-sm">
-                    ${product.products?.price}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {showMembers && (
+          <MembersList
+            members={channelMembers}
+            session={session}
+            isMobile={isMobile}
+            showMembers={showMembers}
+            channelId={selectedChannel}
+            showSidebar={showSidebar}
+          />
+        )}
+        {showProducts && (
+          <ProductsList
+            products={channelProducts}
+            session={session}
+            isMobile={isMobile}
+            showProducts={showProducts}
+            channelId={selectedChannel}
+            showSidebar={showSidebar}
+          />
+        )}
       </div>
     </div>
   );
