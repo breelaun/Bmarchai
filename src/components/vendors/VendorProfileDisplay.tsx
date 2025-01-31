@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import VendorHeader from "./profile/VendorHeader";
 import AddContactButton from "../contacts/AddContactButton";
+import { VendorProfileEditModal } from "./profile/VendorProfileEditModal";
 import type { Profile } from "@/types/profile";
 
 interface VendorData {
@@ -25,7 +26,7 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
   const { socialLinks, aboutMe, enableReviews, enableFeatured } = vendorData;
 
   // Fetch the user's profile data to get the banner URL
-  const { data: profile } = useQuery({
+  const { data: profile, refetch } = useQuery({
     queryKey: ['profile', vendorId],
     queryFn: async () => {
       if (!vendorId) return null;
@@ -54,7 +55,13 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
           aboutMe={aboutMe}
         />
         {vendorId && (
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex gap-2">
+            {profile?.id === vendorId && (
+              <VendorProfileEditModal 
+                vendorId={vendorId}
+                onSuccess={refetch}
+              />
+            )}
             <AddContactButton targetUserId={vendorId} />
           </div>
         )}
