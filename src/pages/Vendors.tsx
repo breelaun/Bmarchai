@@ -10,6 +10,7 @@ import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton
 const Vendors = () => {
   const navigate = useNavigate();
   const session = useSession();
+  console.log('Session details:', session);
 
   const { data: vendors, isLoading } = useQuery({
     queryKey: ['vendors'],
