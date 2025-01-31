@@ -55,11 +55,12 @@ const ChatLayout = () => {
       const { data: channelsData, error: channelsError } = await supabase
         .from("chat_channels")
         .select("*")
-        .or(`is_public.eq.true,owner_id.eq.${session?.user?.id}`);
+        .or(`is_public.eq.true,owner_id.eq.${session?.user?.id}`)
+        .limit(100); // Add limit to prevent recursion
 
       if (channelsError) throw channelsError;
-      setChannels(channelsData);
-      if (channelsData.length > 0) {
+      setChannels(channelsData || []);
+      if (channelsData && channelsData.length > 0) {
         setSelectedChannel(channelsData[0].id);
       }
     } catch (error: any) {
@@ -338,9 +339,7 @@ const ChatLayout = () => {
 
         {/* Right Sidebar - Members & Products */}
         <div 
-          className={`${
-            (showMembers || showProducts) ? 'w-64' : 'w-0'
-          } bg-black/30 backdrop-blur-lg border-l border-[#f7bd00]/20 
+          className={`${(showMembers || showProducts) ? 'w-64' : 'w-0'} bg-black/30 backdrop-blur-lg border-l border-[#f7bd00]/20 
              transition-all duration-300 overflow-hidden`}
         >
           {showMembers && (
@@ -384,6 +383,13 @@ const ChatLayout = () => {
                     ${product.products.price}
                   </span>
                 </div>
-              )
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 export default ChatLayout;
