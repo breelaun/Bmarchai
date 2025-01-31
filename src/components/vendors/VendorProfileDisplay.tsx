@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import VendorHeader from "./profile/VendorHeader";
 import AddContactButton from "../contacts/AddContactButton";
@@ -26,6 +27,7 @@ interface VendorProfileDisplayProps {
 const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProps) => {
   const { socialLinks, aboutMe, enableReviews, enableFeatured } = vendorData;
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const session = useSession();
 
   // Fetch the user's profile data to get the banner URL
   const { data: profile, refetch } = useQuery({
@@ -51,13 +53,9 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
 
   // Check if this is the user's own profile
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsOwnProfile(user?.id === vendorId);
-    };
-    
-    checkUser();
-  }, [vendorId]);
+    if (!vendorId || !session?.user?.id) return;
+    setIsOwnProfile(session.user.id === vendorId);
+  }, [vendorId, session?.user?.id]);
 
   return (
     <div className="vendor-profile space-y-6">
@@ -68,7 +66,7 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
         />
         {vendorId && (
           <div className="absolute top-4 right-4 flex gap-2">
-            {isOwnProfile && (
+            {isOwnProfile && profile?.is_vendor && (
               <VendorProfileEditModal 
                 vendorId={vendorId}
                 onSuccess={refetch}
