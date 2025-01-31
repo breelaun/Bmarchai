@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Menu, Hash, Users, Package, ChevronLeft, MessageSquare, Settings, Home } from "lucide-react";
+import { Menu, Hash, Users, Package, ChevronLeft, MessageSquare, Settings, Home, Sparkles } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion, AnimatePresence } from "framer-motion";
 
 import ServerList from "./components/ServerList";
 import ChannelList from "./components/ChannelList";
@@ -29,6 +30,21 @@ const ChatLayout = () => {
   const [showProducts, setShowProducts] = useState(!isMobile);
   const [channelMembers, setChannelMembers] = useState<any[]>([]);
   const [channelProducts, setChannelProducts] = useState<any[]>([]);
+  const [activeGradient, setActiveGradient] = useState(0);
+
+  const gradients = [
+    'bg-gradient-to-br from-[#171923] via-[#1a202c] to-[#2d3748]',
+    'bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]',
+    'bg-gradient-to-br from-[#222831] via-[#393e46] to-[#00adb5]'
+  ];
+
+  useEffect(() => {
+    const gradientInterval = setInterval(() => {
+      setActiveGradient((prev) => (prev + 1) % gradients.length);
+    }, 10000);
+
+    return () => clearInterval(gradientInterval);
+  }, []);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -181,143 +197,172 @@ const ChatLayout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#1a1b1e]">
-      {/* Left Sidebar - Server Navigation */}
-      <div className={`${showSidebar ? 'w-20' : 'w-0'} bg-[#141517] transition-all duration-300 flex flex-col items-center py-4 space-y-6`}>
-        <Button variant="ghost" className="p-2 rounded-xl bg-[#2d2f34] hover:bg-[#3f4147]">
-          <Home className="h-6 w-6 text-[#a6adb7]" />
-        </Button>
-        
-        {channels.map((channel) => (
-          <Button
-            key={channel.id}
-            variant="ghost"
-            className={`p-2 rounded-xl hover:bg-[#3f4147] ${
-              selectedChannel === channel.id ? 'bg-[#3f4147]' : 'bg-[#2d2f34]'
-            }`}
-            onClick={() => setSelectedChannel(channel.id)}
-          >
-            <MessageSquare className="h-6 w-6 text-[#a6adb7]" />
-          </Button>
-        ))}
-        
-        <div className="mt-auto">
-          <Button variant="ghost" className="p-2 rounded-xl bg-[#2d2f34] hover:bg-[#3f4147]">
-            <Settings className="h-6 w-6 text-[#a6adb7]" />
-          </Button>
-        </div>
-      </div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className={`relative flex h-screen ${gradients[activeGradient]} overflow-hidden`}
+    >
+      {/* Glassmorphic Overlay */}
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-xl" />
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="h-16 bg-[#1e1f23] border-b border-[#2d2f34] flex items-center justify-between px-6">
-          <div className="flex items-center space-x-4">
-            {isMobile && (
-              <Button variant="ghost" size="icon" onClick={() => setShowSidebar(!showSidebar)}>
-                {showSidebar ? <ChevronLeft className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
-            )}
-            <div className="flex items-center space-x-2">
-              <Hash className="h-5 w-5 text-[#a6adb7]" />
-              <h3 className="font-semibold text-white text-lg">
-                {channels.find((c) => c.id === selectedChannel)?.name || "Select a channel"}
-              </h3>
-            </div>
-          </div>
+      {/* Main Content */}
+      <div className="relative z-10 flex w-full">
+        {/* Left Sidebar - Server Navigation */}
+        <motion.div 
+          initial={{ x: -100 }}
+          animate={{ x: 0 }}
+          className={`${showSidebar ? 'w-20' : 'w-0'} bg-white/10 backdrop-blur-lg border-r border-white/20 transition-all duration-300 flex flex-col items-center py-4 space-y-6`}
+        >
+          <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
+            <Home className="h-6 w-6 text-white" />
+          </Button>
           
-          <div className="flex items-center space-x-3">
+          {channels.map((channel) => (
             <Button
+              key={channel.id}
               variant="ghost"
-              className="rounded-xl hover:bg-[#3f4147] bg-[#2d2f34]"
-              onClick={() => setShowProducts(!showProducts)}
+              className={`p-2 rounded-xl hover:bg-black/20 ${
+                selectedChannel === channel.id ? 'bg-black/30' : 'bg-black/10'
+              }`}
+              onClick={() => setSelectedChannel(channel.id)}
             >
-              <Package className="h-5 w-5 text-[#a6adb7]" />
+              <MessageSquare className="h-6 w-6 text-white" />
             </Button>
-            <Button
-              variant="ghost"
-              className="rounded-xl hover:bg-[#3f4147] bg-[#2d2f34]"
-              onClick={() => setShowMembers(!showMembers)}
-            >
-              <Users className="h-5 w-5 text-[#a6adb7]" />
+          ))}
+          
+          <div className="mt-auto">
+            <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
+              <Settings className="h-6 w-6 text-white" />
             </Button>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className="flex items-start space-x-3 hover:bg-[#2d2f34] p-3 rounded-lg transition-colors"
-            >
-              <img
-                src={message.sender?.avatar_url || "/api/placeholder/32/32"}
-                alt="avatar"
-                className="w-8 h-8 rounded-full"
-              />
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium text-white">
-                    {message.sender?.username || "Anonymous"}
-                  </span>
-                  <span className="text-xs text-[#a6adb7]">
-                    {new Date(message.created_at).toLocaleTimeString()}
-                  </span>
-                </div>
-                <p className="text-[#e3e5e8] mt-1">{message.content}</p>
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="h-16 bg-white/10 backdrop-blur-lg border-b border-white/20 flex items-center justify-between px-6"
+          >
+            <div className="flex items-center space-x-4">
+              {isMobile && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setShowSidebar(!showSidebar)}
+                  className="bg-black/10 hover:bg-black/20"
+                >
+                  {showSidebar ? <ChevronLeft className="h-5 w-5 text-white" /> : <Menu className="h-5 w-5 text-white" />}
+                </Button>
+              )}
+              <div className="flex items-center space-x-2">
+                <Hash className="h-5 w-5 text-white" />
+                <h3 className="font-semibold text-white text-lg">
+                  {channels.find((c) => c.id === selectedChannel)?.name || "Select a channel"}
+                </h3>
               </div>
             </div>
-          ))}
+            
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                className="rounded-xl hover:bg-black/20 bg-black/10"
+                onClick={() => setShowProducts(!showProducts)}
+              >
+                <Package className="h-5 w-5 text-white" />
+              </Button>
+              <Button
+                variant="ghost"
+                className="rounded-xl hover:bg-black/20 bg-black/10"
+                onClick={() => setShowMembers(!showMembers)}
+              >
+                <Users className="h-5 w-5 text-white" />
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto">
+            <AnimatePresence>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="flex items-start space-x-3 hover:bg-white/5 p-3 rounded-lg transition-colors"
+                >
+                  <img
+                    src={message.sender?.avatar_url || "/api/placeholder/32/32"}
+                    alt="avatar"
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium text-white">
+                        {message.sender?.username || "Anonymous"}
+                      </span>
+                      <span className="text-xs text-white/60">
+                        {new Date(message.created_at).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <p className="text-white/80 mt-1">{message.content}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Message Input */}
+          <div className="p-4 bg-white/10 backdrop-blur-lg border-t border-white/20">
+            <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
+              <input
+                type="text"
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1 bg-black/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-white/20 placeholder-white/50"
+              />
+              <Button 
+                type="submit"
+                className="bg-white/10 hover:bg-white/20 text-white rounded-xl px-6 py-3"
+              >
+                Send
+              </Button>
+            </form>
+          </div>
         </div>
 
-        {/* Message Input */}
-        <div className="p-4 bg-[#1e1f23] border-t border-[#2d2f34]">
-          <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
-            <input
-              type="text"
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 bg-[#2d2f34] text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#5865f2] placeholder-[#a6adb7]"
+        {/* Right Sidebar - Members & Products */}
+        <div 
+          className={`${
+            (showMembers || showProducts) ? 'w-64' : 'w-0'
+          } bg-white/10 backdrop-blur-lg border-l border-white/20 transition-all duration-300 overflow-hidden`}
+        >
+          {showMembers && (
+            <MembersList
+              members={channelMembers}
+              session={session}
+              isMobile={isMobile}
+              showMembers={showMembers}
+              showSidebar={showSidebar}
             />
-            <Button 
-              type="submit"
-              className="bg-[#5865f2] hover:bg-[#4752c4] text-white rounded-xl px-6 py-3"
-            >
-              Send
-            </Button>
-          </form>
+          )}
+          {showProducts && (
+            <ProductsList
+              products={channelProducts}
+              session={session}
+              isMobile={isMobile}
+              showProducts={showProducts}
+              channelId={selectedChannel}
+              showSidebar={showSidebar}
+            />
+          )}
         </div>
       </div>
-
-      {/* Right Sidebar - Members & Products */}
-      <div 
-        className={`${
-          (showMembers || showProducts) ? 'w-64' : 'w-0'
-        } bg-[#1e1f23] border-l border-[#2d2f34] transition-all duration-300 overflow-hidden`}
-      >
-        {showMembers && (
-          <MembersList
-            members={channelMembers}
-            session={session}
-            isMobile={isMobile}
-            showMembers={showMembers}
-            showSidebar={showSidebar}
-          />
-        )}
-        {showProducts && (
-          <ProductsList
-            products={channelProducts}
-            session={session}
-            isMobile={isMobile}
-            showProducts={showProducts}
-            channelId={selectedChannel}
-            showSidebar={showSidebar}
-          />
-        )}
-      </div>
-    </div>
+    </motion.div>
   );
 };
 
