@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Star, Trash2 } from 'lucide-react';
 import type { StockChartProps } from '@/types/stock';
+import StockMarket from "@/components/crm/StockMarket";
 
 interface StockData {
   symbol: string;
