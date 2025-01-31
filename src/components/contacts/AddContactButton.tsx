@@ -20,7 +20,7 @@ const AddContactButton = ({ targetUserId, className = "" }: AddContactButtonProp
   const { data: contactStatus } = useQuery({
     queryKey: ['contact-status', targetUserId],
     queryFn: async () => {
-      if (!session?.user?.id) return null;
+      if (!session?.user?.id || !targetUserId || targetUserId === 'profile') return null;
       
       const { data, error } = await supabase
         .from('contacts')
@@ -32,12 +32,14 @@ const AddContactButton = ({ targetUserId, className = "" }: AddContactButtonProp
       if (error && error.code !== 'PGRST116') throw error;
       return data;
     },
-    enabled: !!session?.user?.id && !!targetUserId && session.user.id !== targetUserId
+    enabled: !!session?.user?.id && !!targetUserId && targetUserId !== 'profile' && session.user.id !== targetUserId
   });
 
   const addContact = useMutation({
     mutationFn: async () => {
-      if (!session?.user?.id) throw new Error('Not authenticated');
+      if (!session?.user?.id || !targetUserId || targetUserId === 'profile') {
+        throw new Error('Invalid user IDs');
+      }
       
       const { error } = await supabase
         .from('contacts')
@@ -66,7 +68,7 @@ const AddContactButton = ({ targetUserId, className = "" }: AddContactButtonProp
     }
   });
 
-  if (!session?.user?.id || session.user.id === targetUserId) {
+  if (!session?.user?.id || session.user.id === targetUserId || targetUserId === 'profile') {
     return null;
   }
 
