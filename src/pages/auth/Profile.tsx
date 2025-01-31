@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import BlogCard from "@/components/blogs/BlogCard";
 import { useQuery } from "@tanstack/react-query";
+import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton";
+import AddContactButton from "@/components/contacts/AddContactButton";
 import type { ProfileData } from "@/components/profile/types";
 import type { BlogData } from "@/types/blog";
 
@@ -17,7 +19,6 @@ const Profile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user's blogs with debugging
   const { data: blogs, isLoading: blogsLoading, error: blogsError } = useQuery({
     queryKey: ["profile-blogs", profile?.username],
     queryFn: async () => {
@@ -105,6 +106,13 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <div className="relative z-10 flex justify-end gap-2 px-4 py-2">
+        {profile.is_vendor && <EditVendorProfileButton />}
+        {session?.user?.id && session.user.id !== profile.id && (
+          <AddContactButton targetUserId={profile.id} />
+        )}
+      </div>
+      
       <ProfileHeader profile={profile} />
       
       <div className="container max-w-7xl mx-auto py-8 px-4">
@@ -125,10 +133,9 @@ const Profile = () => {
           </div>
         ) : blogs && blogs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogs.map((blog) => {
-              console.log("Rendering blog:", blog);
-              return <BlogCard key={blog.id} blog={blog} />;
-            })}
+            {blogs.map((blog) => (
+              <BlogCard key={blog.id} blog={blog} />
+            ))}
           </div>
         ) : (
           <div className="text-center py-12">

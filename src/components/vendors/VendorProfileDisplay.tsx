@@ -60,10 +60,12 @@ const VendorProfileDisplay = ({ vendorData, vendorId }: VendorProfileDisplayProp
       {/* Action buttons container - Moved above the banner for proper z-index */}
       {vendorId && (
         <div className="relative z-10 flex justify-end gap-2 px-4 py-2">
-          {isOwnProfile && profile?.is_vendor && (
+          {isOwnProfile && (
             <EditVendorProfileButton />
           )}
-          <AddContactButton targetUserId={vendorId} />
+          {session?.user?.id && session.user.id !== vendorId && (
+            <AddContactButton targetUserId={vendorId} />
+          )}
         </div>
       )}
 
