@@ -1,13 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, BadgeCheck } from "lucide-react";
+import { Search, BadgeCheck, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth"; // Assuming you have an auth hook
 
 const Vendors = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get current logged-in user
 
   const { data: vendors, isLoading } = useQuery({
     queryKey: ['vendors'],
@@ -32,8 +34,11 @@ const Vendors = () => {
   };
 
   const handleVendorNavigation = (vendorId: string) => {
-    // Navigate to the specific vendor's profile page
     navigate(`/vendors/${vendorId}`);
+  };
+
+  const handleEditProfile = () => {
+    navigate('/vendors/edit');
   };
 
   return (
@@ -41,12 +46,27 @@ const Vendors = () => {
       <div className="flex flex-col gap-8">
         {/* Header Section */}
         <div className="flex flex-col gap-4">
-          <h1 className="text-4xl font-heading font-bold text-gradient">Marketplace Vendors</h1>
-          <p className="text-muted-foreground">
-            Discover trusted vendors in our marketplace
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-heading font-bold text-gradient">Marketplace Vendors</h1>
+              <p className="text-muted-foreground">
+                Discover trusted vendors in our marketplace
+              </p>
+            </div>
+            {user && (
+              <Button 
+                variant="outline" 
+                onClick={handleEditProfile}
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Profile
+              </Button>
+            )}
+          </div>
         </div>
 
+        {/* Rest of the existing component remains the same */}
         {/* Search and Filter Section */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
