@@ -10,8 +10,22 @@
   }
 }
 
-.glass-effect {
-  @apply bg-background/80 backdrop-blur-sm border border-border/50;
+@layer components {
+  .glass-effect {
+    @apply bg-background/80 backdrop-blur-sm border border-border/50;
+  }
+
+  .glass-card {
+    @apply bg-card/70 backdrop-blur-md border border-white/10 rounded-lg shadow-lg;
+  }
+
+  .glass-nav {
+    @apply bg-background/60 backdrop-blur-lg border-b border-border/50;
+  }
+
+  .glass-button {
+    @apply bg-primary/80 backdrop-blur-sm hover:bg-primary/90 transition-all duration-300;
+  }
 }
 
 .text-gradient {

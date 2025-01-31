@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { useVideo } from "@/contexts/VideoPlayerContext";
+import { motion, AnimatePresence } from "framer-motion";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
@@ -30,29 +31,38 @@ const AppContent = () => {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <Navigation />
       <main className="flex-grow pt-16">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/vendors" element={<Vendors />} />
-          <Route path="/vendors/new" element={<VendorProfile />} />
-          <Route path="/vendors/:id" element={<VendorProfile />} />
-          <Route path="/vendors/profile" element={<VendorProfile />} />
-          <Route path="/blogs" element={<BlogsPage />} />
-          <Route path="/blogs/new" element={<CreateBlog />} />
-          <Route path="/blogs/category/:category" element={<BlogCategory />} />
-          <Route path="/blogs/tags/:tag" element={<BlogTag />} />
-          <Route path="/blogs/:category/:slug" element={<BlogPost />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/streaming" element={<StreamingPage />} />
-          <Route path="/arts" element={<ArtsPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/products/:id" element={<ProductPage />} />
-          <Route path="/sessions" element={<SessionsPage />} />
-          <Route path="/crm" element={<CRMPage />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/vendors" element={<Vendors />} />
+              <Route path="/vendors/new" element={<VendorProfile />} />
+              <Route path="/vendors/:id" element={<VendorProfile />} />
+              <Route path="/vendors/profile" element={<VendorProfile />} />
+              <Route path="/blogs" element={<BlogsPage />} />
+              <Route path="/blogs/new" element={<CreateBlog />} />
+              <Route path="/blogs/category/:category" element={<BlogCategory />} />
+              <Route path="/blogs/tags/:tag" element={<BlogTag />} />
+              <Route path="/blogs/:category/:slug" element={<BlogPost />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/streaming" element={<StreamingPage />} />
+              <Route path="/arts" element={<ArtsPage />} />
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/products/:id" element={<ProductPage />} />
+              <Route path="/sessions" element={<SessionsPage />} />
+              <Route path="/crm" element={<CRMPage />} />
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
       </main>
       <Footer />
       {activeVideo && (
