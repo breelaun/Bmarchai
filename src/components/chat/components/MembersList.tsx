@@ -12,9 +12,11 @@ interface MembersListProps {
   session: Session | null;
   isMobile?: boolean;
   showMembers?: boolean;
+  showSidebar?: boolean;
+  channelId?: string | null;
 }
 
-const MembersList = ({ members, session, isMobile, showMembers }: MembersListProps) => {
+const MembersList = ({ members, session, isMobile, showMembers, showSidebar }: MembersListProps) => {
   return (
     <div className={`${isMobile ? (showMembers ? 'absolute right-0 z-20' : 'hidden') : ''} w-60 bg-[#2B2D31] p-4 h-full`}>
       <h3 className="text-[#949BA4] font-semibold mb-4">Online</h3>

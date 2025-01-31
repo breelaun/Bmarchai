@@ -303,7 +303,6 @@ const ChatLayout = () => {
             session={session}
             isMobile={isMobile}
             showMembers={showMembers}
-            channelId={selectedChannel}
             showSidebar={showSidebar}
           />
         )}
