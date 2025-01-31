@@ -1,358 +1,316 @@
 import React, { useEffect, useState } from 'react';
-import { useSession } from '@supabase/auth-helpers-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Star, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Bell, Plus, Search, X } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-interface StockData {
+interface WatchlistItem {
   symbol: string;
-  companyName: string;
-  latestPrice: number;
-  change: number;
-  changePercent: number;
+  alertPrice: number | null;
 }
 
-interface HistoricalData {
-  date: string;
-  close: number;
+interface StockMarketProps {
+  defaultSymbol?: string;
 }
 
-const DEFAULT_STOCK = 'AAPL';
+const API_KEY = 'YOUR_POLYGON_API_KEY'; // Replace with your Polygon.io API key
 
-const StockMarket = () => {
-  const session = useSession();
+const fetchStockData = async (symbol: string, startDate: string, endDate: string) => {
+  // Using Polygon.io API
+  const url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/${startDate}/${endDate}?apiKey=${API_KEY}`;
+  
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error('Failed to fetch stock data');
+  }
+  
+  return response.json();
+};
+
+export const StockMarket = ({ defaultSymbol = "AAPL" }: StockMarketProps) => {
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentStock, setCurrentStock] = useState<StockData | null>(null);
-  const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
-  const [favorites, setFavorites] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [symbol, setSymbol] = useState(defaultSymbol);
+  const [inputSymbol, setInputSymbol] = useState(defaultSymbol);
+  const [timeRange, setTimeRange] = useState("1M"); // 1D, 1W, 1M, 1Y
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [alertPrice, setAlertPrice] = useState<string>("");
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      fetchFavorites();
+  const getDateRange = () => {
+    const end = new Date();
+    const start = new Date();
+    
+    switch (timeRange) {
+      case "1D":
+        start.setDate(end.getDate() - 1);
+        break;
+      case "1W":
+        start.setDate(end.getDate() - 7);
+        break;
+      case "1M":
+        start.setMonth(end.getMonth() - 1);
+        break;
+      case "1Y":
+        start.setFullYear(end.getFullYear() - 1);
+        break;
     }
-    fetchStock(DEFAULT_STOCK);
-  }, [session?.user?.id]);
-
-  const fetchHistoricalData = async (symbol: string) => {
-    try {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - 1);
-
-      const response = await fetch(
-        `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1mo`
-      );
-      const data = await response.json();
-
-      if (data.chart.result) {
-        const timestamps = data.chart.result[0].timestamp;
-        const quotes = data.chart.result[0].indicators.quote[0];
-
-        const historicalPrices = timestamps.map((timestamp: number, index: number) => ({
-          date: new Date(timestamp * 1000).toLocaleDateString(),
-          close: Number(quotes.close[index].toFixed(2))
-        }));
-
-        setHistoricalData(historicalPrices);
-      }
-    } catch (error) {
-      console.error('Error fetching historical data:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch historical stock data',
-        variant: 'destructive',
-      });
-    }
+    
+    return {
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0]
+    };
   };
 
-  const fetchStockQuote = async (symbol: string) => {
-    try {
-      const response = await fetch(
-        `https://query1.finance.yahoo.com/v6/finance/quote?symbols=${symbol}`
-      );
-      const data = await response.json();
-
-      if (data.quoteResponse?.result?.[0]) {
-        const quote = data.quoteResponse.result[0];
-        return {
-          symbol: quote.symbol,
-          companyName: quote.longName || quote.shortName,
-          latestPrice: quote.regularMarketPrice,
-          change: quote.regularMarketChange,
-          changePercent: quote.regularMarketChangePercent,
-        };
-      }
-      throw new Error('Stock not found');
-    } catch (error) {
-      throw new Error('Failed to fetch stock quote');
-    }
-  };
-
-  const fetchStock = async (symbol: string) => {
-    setIsLoading(true);
-    try {
-      const stockData = await fetchStockQuote(symbol);
-      setCurrentStock(stockData);
-      await fetchHistoricalData(symbol);
-    } catch (error) {
-      console.error('Error fetching stock:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch stock data',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchFavorites = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('favorite_stocks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+  const { data: stockData, isLoading } = useQuery({
+    queryKey: ['stock', symbol, timeRange],
+    queryFn: async () => {
+      const { startDate, endDate } = getDateRange();
+      const data = await fetchStockData(symbol, startDate, endDate);
       
-      // Fetch current prices for all favorites
-      if (data) {
-        const updatedFavorites = await Promise.all(
-          data.map(async (favorite) => {
-            try {
-              const quote = await fetchStockQuote(favorite.symbol);
-              return {
-                ...favorite,
-                currentPrice: quote.latestPrice,
-                change: quote.change,
-                changePercent: quote.changePercent,
-              };
-            } catch (error) {
-              return favorite;
-            }
-          })
-        );
-        setFavorites(updatedFavorites);
+      if (!data.results) {
+        throw new Error('No data available for this symbol');
       }
-    } catch (error) {
-      console.error('Error fetching favorites:', error);
+      
+      return data.results.map((item: any) => ({
+        date: new Date(item.t).toLocaleDateString(),
+        price: item.c,
+        volume: item.v,
+        high: item.h,
+        low: item.l,
+        open: item.o
+      }));
+    },
+    retry: 1,
+    onError: (error) => {
       toast({
-        title: 'Error',
-        description: 'Failed to load favorite stocks',
-        variant: 'destructive',
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to fetch stock data",
+        variant: "destructive"
       });
     }
-  };
+  });
 
   const handleSearch = () => {
-    if (!searchTerm) return;
-    fetchStock(searchTerm.toUpperCase());
+    if (!inputSymbol) return;
+    setSymbol(inputSymbol.toUpperCase());
   };
 
-  const addToFavorites = async (stock: StockData) => {
-    if (!session?.user?.id) {
+  const addToWatchlist = () => {
+    if (watchlist.length >= 3) {
       toast({
-        title: 'Error',
-        description: 'Please login to add favorites',
-        variant: 'destructive',
+        title: "Watchlist full",
+        description: "You can only watch up to 3 stocks at a time.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!watchlist.find(item => item.symbol === symbol)) {
+      setWatchlist([...watchlist, { symbol, alertPrice: null }]);
+      toast({
+        title: "Added to watchlist",
+        description: `${symbol} has been added to your watchlist.`
+      });
+    }
+  };
+
+  const removeFromWatchlist = (symbolToRemove: string) => {
+    setWatchlist(watchlist.filter(item => item.symbol !== symbolToRemove));
+    toast({
+      title: "Removed from watchlist",
+      description: `${symbolToRemove} has been removed from your watchlist.`
+    });
+  };
+
+  const setAlert = () => {
+    const price = parseFloat(alertPrice);
+    if (isNaN(price)) {
+      toast({
+        title: "Invalid price",
+        description: "Please enter a valid number for the alert price.",
+        variant: "destructive"
       });
       return;
     }
 
-    if (favorites.length >= 5) {
-      toast({
-        title: 'Error',
-        description: 'Maximum of 5 favorite stocks allowed',
-        variant: 'destructive',
-      });
-      return;
-    }
+    setWatchlist(watchlist.map(item => 
+      item.symbol === symbol 
+        ? { ...item, alertPrice: price }
+        : item
+    ));
 
-    try {
-      const { error } = await supabase
-        .from('favorite_stocks')
-        .insert({
-          symbol: stock.symbol,
-          company_name: stock.companyName,
-          user_id: session.user.id,
-        });
-
-      if (error) throw error;
-      fetchFavorites();
-      toast({
-        title: 'Success',
-        description: 'Stock added to favorites',
-      });
-    } catch (error) {
-      console.error('Error adding favorite:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to add stock',
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: "Alert set",
+      description: `You will be notified when ${symbol} reaches $${price}.`
+    });
+    setAlertPrice("");
   };
 
-  const removeFromFavorites = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('favorite_stocks')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      fetchFavorites();
-      toast({
-        title: 'Success',
-        description: 'Stock removed from favorites',
-      });
-    } catch (error) {
-      console.error('Error removing favorite:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to remove stock',
-        variant: 'destructive',
+  useEffect(() => {
+    if (stockData && stockData.length > 0) {
+      const currentPrice = stockData[stockData.length - 1].price;
+      watchlist.forEach(item => {
+        if (item.alertPrice && 
+            ((item.symbol === symbol) && 
+             (currentPrice >= item.alertPrice))) {
+          toast({
+            title: "Price Alert!",
+            description: `${item.symbol} has reached your target price of $${item.alertPrice}!`
+          });
+        }
       });
     }
+  }, [stockData, watchlist, symbol, toast]);
+
+  const getStockStats = () => {
+    if (!stockData || stockData.length === 0) return null;
+    
+    const latest = stockData[stockData.length - 1];
+    const first = stockData[0];
+    const change = latest.price - first.price;
+    const changePercent = (change / first.price) * 100;
+    
+    return {
+      price: latest.price,
+      change,
+      changePercent,
+      high: Math.max(...stockData.map(d => d.high)),
+      low: Math.min(...stockData.map(d => d.low)),
+    };
   };
+
+  const stats = getStockStats();
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Stock Market</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Stock Market</CardTitle>
+        <div className="flex flex-col gap-4">
           <div className="flex gap-2">
             <Input
-              placeholder="Search stocks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Enter stock symbol (e.g., AAPL)"
+              value={inputSymbol}
+              onChange={(e) => setInputSymbol(e.target.value)}
+              className="max-w-[200px]"
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
             <Button onClick={handleSearch} disabled={isLoading}>
-              <Search className="h-4 w-4" />
+              <Search className="mr-2 h-4 w-4" />
+              Search
+            </Button>
+            <Button variant="outline" onClick={addToWatchlist}>
+              <Plus className="mr-2 h-4 w-4" />
+              Watch
             </Button>
           </div>
+          
+          <div className="flex gap-2">
+            {["1D", "1W", "1M", "1Y"].map((range) => (
+              <Button
+                key={range}
+                variant={timeRange === range ? "default" : "outline"}
+                onClick={() => setTimeRange(range)}
+                size="sm"
+              >
+                {range}
+              </Button>
+            ))}
+          </div>
 
-          {currentStock && (
-            <div className="mt-4">
-              <div className="p-4 border rounded-lg">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-semibold text-lg">
-                      {currentStock.symbol} - {currentStock.companyName}
-                    </h3>
-                    <p className="text-2xl font-bold">
-                      ${currentStock.latestPrice.toFixed(2)}
-                    </p>
-                    <p
-                      className={
-                        currentStock.change >= 0 ? 'text-green-500' : 'text-red-500'
-                      }
-                    >
-                      {currentStock.change > 0 ? '+' : ''}
-                      {currentStock.change.toFixed(2)} (
-                      {currentStock.changePercent.toFixed(2)}%)
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => addToFavorites(currentStock)}
-                  >
-                    <Star className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Stock Chart */}
-                <div className="h-64 w-full mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={historicalData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 12 }}
-                        interval="preserveStartEnd"
-                      />
-                      <YAxis
-                        domain={['auto', 'auto']}
-                        tick={{ fontSize: 12 }}
-                      />
-                      <Tooltip />
-                      <Line
-                        type="monotone"
-                        dataKey="close"
-                        stroke="#8884d8"
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Favorite Stocks ({favorites.length}/5)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {favorites.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              No favorite stocks yet. Add some from the search results!
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {favorites.map((favorite) => (
-                <div
-                  key={favorite.id}
-                  className="flex items-center justify-between p-2 border rounded-lg"
+          {watchlist.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {watchlist.map((item) => (
+                <Badge 
+                  key={item.symbol} 
+                  variant="secondary" 
+                  className="flex items-center gap-2 py-1 px-2"
                 >
-                  <div className="flex-1">
-                    <p className="font-medium">{favorite.symbol}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {favorite.company_name}
-                    </p>
-                  </div>
-                  {favorite.currentPrice && (
-                    <div className="text-right mr-4">
-                      <p className="font-medium">
-                        ${favorite.currentPrice.toFixed(2)}
-                      </p>
-                      <p
-                        className={
-                          favorite.change >= 0 ? 'text-green-500' : 'text-red-500'
-                        }
-                      >
-                        {favorite.change > 0 ? '+' : ''}
-                        {favorite.change.toFixed(2)} (
-                        {favorite.changePercent.toFixed(2)}%)
-                      </p>
-                    </div>
+                  {item.symbol}
+                  {item.alertPrice && (
+                    <Bell className="h-3 w-3" title={`Alert: $${item.alertPrice}`} />
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeFromFavorites(favorite.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => removeFromWatchlist(item.symbol)}
+                  />
+                </Badge>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              placeholder="Set price alert"
+              value={alertPrice}
+              onChange={(e) => setAlertPrice(e.target.value)}
+              className="max-w-[150px]"
+            />
+            <Button variant="outline" onClick={setAlert}>
+              <Bell className="mr-2 h-4 w-4" />
+              Set Alert
+            </Button>
+          </div>
+
+          {stats && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-2 border rounded">
+                <div className="text-sm text-muted-foreground">Current</div>
+                <div className="text-lg font-semibold">${stats.price.toFixed(2)}</div>
+              </div>
+              <div className="text-center p-2 border rounded">
+                <div className="text-sm text-muted-foreground">Change</div>
+                <div className={`text-lg font-semibold ${stats.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {stats.change >= 0 ? '+' : ''}{stats.change.toFixed(2)} ({stats.changePercent.toFixed(2)}%)
+                </div>
+              </div>
+              <div className="text-center p-2 border rounded">
+                <div className="text-sm text-muted-foreground">High</div>
+                <div className="text-lg font-semibold">${stats.high.toFixed(2)}</div>
+              </div>
+              <div className="text-center p-2 border rounded">
+                <div className="text-sm text-muted-foreground">Low</div>
+                <div className="text-lg font-semibold">${stats.low.toFixed(2)}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="h-[400px] flex items-center justify-center">
+            Loading...
+          </div>
+        ) : (
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={stockData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date"
+                  tick={{ fontSize: 12 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis 
+                  domain={['auto', 'auto']}
+                  tick={{ fontSize: 12 }}
+                />
+                <Tooltip />
+                <Line 
+                  type="monotone" 
+                  dataKey="price" 
+                  stroke="#3b82f6" 
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
