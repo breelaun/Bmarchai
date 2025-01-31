@@ -4,7 +4,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import VendorHeader from "./VendorHeader";
+import VendorHeader from "./profile/VendorHeader";
 import type { Profile } from "@/types/profile";
 
 interface VendorData {
