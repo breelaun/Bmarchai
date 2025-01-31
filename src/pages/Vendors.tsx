@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Search, BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { useSession } from "@supabase/auth-helpers-react";
 import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton";
 
