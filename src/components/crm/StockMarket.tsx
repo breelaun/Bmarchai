@@ -24,11 +24,17 @@ const fetchStockData = async (symbol: string, startDate: string, endDate: string
   const url = `https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/${startDate}/${endDate}?apiKey=${API_KEY}`;
   
   const response = await fetch(url);
+  const data = await response.json();
+  
   if (!response.ok) {
-    throw new Error('Failed to fetch stock data');
+    throw new Error(data.error || 'Failed to fetch stock data');
   }
   
-  return response.json();
+  if (data.status === "ERROR") {
+    throw new Error(data.error || 'API Error occurred');
+  }
+  
+  return data;
 };
 
 export const StockMarket = ({ defaultSymbol = "AAPL" }: StockMarketProps) => {
@@ -84,12 +90,14 @@ export const StockMarket = ({ defaultSymbol = "AAPL" }: StockMarketProps) => {
       }));
     },
     retry: 1,
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to fetch stock data",
-        variant: "destructive"
-      });
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to fetch stock data",
+          variant: "destructive"
+        });
+      }
     }
   });
 
@@ -230,7 +238,10 @@ export const StockMarket = ({ defaultSymbol = "AAPL" }: StockMarketProps) => {
                 >
                   {item.symbol}
                   {item.alertPrice && (
-                    <Bell className="h-3 w-3" title={`Alert: $${item.alertPrice}`} />
+                    <Bell 
+                      className="h-3 w-3" 
+                      aria-label={`Alert: $${item.alertPrice}`}
+                    />
                   )}
                   <X
                     className="h-3 w-3 cursor-pointer"
