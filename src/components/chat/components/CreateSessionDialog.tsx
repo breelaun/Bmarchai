@@ -24,13 +24,14 @@ const CreateSessionDialog = () => {
   const session = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<SessionFormData>();
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<SessionFormData>();
+  const sessionType = watch('session_type', 'free');
 
   const createSession = useMutation({
     mutationFn: async (data: SessionFormData) => {
       if (!session?.user?.id) throw new Error('Not authenticated');
 
-      const { error } = await supabase
+      const { data: newSession, error } = await supabase
         .from('sessions')
         .insert({
           vendor_id: session.user.id,
@@ -41,9 +42,12 @@ const CreateSessionDialog = () => {
           max_participants: data.max_participants,
           session_type: data.session_type,
           status: 'scheduled'
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+      return newSession;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -127,22 +131,24 @@ const CreateSessionDialog = () => {
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="price">Price (in USD)</Label>
-            <Input
-              id="price"
-              type="number"
-              step="0.01"
-              {...register("price", { 
-                valueAsNumber: true,
-                validate: (value) => value >= 0 || "Price cannot be negative" 
-              })}
-              placeholder="0.00"
-            />
-            {errors.price && (
-              <p className="text-sm text-destructive">{errors.price.message}</p>
-            )}
-          </div>
+          {sessionType === 'paid' && (
+            <div className="space-y-2">
+              <Label htmlFor="price">Price (in USD)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                {...register("price", { 
+                  valueAsNumber: true,
+                  validate: (value) => value >= 0 || "Price cannot be negative" 
+                })}
+                placeholder="0.00"
+              />
+              {errors.price && (
+                <p className="text-sm text-destructive">{errors.price.message}</p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="max_participants">Maximum Participants</Label>
