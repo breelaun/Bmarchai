@@ -11,6 +11,7 @@ import ChatHeader from "./components/ChatHeader";
 import MessageArea from "./components/MessageArea";
 import MessageInput from "./components/MessageInput";
 import ProductShowcase from "./components/ProductShowcase";
+import LiveSession from "./components/LiveSession";
 
 const ChatLayout = () => {
   const session = useSession();
@@ -148,6 +149,10 @@ const ChatLayout = () => {
 
         {selectedChannel && channels.find(c => c.id === selectedChannel)?.channel_type === 'product_showcase' && (
           <ProductShowcase channel={channels.find(c => c.id === selectedChannel)!} />
+        )}
+
+        {selectedChannel && channels.find(c => c.id === selectedChannel)?.channel_type === 'video_stream' && (
+          <LiveSession channel={channels.find(c => c.id === selectedChannel)!} />
         )}
 
         <MessageArea messages={messages} />
