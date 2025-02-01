@@ -1,49 +1,73 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PaymentButtonProps {
   amount: number;
-  vendorId: string;
+  vendorId?: string;
   className?: string;
 }
 
 const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card");
   const { toast } = useToast();
 
   const handlePayment = async () => {
-    try {
-      setIsLoading(true);
-      console.log('Initiating payment:', { amount, vendorId });
-
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          amount, 
-          vendorId,
-          mode: 'payment',
-          successUrl: `${window.location.origin}/payment/success`,
-          cancelUrl: `${window.location.origin}/payment/cancel`,
-        },
+    if (!vendorId) {
+      toast({
+        title: "Error",
+        description: "Vendor information is missing",
+        variant: "destructive",
       });
+      return;
+    }
 
-      if (error) {
-        console.error('Payment function error:', error);
-        throw error;
+    setIsLoading(true);
+    try {
+      if (paymentMethod === "cash") {
+        // Handle cash payment
+        toast({
+          title: "Cash Payment Selected",
+          description: "Please pay in cash when receiving your items.",
+        });
+        return;
       }
 
-      if (!data?.url) {
-        console.error('Invalid response:', data);
-        throw new Error('No checkout URL received');
+      const response = await fetch(
+        "https://qyblzbqpyasfoirqzdpo.functions.supabase.co/create-checkout",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount,
+            vendorId,
+            paymentMethod,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Payment initiation failed");
       }
 
-      window.location.href = data.url;
+      const { url } = await response.json();
+      window.location.href = url;
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error("Payment error:", error);
       toast({
         title: "Payment Error",
-        description: "Unable to process payment. Please try again later.",
+        description: "There was a problem initiating the payment. Please try again",
         variant: "destructive",
       });
     } finally {
@@ -52,23 +76,37 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
   };
 
   return (
-    <Button
-      onClick={handlePayment}
-      disabled={isLoading}
-      className={className}
-      id="payment-button"
-      name="payment-button"
-      aria-label="Process payment"
-    >
-      {isLoading ? (
-        <span className="flex items-center gap-2">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          Processing...
-        </span>
-      ) : (
-        `Pay $${amount.toFixed(2)}`
-      )}
-    </Button>
+    <div className="space-y-4">
+      <Select
+        value={paymentMethod}
+        onValueChange={(value) => setPaymentMethod(value as "card" | "cash")}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select payment method" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="card">Pay by Card</SelectItem>
+          <SelectItem value="cash">Pay by Cash</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Button
+        onClick={handlePayment}
+        disabled={isLoading}
+        className={className}
+        id="payment-button"
+        name="payment-button"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          `Pay ${amount.toFixed(2)} USD`
+        )}
+      </Button>
+    </div>
   );
 };
 
