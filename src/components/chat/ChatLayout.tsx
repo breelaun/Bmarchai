@@ -92,8 +92,19 @@ const ChatLayout = () => {
           filter: `channel_id=eq.${selectedChannel}`,
         },
         (payload) => {
-          console.log("Real-time update:", payload);
-          fetchMessages();
+          if (payload.eventType === "INSERT") {
+            setMessages((current) => [...current, payload.new as Message]);
+          } else if (payload.eventType === "UPDATE") {
+            setMessages((current) =>
+              current.map((msg) =>
+                msg.id === payload.new.id ? (payload.new as Message) : msg
+              )
+            );
+          } else if (payload.eventType === "DELETE") {
+            setMessages((current) =>
+              current.filter((msg) => msg.id !== payload.old.id)
+            );
+          }
         }
       )
       .subscribe();
