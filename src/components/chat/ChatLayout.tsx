@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
 import ServerList from './components/ServerList';
@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
+  const [session, setSession] = useState<any>(null);
   
   const { data: channels = [] } = useQuery({
     queryKey: ['channels'],
@@ -44,7 +45,13 @@ const ChatLayout = () => {
     enabled: !!selectedChannel
   });
 
-  const { data: session } = await supabase.auth.getSession();
+  useEffect(() => {
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data);
+    };
+    getSession();
+  }, []);
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
@@ -70,15 +77,15 @@ const ChatLayout = () => {
         </div>
         <div className="col-span-6 bg-background flex flex-col">
           <MessageArea 
-            channelId={selectedChannel}
-            userId={session?.user?.id}
+            channelId={selectedChannel || ''}
+            userId={session?.session?.user?.id || ''}
           />
           <Controls />
         </div>
         <div className="col-span-3 bg-background border-l">
           <MembersList 
             members={members}
-            session={session}
+            session={session?.session}
           />
         </div>
       </Grid>
