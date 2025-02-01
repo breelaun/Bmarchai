@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { UserPlus } from "lucide-react";
+import { UserPlus, UserCheck, Loader2 } from "lucide-react";
 
 interface AddContactButtonProps {
   targetUserId: string;
@@ -11,7 +11,7 @@ interface AddContactButtonProps {
 
 const AddContactButton = ({ targetUserId, onRequestSent }: AddContactButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [hasRequested, setHasRequested] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'accepted'>('none');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -20,21 +20,39 @@ const AddContactButton = ({ targetUserId, onRequestSent }: AddContactButtonProps
 
   const checkExistingRequest = async () => {
     try {
-      console.log('Checking existing request for target user:', targetUserId);
-      
+      const { data: user } = await supabase.auth.getUser();
+      if (!user?.user?.id) return;
+
       const { data: existingRequest, error } = await supabase
         .from('contacts')
         .select('*')
         .or(`requester_id.eq.${targetUserId},receiver_id.eq.${targetUserId}`)
+        .eq('status', 'accepted')
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error checking contact request:', error);
         return;
       }
 
-      console.log('Existing request check result:', existingRequest);
-      setHasRequested(!!existingRequest);
+      if (existingRequest) {
+        setRequestStatus('accepted');
+        return;
+      }
+
+      const { data: pendingRequest, error: pendingError } = await supabase
+        .from('contacts')
+        .select('*')
+        .or(`requester_id.eq.${targetUserId},receiver_id.eq.${targetUserId}`)
+        .eq('status', 'pending')
+        .single();
+
+      if (pendingError && pendingError.code !== 'PGRST116') {
+        console.error('Error checking pending request:', pendingError);
+        return;
+      }
+
+      setRequestStatus(pendingRequest ? 'pending' : 'none');
     } catch (error) {
       console.error('Error in checkExistingRequest:', error);
     }
@@ -42,13 +60,10 @@ const AddContactButton = ({ targetUserId, onRequestSent }: AddContactButtonProps
 
   const sendContactRequest = async () => {
     setIsLoading(true);
-    console.log('Sending contact request to:', targetUserId);
-
     try {
       const { data: user } = await supabase.auth.getUser();
       
       if (!user?.user?.id) {
-        console.error('No authenticated user found');
         toast({
           title: "Error",
           description: "You must be logged in to send contact requests",
@@ -79,8 +94,7 @@ const AddContactButton = ({ targetUserId, onRequestSent }: AddContactButtonProps
         return;
       }
 
-      console.log('Contact request sent successfully:', data);
-      setHasRequested(true);
+      setRequestStatus('pending');
       toast({
         title: "Success",
         description: "Contact request sent",
@@ -101,9 +115,19 @@ const AddContactButton = ({ targetUserId, onRequestSent }: AddContactButtonProps
     }
   };
 
-  if (hasRequested) {
+  if (requestStatus === 'accepted') {
     return (
       <Button variant="outline" disabled>
+        <UserCheck className="h-4 w-4 mr-2" />
+        Connected
+      </Button>
+    );
+  }
+
+  if (requestStatus === 'pending') {
+    return (
+      <Button variant="outline" disabled>
+        <UserCheck className="h-4 w-4 mr-2" />
         Request Sent
       </Button>
     );
@@ -116,7 +140,11 @@ const AddContactButton = ({ targetUserId, onRequestSent }: AddContactButtonProps
       variant="outline"
       size="sm"
     >
-      <UserPlus className="h-4 w-4 mr-2" />
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+      ) : (
+        <UserPlus className="h-4 w-4 mr-2" />
+      )}
       Add Contact
     </Button>
   );

@@ -1,77 +1,36 @@
-import React, { useState, useEffect } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
-import { supabase } from "@/integrations/supabase/client";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import LeftSidebar from "./components/LeftSidebar";
-import MessageArea from "./components/MessageArea";
-import MessageInput from "./components/MessageInput";
-import type { Channel } from "./types";
+import React from 'react';
+import { Grid } from './Grid';
+import { Controls } from './Controls';
+import ServerList from './components/ServerList';
+import ChannelList from './components/ChannelList';
+import MessageArea from './components/MessageArea';
+import MembersList from './components/MembersList';
+import ContactRequests from '../contacts/ContactRequests';
 
 const ChatLayout = () => {
-  const session = useSession();
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
-  const [showSidebar, setShowSidebar] = useState(true);
-
-  useEffect(() => {
-    fetchChannels();
-  }, []);
-
-  const fetchChannels = async () => {
-    if (!session?.user?.id) return;
-    
-    console.log('Fetching channels for user:', session.user.id);
-    const { data, error } = await supabase
-      .from("chat_channels")
-      .select("*")
-      .or(`is_public.eq.true,owner_id.eq.${session.user.id}`)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching channels:", error);
-      return;
-    }
-
-    console.log('Fetched channels:', data);
-    setChannels(data);
-    if (data.length > 0 && !selectedChannel) {
-      setSelectedChannel(data[0].id);
-    }
-  };
-
-  if (!session) {
-    return <div>Please log in to access the chat.</div>;
-  }
-
   return (
-    <SidebarProvider defaultOpen>
-      <div className="flex h-screen bg-[#1E1F22] text-white">
-        <LeftSidebar
-          channels={channels}
-          selectedChannel={selectedChannel}
-          setSelectedChannel={setSelectedChannel}
-          showSidebar={showSidebar}
-          onChannelCreated={fetchChannels}
-        />
-        
-        <div className="flex-1 flex flex-col">
-          {selectedChannel && (
-            <>
-              <div className="flex-1 overflow-y-auto">
-                <MessageArea 
-                  channelId={selectedChannel} 
-                  userId={session.user.id} 
-                />
-              </div>
-              <MessageInput 
-                channelId={selectedChannel} 
-                userId={session.user.id} 
-              />
-            </>
-          )}
+    <div className="h-[calc(100vh-4rem)] flex flex-col">
+      <Grid>
+        <div className="col-span-1 bg-background border-r">
+          <ServerList />
         </div>
-      </div>
-    </SidebarProvider>
+        <div className="col-span-2 bg-background border-r flex flex-col">
+          <div className="flex-1 overflow-y-auto">
+            <ChannelList />
+          </div>
+          <div className="p-4 border-t">
+            <ContactRequests />
+          </div>
+        </div>
+        <div className="col-span-6 bg-background flex flex-col">
+          <MessageArea />
+          <Controls />
+        </div>
+        <div className="col-span-3 bg-background border-l">
+          <MembersList />
+        </div>
+      </Grid>
+    </div>
   );
 };
 
