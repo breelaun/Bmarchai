@@ -1,149 +1,123 @@
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserCheck } from "lucide-react";
-import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserPlus } from "lucide-react";
 
 interface AddContactButtonProps {
   targetUserId: string;
-  className?: string;
+  onRequestSent?: () => void;
 }
 
-const AddContactButton = ({ targetUserId, className = "" }: AddContactButtonProps) => {
-  const session = useSession();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+const AddContactButton = ({ targetUserId, onRequestSent }: AddContactButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [hasRequested, setHasRequested] = useState(false);
+  const { toast } = useToast();
 
-  const { data: contactStatus } = useQuery({
-    queryKey: ['contact-status', targetUserId],
-    queryFn: async () => {
-      if (!session?.user?.id || !targetUserId || targetUserId === 'profile') return null;
-      console.log('Checking contact status between:', session.user.id, 'and', targetUserId);
+  useEffect(() => {
+    checkExistingRequest();
+  }, [targetUserId]);
+
+  const checkExistingRequest = async () => {
+    try {
+      console.log('Checking existing request for target user:', targetUserId);
       
-      const { data, error } = await supabase
+      const { data: existingRequest, error } = await supabase
         .from('contacts')
         .select('*')
-        .or(`requester_id.eq.${session.user.id},receiver_id.eq.${session.user.id}`)
         .or(`requester_id.eq.${targetUserId},receiver_id.eq.${targetUserId}`)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking contact status:', error);
-        throw error;
+      if (error) {
+        console.error('Error checking contact request:', error);
+        return;
       }
-      console.log('Contact status result:', data);
-      return data;
-    },
-    enabled: !!session?.user?.id && !!targetUserId && targetUserId !== 'profile' && session.user.id !== targetUserId
-  });
 
-  const addContact = useMutation({
-    mutationFn: async () => {
-      if (!session?.user?.id || !targetUserId || targetUserId === 'profile') {
-        throw new Error('Invalid user IDs');
-      }
+      console.log('Existing request check result:', existingRequest);
+      setHasRequested(!!existingRequest);
+    } catch (error) {
+      console.error('Error in checkExistingRequest:', error);
+    }
+  };
+
+  const sendContactRequest = async () => {
+    setIsLoading(true);
+    console.log('Sending contact request to:', targetUserId);
+
+    try {
+      const { data: user } = await supabase.auth.getUser();
       
-      console.log('Attempting to add contact:', {
-        requester_id: session.user.id,
-        receiver_id: targetUserId,
-      });
+      if (!user?.user?.id) {
+        console.error('No authenticated user found');
+        toast({
+          title: "Error",
+          description: "You must be logged in to send contact requests",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { data, error } = await supabase
         .from('contacts')
-        .insert({
-          requester_id: session.user.id,
-          receiver_id: targetUserId,
-          status: 'pending'
-        })
+        .insert([
+          {
+            requester_id: user.user.id,
+            receiver_id: targetUserId,
+            status: 'pending'
+          }
+        ])
         .select()
         .single();
 
       if (error) {
-        console.error('Error adding contact:', error);
-        throw error;
+        console.error('Error sending contact request:', error);
+        toast({
+          title: "Error",
+          description: "Failed to send contact request",
+          variant: "destructive",
+        });
+        return;
       }
-      
-      console.log('Successfully added contact:', data);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact-status', targetUserId] });
+
+      console.log('Contact request sent successfully:', data);
+      setHasRequested(true);
       toast({
-        title: "Contact request sent",
-        description: "They will be notified of your request.",
+        title: "Success",
+        description: "Contact request sent",
       });
-    },
-    onError: (error) => {
-      console.error('Error adding contact:', error);
+
+      if (onRequestSent) {
+        onRequestSent();
+      }
+    } catch (error) {
+      console.error('Error in sendContactRequest:', error);
       toast({
         title: "Error",
-        description: "Failed to send contact request. Please try again.",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
-    }
-  });
-
-  if (!session?.user?.id || session.user.id === targetUserId || targetUserId === 'profile') {
-    return null;
-  }
-
-  const handleAddContact = async () => {
-    setIsLoading(true);
-    try {
-      await addContact.mutateAsync();
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getButtonState = () => {
-    if (!contactStatus) {
-      return {
-        icon: <UserPlus className="h-4 w-4 mr-2" />,
-        text: "Add Contact",
-        onClick: handleAddContact,
-        disabled: false
-      };
-    }
-
-    switch (contactStatus.status) {
-      case 'accepted':
-        return {
-          icon: <UserCheck className="h-4 w-4 mr-2" />,
-          text: "Contact",
-          disabled: true
-        };
-      case 'pending':
-        return {
-          icon: <UserPlus className="h-4 w-4 mr-2" />,
-          text: "Request Pending",
-          disabled: true
-        };
-      default:
-        return {
-          icon: <UserPlus className="h-4 w-4 mr-2" />,
-          text: "Add Contact",
-          onClick: handleAddContact,
-          disabled: false
-        };
-    }
-  };
-
-  const buttonState = getButtonState();
+  if (hasRequested) {
+    return (
+      <Button variant="outline" disabled>
+        Request Sent
+      </Button>
+    );
+  }
 
   return (
     <Button
+      onClick={sendContactRequest}
+      disabled={isLoading}
       variant="outline"
       size="sm"
-      className={className}
-      onClick={buttonState.onClick}
-      disabled={buttonState.disabled || isLoading}
     >
-      {buttonState.icon}
-      {buttonState.text}
+      <UserPlus className="h-4 w-4 mr-2" />
+      Add Contact
     </Button>
   );
 };
