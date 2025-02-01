@@ -170,7 +170,10 @@ const ChatLayout = () => {
           <LiveSession channel={channels.find(c => c.id === selectedChannel)!} />
         )}
 
-        <MessageArea messages={messages} />
+        <MessageArea 
+          messages={messages} 
+          currentUserId={session?.user?.id}
+        />
 
         <MessageInput
           messageInput={messageInput}

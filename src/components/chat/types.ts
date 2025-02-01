@@ -31,6 +31,14 @@ export interface ChatMember {
   joined_at: string;
 }
 
+export interface Cell {
+  text: string;
+  rowIndex: number;
+  colIndex: number;
+  isSelected: boolean;
+  isFound: boolean;
+}
+
 export interface ChannelProduct {
   id: string;
   channel_id: string;
@@ -47,12 +55,4 @@ export interface ChannelProduct {
     price: number;
     image_url: string;
   };
-}
-
-export interface Cell {
-  text: string;
-  rowIndex: number;
-  colIndex: number;
-  isSelected: boolean;
-  isFound: boolean;
 }
