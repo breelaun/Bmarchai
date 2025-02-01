@@ -51,7 +51,7 @@ const Orders = () => {
               image_url
             )
           ),
-          customer:profiles!orders_user_id_fkey (
+          user:profiles (
             full_name,
             email
           )

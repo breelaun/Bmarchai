@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/components/cart/CartProvider";
 import {
   Select,
   SelectContent,
@@ -20,6 +23,8 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card");
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { items, clearCart } = useCart();
 
   const handlePayment = async () => {
     if (!vendorId) {
@@ -34,11 +39,43 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
     setIsLoading(true);
     try {
       if (paymentMethod === "cash") {
-        // Handle cash payment
+        // Create order for cash payment
+        const { data: order, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            vendor_id: vendorId,
+            payment_method: 'cash',
+            payment_status: 'pending',
+            order_status: 'pending',
+            total_amount: amount,
+          })
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+
+        // Create order items
+        const orderItems = items.map(item => ({
+          order_id: order.id,
+          product_id: item.product.id,
+          quantity: item.quantity,
+          price_at_time: item.product.price,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems);
+
+        if (itemsError) throw itemsError;
+
+        // Clear cart and redirect to orders page
+        await clearCart();
         toast({
-          title: "Cash Payment Selected",
-          description: "Please pay in cash when receiving your items.",
+          title: "Order Created",
+          description: "Your cash payment order has been created successfully.",
         });
+        navigate("/auth/orders");
         return;
       }
 
