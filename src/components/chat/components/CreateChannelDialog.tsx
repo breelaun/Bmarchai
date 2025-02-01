@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => void }) => {
   const [name, setName] = useState("");
@@ -54,15 +55,12 @@ const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => voi
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-500"
-        >
-          <Plus className="h-6 w-6" />
-        </Button>
+        <SidebarMenuButton tooltip="Create Channel">
+          <Plus className="h-4 w-4" />
+          <span>Create Channel</span>
+        </SidebarMenuButton>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-gray-900 text-white border-gray-800">
+      <DialogContent className="sm:max-w-[425px] bg-[#2B2D31] text-white border-[#1E1F22]">
         <DialogHeader>
           <DialogTitle>Create New Channel</DialogTitle>
         </DialogHeader>
@@ -74,7 +72,7 @@ const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => voi
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter channel name"
-              className="bg-gray-800 border-gray-700"
+              className="bg-[#383A40] border-[#1E1F22]"
               required
             />
           </div>
@@ -85,7 +83,7 @@ const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => voi
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter channel description"
-              className="bg-gray-800 border-gray-700"
+              className="bg-[#383A40] border-[#1E1F22]"
             />
           </div>
           <div className="flex items-center space-x-2">
@@ -96,7 +94,7 @@ const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => voi
             />
             <Label htmlFor="public">Make channel public</Label>
           </div>
-          <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600">
+          <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">
             Create Channel
           </Button>
         </form>

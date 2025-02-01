@@ -1,11 +1,22 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Home, MessageSquare, Users, Package, Settings, Plus } from "lucide-react";
+import { 
+  Sidebar, 
+  SidebarContent,
+  SidebarHeader,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarFooter
+} from "@/components/ui/sidebar";
+import { MessageSquare, Users, Plus, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Channel } from "../types";
 import CreateChannelDialog from "./CreateChannelDialog";
-import ChannelList from "./ChannelList";
+import { useSession } from "@supabase/auth-helpers-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface LeftSidebarProps {
   channels: Channel[];
@@ -22,58 +33,82 @@ const LeftSidebar = ({
   showSidebar,
   onChannelCreated 
 }: LeftSidebarProps) => {
+  const session = useSession();
+
   return (
-    <div className="flex h-full">
-      <motion.div 
-        initial={{ x: -100 }}
-        animate={{ x: 0 }}
-        className={`${showSidebar ? 'w-20' : 'w-0'} bg-white/10 backdrop-blur-lg border-r border-white/20 transition-all duration-300 flex flex-col items-center py-4 space-y-6 relative`}
-      >
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
-                <Home className="h-6 w-6 text-white" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Home</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+    <motion.div 
+      initial={{ x: -100 }}
+      animate={{ x: 0 }}
+      className="h-full"
+    >
+      <Sidebar>
+        <SidebarHeader className="p-4 border-b border-white/10">
+          <h2 className="font-semibold text-white">Chat Channels</h2>
+        </SidebarHeader>
+        
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Channels</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {channels.map((channel) => (
+                  <SidebarMenuItem key={channel.id}>
+                    <SidebarMenuButton
+                      isActive={selectedChannel === channel.id}
+                      onClick={() => setSelectedChannel(channel.id)}
+                      tooltip={channel.name}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      <span>{channel.name}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                <SidebarMenuItem>
+                  <CreateChannelDialog onChannelCreated={onChannelCreated} />
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-        {channels.map((channel) => (
-          <TooltipProvider key={channel.id}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className={`p-2 rounded-xl hover:bg-black/20 ${
-                    selectedChannel === channel.id ? 'bg-black/30' : 'bg-black/10'
-                  }`}
-                  onClick={() => setSelectedChannel(channel.id)}
-                >
-                  <MessageSquare className="h-6 w-6 text-white" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{channel.name}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ))}
+          <SidebarGroup>
+            <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Members">
+                    <Users className="h-4 w-4" />
+                    <span>Members</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Settings">
+                    <Settings className="h-4 w-4" />
+                    <span>Settings</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
 
-        <CreateChannelDialog onChannelCreated={onChannelCreated} />
-      </motion.div>
-
-      {showSidebar && (
-        <ChannelList
-          channels={channels}
-          selectedChannel={selectedChannel}
-          onChannelSelect={setSelectedChannel}
-        />
-      )}
-    </div>
+        <SidebarFooter className="p-4 border-t border-white/10">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={session?.user?.user_metadata?.avatar_url} />
+              <AvatarFallback>
+                {session?.user?.email?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <p className="text-sm text-white font-medium">
+                {session?.user?.email?.split("@")[0]}
+              </p>
+              <p className="text-xs text-[#949BA4]">Online</p>
+            </div>
+          </div>
+        </SidebarFooter>
+      </Sidebar>
+    </motion.div>
   );
 };
 

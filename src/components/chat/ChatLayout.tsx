@@ -1,185 +1,66 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { motion } from "framer-motion";
-import type { Channel, Message } from "./types";
-
+import { SidebarProvider } from "@/components/ui/sidebar";
 import LeftSidebar from "./components/LeftSidebar";
-import ChatHeader from "./components/ChatHeader";
 import MessageArea from "./components/MessageArea";
 import MessageInput from "./components/MessageInput";
-import ProductShowcase from "./components/ProductShowcase";
-import LiveSession from "./components/LiveSession";
+import type { Channel } from "./types";
 
 const ChatLayout = () => {
   const session = useSession();
-  const { toast } = useToast();
-  const isMobile = useIsMobile();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [messageInput, setMessageInput] = useState("");
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(!isMobile);
+  const [showSidebar, setShowSidebar] = useState(true);
+
+  useEffect(() => {
+    fetchChannels();
+  }, []);
 
   const fetchChannels = async () => {
-    try {
-      const { data: channelsData, error: channelsError } = await supabase
-        .from("chat_channels")
-        .select(`
-          *,
-          chat_members(*)
-        `)
-        .or(`is_public.eq.true,owner_id.eq.${session?.user?.id}`)
-        .or(`chat_members.user_id.eq.${session?.user?.id}`);
+    const { data, error } = await supabase
+      .from("chat_channels")
+      .select("*")
+      .order("created_at", { ascending: true });
 
-      if (channelsError) throw channelsError;
-
-      setChannels(channelsData || []);
-      if (channelsData?.length > 0 && !selectedChannel) {
-        setSelectedChannel(channelsData[0].id);
-      }
-    } catch (error: any) {
+    if (error) {
       console.error("Error fetching channels:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load channels",
-        variant: "destructive",
-      });
+      return;
+    }
+
+    setChannels(data);
+    if (data.length > 0 && !selectedChannel) {
+      setSelectedChannel(data[0].id);
     }
   };
 
-  useEffect(() => {
-    if (!session?.user?.id) return;
-    fetchChannels();
-  }, [session?.user?.id]);
-
-  useEffect(() => {
-    if (!selectedChannel || !session?.user?.id || isSubscribed) return;
-
-    const fetchMessages = async () => {
-      const { data: messagesData, error: messagesError } = await supabase
-        .from("chat_messages")
-        .select(`
-          *,
-          sender:profiles!chat_messages_sender_id_fkey (
-            username,
-            avatar_url
-          )
-        `)
-        .eq("channel_id", selectedChannel)
-        .order("created_at", { ascending: true });
-
-      if (messagesError) throw messagesError;
-      setMessages(messagesData || []);
-    };
-
-    fetchMessages();
-
-    const channel = supabase
-      .channel(`chat-${selectedChannel}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "chat_messages",
-          filter: `channel_id=eq.${selectedChannel}`,
-        },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setMessages((current) => [...current, payload.new as Message]);
-          } else if (payload.eventType === "UPDATE") {
-            setMessages((current) =>
-              current.map((msg) =>
-                msg.id === payload.new.id ? (payload.new as Message) : msg
-              )
-            );
-          } else if (payload.eventType === "DELETE") {
-            setMessages((current) =>
-              current.filter((msg) => msg.id !== payload.old.id)
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    setIsSubscribed(true);
-
-    return () => {
-      supabase.removeChannel(channel);
-      setIsSubscribed(false);
-    };
-  }, [selectedChannel, session?.user?.id, isSubscribed]);
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!messageInput.trim() || !selectedChannel || !session?.user?.id) return;
-
-    try {
-      const { error } = await supabase.from("chat_messages").insert({
-        channel_id: selectedChannel,
-        sender_id: session.user.id,
-        content: messageInput.trim(),
-      });
-
-      if (error) throw error;
-      setMessageInput("");
-    } catch (error: any) {
-      toast({
-        title: "Error sending message",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+  if (!session) {
+    return <div>Please log in to access the chat.</div>;
+  }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="flex h-screen bg-gradient-to-br from-gray-900 to-gray-800"
-    >
-      <LeftSidebar 
-        channels={channels}
-        selectedChannel={selectedChannel}
-        setSelectedChannel={setSelectedChannel}
-        showSidebar={showSidebar}
-        onChannelCreated={fetchChannels}
-      />
-
-      <div className="flex-1 flex flex-col">
-        <ChatHeader 
+    <SidebarProvider defaultOpen>
+      <div className="flex h-screen bg-[#1E1F22] text-white">
+        <LeftSidebar
           channels={channels}
           selectedChannel={selectedChannel}
-          isMobile={isMobile}
+          setSelectedChannel={setSelectedChannel}
           showSidebar={showSidebar}
-          setShowSidebar={setShowSidebar}
+          onChannelCreated={fetchChannels}
         />
-
-        {selectedChannel && channels.find(c => c.id === selectedChannel)?.channel_type === 'product_showcase' && (
-          <ProductShowcase channel={channels.find(c => c.id === selectedChannel)!} />
-        )}
-
-        {selectedChannel && channels.find(c => c.id === selectedChannel)?.channel_type === 'video_stream' && (
-          <LiveSession channel={channels.find(c => c.id === selectedChannel)!} />
-        )}
-
-        <MessageArea 
-          messages={messages} 
-          currentUserId={session?.user?.id}
-        />
-
-        <MessageInput
-          messageInput={messageInput}
-          setMessageInput={setMessageInput}
-          handleSendMessage={handleSendMessage}
-        />
+        
+        <div className="flex-1 flex flex-col">
+          {selectedChannel && (
+            <>
+              <div className="flex-1 overflow-y-auto">
+                <MessageArea channelId={selectedChannel} userId={session.user.id} />
+              </div>
+              <MessageInput channelId={selectedChannel} userId={session.user.id} />
+            </>
+          )}
+        </div>
       </div>
-    </motion.div>
+    </SidebarProvider>
   );
 };
 
