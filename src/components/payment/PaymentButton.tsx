@@ -75,7 +75,7 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
           title: "Order Created",
           description: "Your cash payment order has been created successfully.",
         });
-        navigate("/auth/orders");
+        navigate("/orders");
         return;
       }
 
