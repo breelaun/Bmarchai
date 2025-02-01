@@ -7,7 +7,7 @@ import MessageArea from './components/MessageArea';
 import MembersList from './components/MembersList';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Bell } from 'lucide-react';
+import { MessageSquare, Bell, Users } from 'lucide-react';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
@@ -72,6 +72,21 @@ const ChatLayout = () => {
     },
   });
 
+  const { data: onlineUsers = [] } = useQuery({
+    queryKey: ['online-users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        // In a real app, you'd have a way to track online status
+        // This is just a placeholder query
+        .limit(10);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -97,6 +112,17 @@ const ChatLayout = () => {
               {pendingRequests.length > 0 && (
                 <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
                   {pendingRequests.length}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-between space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer">
+              <div className="flex items-center space-x-2">
+                <Users className="h-4 w-4" />
+                <span>Online</span>
+              </div>
+              {onlineUsers.length > 0 && (
+                <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  {onlineUsers.length}
                 </span>
               )}
             </div>
