@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import type { Channel, Message } from "./types";
 
 import LeftSidebar from "./components/LeftSidebar";
@@ -239,6 +240,7 @@ const ChatLayout = () => {
               />
               <Button 
                 type="submit"
+                variant="ghost"
                 className="bg-white/10 hover:bg-white/20 text-white rounded-xl px-6 py-3"
               >
                 Send
