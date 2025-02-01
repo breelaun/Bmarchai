@@ -26,6 +26,20 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
   const navigate = useNavigate();
   const { items, clearCart } = useCart();
 
+  const createNotification = async (orderId: string, vendorId: string) => {
+    const { error } = await supabase.from('notifications').insert({
+      user_id: vendorId,
+      type: 'new_order',
+      title: 'New Order Received',
+      message: `You have received a new order (#${orderId.slice(0, 8)})`,
+      metadata: { order_id: orderId }
+    });
+
+    if (error) {
+      console.error('Error creating notification:', error);
+    }
+  };
+
   const handlePayment = async () => {
     if (!vendorId) {
       toast({
@@ -68,6 +82,9 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
           .insert(orderItems);
 
         if (itemsError) throw itemsError;
+
+        // Create notification for vendor
+        await createNotification(order.id, vendorId);
 
         // Clear cart and redirect to orders page
         await clearCart();
