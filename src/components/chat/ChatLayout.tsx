@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
 import MessageArea from './components/MessageArea';
-import MembersList from './components/MembersList';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageSquare, Bell, Users, Hash } from 'lucide-react';
@@ -22,25 +21,6 @@ const ChatLayout = () => {
       if (error) throw error;
       return data;
     }
-  });
-
-  const { data: members = [] } = useQuery({
-    queryKey: ['channel-members', selectedChannel],
-    queryFn: async () => {
-      if (!selectedChannel) return [];
-      
-      const { data, error } = await supabase
-        .from('chat_members')
-        .select(`
-          *,
-          profiles (*)
-        `)
-        .eq('channel_id', selectedChannel);
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedChannel
   });
 
   const { data: pendingRequests = [] } = useQuery({
@@ -76,8 +56,6 @@ const ChatLayout = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        // In a real app, you'd have a way to track online status
-        // This is just a placeholder query
         .limit(10);
       
       if (error) throw error;
@@ -140,18 +118,12 @@ const ChatLayout = () => {
             </div>
           </div>
         </div>
-        <div className="col-span-8 bg-background flex flex-col">
+        <div className="col-span-11 bg-background flex flex-col">
           <MessageArea 
             channelId={selectedChannel || ''}
             userId={session?.session?.user?.id || ''}
           />
           <Controls />
-        </div>
-        <div className="col-span-3 bg-background border-l">
-          <MembersList 
-            members={members}
-            session={session?.session}
-          />
         </div>
       </Grid>
     </div>
