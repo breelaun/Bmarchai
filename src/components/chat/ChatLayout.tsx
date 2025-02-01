@@ -34,13 +34,17 @@ const ChatLayout = () => {
     try {
       const { data: channelsData, error: channelsError } = await supabase
         .from("chat_channels")
-        .select("*, chat_members!inner(*)")
-        .or(`is_public.eq.true,owner_id.eq.${session?.user?.id},chat_members.user_id.eq.${session?.user?.id}`);
+        .select(`
+          *,
+          chat_members!inner(*)
+        `)
+        .or(`is_public.eq.true,owner_id.eq.${session?.user?.id}`)
+        .or(`chat_members.user_id.eq.${session?.user?.id}`);
 
       if (channelsError) throw channelsError;
 
-      setChannels(channelsData);
-      if (channelsData.length > 0 && !selectedChannel) {
+      setChannels(channelsData || []);
+      if (channelsData?.length > 0 && !selectedChannel) {
         setSelectedChannel(channelsData[0].id);
       }
     } catch (error: any) {
