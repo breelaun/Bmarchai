@@ -21,6 +21,8 @@ interface OrderCardProps {
     total_amount: number;
     vendor_notes?: string;
     order_items: OrderItem[];
+    user_profile_name?: string;
+    vendor_profile_name?: string;
     vendor?: {
       id: string;
       business_name: string;
@@ -78,7 +80,7 @@ export const OrderCard = ({ order, type }: OrderCardProps) => {
               </p>
               <p className="text-sm">
                 <span className="font-medium">Vendor Name:</span>{" "}
-                {order.vendor?.business_name || "Unknown Vendor"}
+                {order.vendor_profile_name || order.vendor?.business_name || "Unknown Vendor"}
               </p>
               <p className="text-sm">
                 <span className="font-medium">Vendor Contact:</span>{" "}
@@ -98,7 +100,7 @@ export const OrderCard = ({ order, type }: OrderCardProps) => {
               </p>
               <p className="text-sm">
                 <span className="font-medium">Customer Name:</span>{" "}
-                {order.user?.full_name || order.user?.username || "Unknown Customer"}
+                {order.user_profile_name || order.user?.full_name || order.user?.username || "Unknown Customer"}
               </p>
             </div>
           )}
