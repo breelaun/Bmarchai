@@ -1,12 +1,13 @@
+import React, { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Users, Plus, Edit2, Trash2, TrendingUp } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { formatToLocalTime } from "@/utils/timezone";
 import SessionForm from "./SessionForm";
-import { useState } from "react";
+import SessionParticipantManager from "./SessionParticipantManager";
 import { Session } from "@/types/session";
 
 const VendorSessionManager = () => {
@@ -25,10 +26,20 @@ const VendorSessionManager = () => {
         .select(`
           *,
           session_participants (
+            id,
             user_id,
             has_completed,
             rating,
-            tip_amount
+            tip_amount,
+            payment_method,
+            payment_status,
+            payment_confirmed_at,
+            payment_confirmed_by,
+            payment_notes,
+            profiles (
+              username,
+              avatar_url
+            )
           )
         `)
         .eq('vendor_id', user.user.id)
@@ -60,25 +71,6 @@ const VendorSessionManager = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const calculateSessionStats = (session: Session) => {
-    const participants = session.session_participants || [];
-    const totalParticipants = participants.length;
-    const completedCount = participants.filter(p => p.has_completed).length;
-    const totalRating = participants.reduce((sum, p) => sum + (p.rating || 0), 0);
-    const averageRating = totalParticipants > 0 ? totalRating / totalParticipants : 0;
-    const totalTips = participants.reduce((sum, p) => sum + (p.tip_amount || 0), 0);
-
-    return {
-      totalParticipants,
-      completedCount,
-      averageRating: averageRating.toFixed(1),
-      totalTips: totalTips.toFixed(2),
-      completionRate: totalParticipants > 0 
-        ? ((completedCount / totalParticipants) * 100).toFixed(0) 
-        : '0'
-    };
   };
 
   if (isLoading) {
@@ -127,11 +119,10 @@ const VendorSessionManager = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {sessions?.map((session) => {
-                const stats = calculateSessionStats(session);
-                return (
-                  <Card key={session.id} className="hover:bg-accent/5">
-                    <CardContent className="p-4">
+              {sessions?.map((session) => (
+                <Card key={session.id} className="hover:bg-accent/5">
+                  <CardContent className="p-4">
+                    <div className="space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
                           <h3 className="font-semibold">{session.name}</h3>
@@ -141,31 +132,17 @@ const VendorSessionManager = () => {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
-                              {formatToLocalTime(session.start_time, 'UTC')}
+                              {formatToLocalTime(session.start_time)}
                             </span>
                             <span className="flex items-center gap-1">
                               <Users className="h-4 w-4" />
-                              {stats.totalParticipants}/{session.max_participants} participants
+                              {session.session_participants?.length || 0}/{session.max_participants} participants
                             </span>
                             <span>
                               {session.session_type === 'paid' ? 
                                 `$${session.price}` : 
                                 'Free'}
                             </span>
-                          </div>
-                          <div className="mt-4 grid grid-cols-3 gap-4">
-                            <div className="bg-secondary/20 p-3 rounded-lg">
-                              <p className="text-sm font-medium">Completion Rate</p>
-                              <p className="text-lg font-semibold">{stats.completionRate}%</p>
-                            </div>
-                            <div className="bg-secondary/20 p-3 rounded-lg">
-                              <p className="text-sm font-medium">Average Rating</p>
-                              <p className="text-lg font-semibold">⭐ {stats.averageRating}</p>
-                            </div>
-                            <div className="bg-secondary/20 p-3 rounded-lg">
-                              <p className="text-sm font-medium">Total Tips</p>
-                              <p className="text-lg font-semibold">${stats.totalTips}</p>
-                            </div>
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -185,10 +162,17 @@ const VendorSessionManager = () => {
                           </Button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                      
+                      {session.session_participants && session.session_participants.length > 0 && (
+                        <SessionParticipantManager 
+                          sessionId={session.id}
+                          participants={session.session_participants}
+                        />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
               {!sessions?.length && (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>No sessions scheduled</p>
