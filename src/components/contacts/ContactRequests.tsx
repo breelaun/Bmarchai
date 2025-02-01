@@ -1,15 +1,30 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UserCheck, UserX } from "lucide-react";
 
+interface Profile {
+  username: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
+interface PendingRequest {
+  id: string;
+  requester_id: string;
+  receiver_id: string;
+  status: string;
+  profiles: Profile;
+}
+
 const ContactRequests = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: pendingRequests, isLoading, refetch } = useQuery({
+  const { data: pendingRequests = [], isLoading } = useQuery<PendingRequest[]>({
     queryKey: ['pending-contacts'],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
@@ -40,8 +55,8 @@ const ContactRequests = () => {
     },
   });
 
-  const handleRequest = async (contactId: string, accept: boolean) => {
-    try {
+  const handleRequest = useMutation({
+    mutationFn: async ({ contactId, accept }: { contactId: string; accept: boolean }) => {
       const { error } = await supabase
         .from('contacts')
         .update({ 
@@ -50,22 +65,23 @@ const ContactRequests = () => {
         .eq('id', contactId);
 
       if (error) throw error;
-
+    },
+    onSuccess: (_, { accept }) => {
+      queryClient.invalidateQueries({ queryKey: ['pending-contacts'] });
       toast({
         title: accept ? "Contact request accepted" : "Contact request rejected",
         description: accept ? "You are now connected" : "The request has been rejected",
       });
-
-      refetch();
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Error handling contact request:', error);
       toast({
         title: "Error",
         description: "Failed to process contact request",
         variant: "destructive",
       });
-    }
-  };
+    },
+  });
 
   if (isLoading) {
     return (
@@ -81,13 +97,13 @@ const ContactRequests = () => {
         <CardTitle className="text-lg">Contact Requests</CardTitle>
       </CardHeader>
       <CardContent>
-        {pendingRequests?.length === 0 ? (
+        {pendingRequests.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
             No pending contact requests
           </p>
         ) : (
           <div className="space-y-4">
-            {pendingRequests?.map((request) => (
+            {pendingRequests.map((request) => (
               <div 
                 key={request.id} 
                 className="flex items-center justify-between p-3 border rounded-lg bg-card"
@@ -115,7 +131,7 @@ const ContactRequests = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleRequest(request.id, true)}
+                    onClick={() => handleRequest.mutate({ contactId: request.id, accept: true })}
                   >
                     <UserCheck className="h-4 w-4 mr-1" />
                     Accept
@@ -123,7 +139,7 @@ const ContactRequests = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleRequest(request.id, false)}
+                    onClick={() => handleRequest.mutate({ contactId: request.id, accept: false })}
                     className="text-destructive hover:text-destructive"
                   >
                     <UserX className="h-4 w-4 mr-1" />
