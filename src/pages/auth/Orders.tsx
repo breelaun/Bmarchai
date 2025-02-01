@@ -39,7 +39,6 @@ const Orders = () => {
         console.error("Orders made error:", error);
         throw error;
       }
-      console.log("Orders made data:", data);
       return data;
     },
     enabled: !!session?.user?.id,
@@ -75,13 +74,11 @@ const Orders = () => {
         console.error("Orders received error:", error);
         throw error;
       }
-      console.log("Orders received data:", data);
       return data;
     },
     enabled: !!session?.user?.id,
   });
 
-  // Set up real-time subscription
   useEffect(() => {
     if (!session?.user?.id || isSubscribed) return;
 
@@ -95,8 +92,7 @@ const Orders = () => {
           table: "orders",
           filter: `user_id=eq.${session.user.id}`,
         },
-        (payload) => {
-          console.log("Orders real-time update:", payload);
+        () => {
           queryClient.invalidateQueries({ queryKey: ["orders-made"] });
         }
       )
@@ -108,8 +104,7 @@ const Orders = () => {
           table: "orders",
           filter: `vendor_id=eq.${session.user.id}`,
         },
-        (payload) => {
-          console.log("Vendor orders real-time update:", payload);
+        () => {
           queryClient.invalidateQueries({ queryKey: ["orders-received"] });
         }
       )
