@@ -16,7 +16,7 @@ const ChatLayout = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('chat_channels')
-        .select('*')
+        .select('*, chat_members!inner(*)')
         .order('created_at', { ascending: true });
       
       if (error) throw error;
@@ -56,7 +56,7 @@ const ChatLayout = () => {
           requester_id,
           receiver_id,
           status,
-          profiles:requester_id (
+          profiles!contacts_profiles_requester_fk (
             username,
             full_name,
             avatar_url
