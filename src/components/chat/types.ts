@@ -41,3 +41,11 @@ export interface ChannelProduct {
   added_by: string;
   added_at: string;
 }
+
+export interface Cell {
+  text: string;
+  rowIndex: number;
+  colIndex: number;
+  isSelected: boolean;
+  isFound: boolean;
+}
