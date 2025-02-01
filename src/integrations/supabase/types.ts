@@ -1666,6 +1666,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean | null
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -1712,6 +1745,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          order_status: string | null
           payment_method: string
           payment_status: string
           status: string
@@ -1719,10 +1753,12 @@ export type Database = {
           updated_at: string
           user_id: string | null
           vendor_id: string | null
+          vendor_notes: string | null
         }
         Insert: {
           created_at?: string
           id?: string
+          order_status?: string | null
           payment_method: string
           payment_status?: string
           status?: string
@@ -1730,10 +1766,12 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           vendor_id?: string | null
+          vendor_notes?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          order_status?: string | null
           payment_method?: string
           payment_status?: string
           status?: string
@@ -1741,6 +1779,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           vendor_id?: string | null
+          vendor_notes?: string | null
         }
         Relationships: [
           {
@@ -2651,6 +2690,7 @@ export type Database = {
           customizations: Json | null
           id: string
           locations: Json[] | null
+          order_notifications: boolean | null
           social_links: Json | null
           template_id: number | null
           timezone: string | null
@@ -2669,6 +2709,7 @@ export type Database = {
           customizations?: Json | null
           id: string
           locations?: Json[] | null
+          order_notifications?: boolean | null
           social_links?: Json | null
           template_id?: number | null
           timezone?: string | null
@@ -2687,6 +2728,7 @@ export type Database = {
           customizations?: Json | null
           id?: string
           locations?: Json[] | null
+          order_notifications?: boolean | null
           social_links?: Json | null
           template_id?: number | null
           timezone?: string | null

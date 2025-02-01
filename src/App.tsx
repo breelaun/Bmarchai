@@ -18,6 +18,7 @@ import CreateBlog from "./pages/blogs/new";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/auth/Profile";
+import Orders from "./pages/auth/Orders";
 import StreamingPage from "./pages/streaming";
 import ArtsPage from "./pages/arts";
 import AdminPage from "./pages/admin";
@@ -58,6 +59,7 @@ const AppContent = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/orders" element={<Orders />} />
           <Route path="/streaming" element={<StreamingPage />} />
           <Route path="/arts" element={<ArtsPage />} />
           <Route path="/admin" element={<AdminPage />} />
