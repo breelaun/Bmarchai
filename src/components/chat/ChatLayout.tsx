@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
-import ServerList from './components/ServerList';
-import ChannelList from './components/ChannelList';
 import MessageArea from './components/MessageArea';
 import MembersList from './components/MembersList';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Bell, Users } from 'lucide-react';
+import { MessageSquare, Bell, Users, Hash } from 'lucide-react';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
@@ -104,6 +102,20 @@ const ChatLayout = () => {
               <MessageSquare className="h-4 w-4" />
               <span>Chat</span>
             </div>
+            {channels.map((channel) => (
+              <div 
+                key={channel.id}
+                onClick={() => setSelectedChannel(channel.id)}
+                className={`flex items-center space-x-2 px-2 py-1.5 text-sm ${
+                  selectedChannel === channel.id 
+                    ? 'text-foreground bg-accent' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                } rounded-md cursor-pointer`}
+              >
+                <Hash className="h-4 w-4" />
+                <span>{channel.name}</span>
+              </div>
+            ))}
             <div className="flex items-center justify-between space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer">
               <div className="flex items-center space-x-2">
                 <Bell className="h-4 w-4" />
@@ -127,20 +139,8 @@ const ChatLayout = () => {
               )}
             </div>
           </div>
-          <ServerList 
-            channels={channels}
-            selectedChannel={selectedChannel}
-            onChannelSelect={setSelectedChannel}
-          />
         </div>
-        <div className="col-span-2 bg-background border-r">
-          <ChannelList 
-            channels={channels}
-            selectedChannel={selectedChannel}
-            onChannelSelect={setSelectedChannel}
-          />
-        </div>
-        <div className="col-span-6 bg-background flex flex-col">
+        <div className="col-span-8 bg-background flex flex-col">
           <MessageArea 
             channelId={selectedChannel || ''}
             userId={session?.session?.user?.id || ''}
