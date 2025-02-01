@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@/types/session';
 
 interface SessionFormData {
   name: string;
@@ -21,15 +22,25 @@ interface SessionFormData {
 
 interface SessionFormProps {
   onSuccess?: () => void;
+  initialData?: Session;
 }
 
-const SessionForm = ({ onSuccess }: SessionFormProps) => {
+const SessionForm = ({ onSuccess, initialData }: SessionFormProps) => {
   const session = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<SessionFormData>();
+  const { register, handleSubmit, formState: { errors } } = useForm<SessionFormData>({
+    defaultValues: initialData ? {
+      name: initialData.name,
+      description: initialData.description || '',
+      start_time: new Date(initialData.start_time).toISOString().slice(0, 16),
+      duration: initialData.duration,
+      max_participants: initialData.max_participants || 20,
+      price: initialData.price || 0,
+    } : undefined
+  });
 
   const onSubmit = async (data: SessionFormData) => {
     if (!session?.user?.id) {
@@ -44,34 +55,42 @@ const SessionForm = ({ onSuccess }: SessionFormProps) => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('sessions')
-        .insert({
-          vendor_id: session.user.id,
-          name: data.name,
-          description: data.description,
-          start_time: data.start_time,
-          duration: data.duration,
-          max_participants: data.max_participants,
-          price: data.price,
-        });
+      const operation = initialData 
+        ? supabase.from('sessions').update({
+            name: data.name,
+            description: data.description,
+            start_time: data.start_time,
+            duration: data.duration,
+            max_participants: data.max_participants,
+            price: data.price,
+          }).eq('id', initialData.id)
+        : supabase.from('sessions').insert({
+            vendor_id: session.user.id,
+            name: data.name,
+            description: data.description,
+            start_time: data.start_time,
+            duration: data.duration,
+            max_participants: data.max_participants,
+            price: data.price,
+          });
 
+      const { error } = await operation;
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Session created successfully",
+        description: `Session ${initialData ? 'updated' : 'created'} successfully`,
       });
 
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       onSuccess?.();
 
     } catch (error: any) {
-      console.error('Error creating session:', error);
+      console.error('Error with session:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to create session",
+        description: error.message || `Failed to ${initialData ? 'update' : 'create'} session`,
       });
     } finally {
       setIsSubmitting(false);
@@ -157,7 +176,7 @@ const SessionForm = ({ onSuccess }: SessionFormProps) => {
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Creating Session..." : "Create Session"}
+            {isSubmitting ? `${initialData ? 'Updating' : 'Creating'} Session...` : `${initialData ? 'Update' : 'Create'} Session`}
           </Button>
         </form>
       </CardContent>
