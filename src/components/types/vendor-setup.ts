@@ -13,3 +13,33 @@ export interface VendorProfileData {
   timezone?: string;
   country?: string;
 }
+
+export interface VendorData {
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
+  aboutMe: string;
+  enableReviews: boolean;
+  enableFeatured: boolean;
+}
+
+export interface VendorSetupData {
+  template_id?: number;
+  customizations?: {
+    display_style?: string;
+    bento_style?: string;
+  };
+  business_name?: string;
+  business_description?: string;
+  contact_email?: string;
+  social_links?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+  };
+  timezone?: string;
+  country?: string;
+}
