@@ -41,7 +41,7 @@ serve(async (req) => {
     const commissionAmount = amount * commissionRate;
     const vendorPayoutAmount = amount - commissionAmount;
 
-    // Create Stripe checkout session
+    console.log('Creating payment session...');
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [

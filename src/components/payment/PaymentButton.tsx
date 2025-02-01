@@ -16,23 +16,32 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
   const handlePayment = async () => {
     try {
       setIsLoading(true);
+      console.log('Initiating payment for amount:', amount, 'to vendor:', vendorId);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { amount, vendorId },
+        body: { 
+          amount, 
+          vendorId,
+          mode: 'payment' // Specify one-time payment mode
+        },
       });
 
-      if (error) throw error;
-
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL received');
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
       }
+
+      if (!data?.url) {
+        throw new Error('No checkout URL received from payment service');
+      }
+
+      // Redirect to Stripe checkout
+      window.location.href = data.url;
     } catch (error) {
       console.error('Payment error:', error);
       toast({
         title: "Payment Error",
-        description: "There was a problem initiating the payment. Please try again.",
+        description: "There was a problem initiating the payment. Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -45,6 +54,8 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
       onClick={handlePayment}
       disabled={isLoading}
       className={className}
+      id="payment-button"
+      name="payment-button"
     >
       {isLoading ? "Processing..." : `Pay $${amount.toFixed(2)}`}
     </Button>
