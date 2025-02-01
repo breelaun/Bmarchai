@@ -109,7 +109,7 @@ const Profile = () => {
       <div className="relative z-10 flex justify-end gap-2 px-4 py-2">
         {profile.is_vendor && <EditVendorProfileButton />}
         {session?.user?.id && session.user.id !== profile.id && (
-          <AddContactButton targetUserId={profile.id} />
+          <AddContactButton userId={profile.id} />
         )}
       </div>
       

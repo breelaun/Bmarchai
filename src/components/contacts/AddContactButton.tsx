@@ -1,5 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const AddContactButton = ({ userId }: { userId: string }) => {
@@ -46,6 +46,9 @@ const AddContactButton = ({ userId }: { userId: string }) => {
         title: "Contact Request Sent",
         description: "You have sent a contact request.",
       });
+      
+      // Invalidate the contacts query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['contact'] });
     } catch (error: any) {
       toast({
         title: "Error",
