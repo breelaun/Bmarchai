@@ -4,7 +4,8 @@ import Controls from './Controls';
 import MessageArea from './components/MessageArea';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Bell, Users, Hash } from 'lucide-react';
+import { MessageSquare, Bell, Users, Hash, Video } from 'lucide-react';
+import { Session } from '@/types/session';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
@@ -15,11 +16,33 @@ const ChatLayout = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('chat_channels')
-        .select('*, chat_members!inner(*)')
+        .select('*, chat_members(*)')
         .order('created_at', { ascending: true });
       
       if (error) throw error;
       return data;
+    }
+  });
+
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select(`
+          *,
+          vendor_profiles (
+            business_name,
+            profiles (
+              username
+            )
+          )
+        `)
+        .eq('status', 'scheduled')
+        .order('start_time', { ascending: true });
+      
+      if (error) throw error;
+      return data as Session[];
     }
   });
 
@@ -80,20 +103,38 @@ const ChatLayout = () => {
               <MessageSquare className="h-4 w-4" />
               <span>Chat</span>
             </div>
-            {channels.map((channel) => (
-              <div 
-                key={channel.id}
-                onClick={() => setSelectedChannel(channel.id)}
-                className={`flex items-center space-x-2 px-2 py-1.5 text-sm ${
-                  selectedChannel === channel.id 
-                    ? 'text-foreground bg-accent' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                } rounded-md cursor-pointer`}
-              >
-                <Hash className="h-4 w-4" />
-                <span>{channel.name}</span>
-              </div>
-            ))}
+            
+            <div className="space-y-1">
+              <h3 className="px-2 text-sm font-medium text-muted-foreground">Live Sessions</h3>
+              {sessions.map((session) => (
+                <div 
+                  key={session.id}
+                  className="flex items-center space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer"
+                >
+                  <Video className="h-4 w-4" />
+                  <span>{session.name}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="px-2 text-sm font-medium text-muted-foreground">Channels</h3>
+              {channels.map((channel) => (
+                <div 
+                  key={channel.id}
+                  onClick={() => setSelectedChannel(channel.id)}
+                  className={`flex items-center space-x-2 px-2 py-1.5 text-sm ${
+                    selectedChannel === channel.id 
+                      ? 'text-foreground bg-accent' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                  } rounded-md cursor-pointer`}
+                >
+                  <Hash className="h-4 w-4" />
+                  <span>{channel.name}</span>
+                </div>
+              ))}
+            </div>
+
             <div className="flex items-center justify-between space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer">
               <div className="flex items-center space-x-2">
                 <Bell className="h-4 w-4" />
@@ -105,6 +146,7 @@ const ChatLayout = () => {
                 </span>
               )}
             </div>
+
             <div className="flex items-center justify-between space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer">
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />

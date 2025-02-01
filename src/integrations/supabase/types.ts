@@ -2084,7 +2084,9 @@ export type Database = {
           max_participants: number | null
           name: string
           price: number
+          session_type: string | null
           start_time: string
+          status: string | null
           updated_at: string
           vendor_id: string
         }
@@ -2099,7 +2101,9 @@ export type Database = {
           max_participants?: number | null
           name: string
           price: number
+          session_type?: string | null
           start_time: string
+          status?: string | null
           updated_at?: string
           vendor_id: string
         }
@@ -2114,7 +2118,9 @@ export type Database = {
           max_participants?: number | null
           name?: string
           price?: number
+          session_type?: string | null
           start_time?: string
+          status?: string | null
           updated_at?: string
           vendor_id?: string
         }
