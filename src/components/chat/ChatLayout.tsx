@@ -11,8 +11,6 @@ import LeftSidebar from "./components/LeftSidebar";
 import ChatHeader from "./components/ChatHeader";
 import MessageArea from "./components/MessageArea";
 import MessageInput from "./components/MessageInput";
-import MembersList from "./components/MembersList";
-import ProductsList from "./components/ProductsList";
 
 const ChatLayout = () => {
   const session = useSession();
@@ -24,33 +22,8 @@ const ChatLayout = () => {
   const [messageInput, setMessageInput] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showSidebar, setShowSidebar] = useState(!isMobile);
-  const [showMembers, setShowMembers] = useState(!isMobile);
-  const [showProducts, setShowProducts] = useState(!isMobile);
-  const [channelMembers, setChannelMembers] = useState<any[]>([]);
-  const [channelProducts, setChannelProducts] = useState<any[]>([]);
-  const [activeGradient, setActiveGradient] = useState(0);
 
-  const gradients = [
-    'bg-gradient-to-br from-black via-[#000000] to-[#000000]',
-    'bg-gradient-to-br from-[#00030b] to-[#00030b]',
-    'bg-gradient-to-br from-[#00081f] to-[#00081f]',
-    'bg-gradient-to-br from-[#000e32] to-[#000e32]',
-    'bg-gradient-to-br from-[#001346] to-[#001346]',
-    'bg-gradient-to-br from-[#001959] to-[#001959]',
-    'bg-gradient-to-br from-[#001E6D] to-[#001E6D]',
-    'bg-gradient-to-br from-[#001959] to-[#001959]',
-    'bg-gradient-to-br from-[#001346] to-[#001346]',
-    'bg-gradient-to-br from-[#000e32] to-[#000e32]',
-    'bg-gradient-to-br from-[#00081f] to-[#00081f]',
-  ];
-
-  useEffect(() => {
-    const gradientInterval = setInterval(() => {
-      setActiveGradient((prev) => (prev + 1) % gradients.length);
-    }, 10000);
-    return () => clearInterval(gradientInterval);
-  }, []);
-
+  // Fetch channels that user has access to
   useEffect(() => {
     if (!session?.user?.id) return;
     fetchChannels();
@@ -60,13 +33,13 @@ const ChatLayout = () => {
     try {
       const { data: channelsData, error: channelsError } = await supabase
         .from("chat_channels")
-        .select("*")
-        .or(`is_public.eq.true,owner_id.eq.${session?.user?.id}`);
+        .select("*, chat_members!inner(*)")
+        .or(`is_public.eq.true,owner_id.eq.${session?.user?.id},chat_members.user_id.eq.${session?.user?.id}`);
 
       if (channelsError) throw channelsError;
 
       setChannels(channelsData);
-      if (channelsData.length > 0) {
+      if (channelsData.length > 0 && !selectedChannel) {
         setSelectedChannel(channelsData[0].id);
       }
     } catch (error: any) {
@@ -79,59 +52,7 @@ const ChatLayout = () => {
     }
   };
 
-  useEffect(() => {
-    if (!selectedChannel) return;
-    fetchChannelMembers();
-  }, [selectedChannel]);
-
-  const fetchChannelMembers = async () => {
-    try {
-      const { data: membersData, error: membersError } = await supabase
-        .from("chat_members")
-        .select(`
-          *,
-          profiles:user_id (
-            username,
-            avatar_url
-          )
-        `)
-        .eq("channel_id", selectedChannel);
-
-      if (membersError) throw membersError;
-      setChannelMembers(membersData);
-    } catch (error) {
-      console.error("Error fetching channel members:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (!selectedChannel) return;
-    fetchChannelProducts();
-  }, [selectedChannel]);
-
-  const fetchChannelProducts = async () => {
-    try {
-      const { data: productsData, error: productsError } = await supabase
-        .from("chat_channel_products")
-        .select(`
-          *,
-          products (
-            id,
-            name,
-            description,
-            price,
-            image_url
-          )
-        `)
-        .eq("channel_id", selectedChannel);
-
-      if (productsError) throw productsError;
-      setChannelProducts(productsData);
-    } catch (error) {
-      console.error("Error fetching channel products:", error);
-    }
-  };
-
+  // Subscribe to messages for selected channel
   useEffect(() => {
     if (!selectedChannel || !session?.user?.id || isSubscribed) return;
 
@@ -140,7 +61,7 @@ const ChatLayout = () => {
         .from("chat_messages")
         .select(`
           *,
-          sender:sender_id (
+          sender:profiles!chat_messages_sender_id_fkey (
             username,
             avatar_url
           )
@@ -154,8 +75,9 @@ const ChatLayout = () => {
 
     fetchMessages();
 
+    // Set up real-time subscription
     const channel = supabase
-      .channel("chat-updates")
+      .channel(`chat-${selectedChannel}`)
       .on(
         "postgres_changes",
         {
@@ -183,22 +105,22 @@ const ChatLayout = () => {
     e.preventDefault();
     if (!messageInput.trim() || !selectedChannel || !session?.user?.id) return;
 
-    const { error } = await supabase.from("chat_messages").insert({
-      channel_id: selectedChannel,
-      sender_id: session.user.id,
-      content: messageInput.trim(),
-    });
+    try {
+      const { error } = await supabase.from("chat_messages").insert({
+        channel_id: selectedChannel,
+        sender_id: session.user.id,
+        content: messageInput.trim(),
+      });
 
-    if (error) {
+      if (error) throw error;
+      setMessageInput("");
+    } catch (error: any) {
       toast({
         title: "Error sending message",
         description: error.message,
         variant: "destructive",
       });
-      return;
     }
-
-    setMessageInput("");
   };
 
   return (
@@ -206,48 +128,31 @@ const ChatLayout = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className={`relative flex h-screen ${gradients[activeGradient]} overflow-hidden`}
+      className="flex h-screen bg-gradient-to-br from-gray-900 to-gray-800"
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      
-      <div className="relative z-10 flex w-full">
-        <LeftSidebar 
+      <LeftSidebar 
+        channels={channels}
+        selectedChannel={selectedChannel}
+        setSelectedChannel={setSelectedChannel}
+        showSidebar={showSidebar}
+      />
+
+      <div className="flex-1 flex flex-col">
+        <ChatHeader 
           channels={channels}
           selectedChannel={selectedChannel}
-          setSelectedChannel={setSelectedChannel}
+          isMobile={isMobile}
           showSidebar={showSidebar}
+          setShowSidebar={setShowSidebar}
         />
 
-        <div className="flex-1 flex flex-col">
-          <ChatHeader 
-            channels={channels}
-            selectedChannel={selectedChannel}
-            isMobile={isMobile}
-            showSidebar={showSidebar}
-            setShowSidebar={setShowSidebar}
-          />
+        <MessageArea messages={messages} />
 
-          <MessageArea messages={messages} />
-
-          <div className="p-4 bg-white/10 backdrop-blur-lg border-t border-white/20">
-            <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
-              <input
-                type="text"
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 bg-black/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-white/20 placeholder-white/50"
-              />
-              <Button 
-                type="submit"
-                variant="ghost"
-                className="bg-white/10 hover:bg-white/20 text-white rounded-xl px-6 py-3"
-              >
-                Send
-              </Button>
-            </form>
-          </div>
-        </div>
+        <MessageInput
+          messageInput={messageInput}
+          setMessageInput={setMessageInput}
+          handleSendMessage={handleSendMessage}
+        />
       </div>
     </motion.div>
   );
