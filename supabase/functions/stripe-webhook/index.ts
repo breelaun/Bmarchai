@@ -35,81 +35,28 @@ serve(async (req) => {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        
-        // Update payment transaction status
-        const { error: transactionError } = await supabaseClient
-          .from('payment_transactions')
-          .update({ 
-            status: 'completed',
-            updated_at: new Date().toISOString(),
-            metadata: {
-              ...session,
-              stripe_event_type: event.type
-            }
-          })
-          .eq('provider_transaction_id', session.id);
+        const sessionId = session.metadata?.sessionId;
+        const userId = session.metadata?.userId;
 
-        if (transactionError) {
-          console.error('Error updating payment transaction:', transactionError);
-          throw transactionError;
+        if (!sessionId || !userId) {
+          throw new Error('Missing session or user ID in metadata');
         }
 
-        // Get the payment transaction to create vendor payout
-        const { data: transaction, error: fetchError } = await supabaseClient
-          .from('payment_transactions')
-          .select('*')
-          .eq('provider_transaction_id', session.id)
-          .single();
+        // Add user as a participant to the session
+        const { error: participantError } = await supabaseClient
+          .from('session_participants')
+          .insert({
+            session_id: sessionId,
+            user_id: userId,
+            has_completed: false
+          });
 
-        if (fetchError) {
-          console.error('Error fetching payment transaction:', fetchError);
-          throw fetchError;
+        if (participantError) {
+          console.error('Error adding session participant:', participantError);
+          throw participantError;
         }
 
-        if (transaction) {
-          // Create vendor payout record
-          const { error: payoutError } = await supabaseClient
-            .from('vendor_payouts')
-            .insert({
-              vendor_id: transaction.vendor_id,
-              amount: transaction.vendor_payout_amount,
-              status: 'pending',
-              provider: 'stripe',
-              provider_payout_id: null, // Will be updated when actual payout is created
-            });
-
-          if (payoutError) {
-            console.error('Error creating vendor payout:', payoutError);
-            throw payoutError;
-          }
-        }
-
-        console.log('Payment transaction and payout records updated successfully');
-        break;
-      }
-
-      case 'charge.refunded': {
-        const charge = event.data.object;
-        
-        // Update payment transaction status for refund
-        const { error } = await supabaseClient
-          .from('payment_transactions')
-          .update({ 
-            status: 'refunded',
-            updated_at: new Date().toISOString(),
-            metadata: {
-              ...charge,
-              stripe_event_type: event.type
-            }
-          })
-          .eq('provider_transaction_id', charge.payment_intent);
-
-        if (error) {
-          console.error('Error updating payment transaction for refund:', error);
-          throw error;
-        }
-
-        console.log('Payment transaction updated for refund');
+        console.log('Successfully added participant to session');
         break;
       }
 

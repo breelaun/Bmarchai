@@ -11,4 +11,7 @@ export interface Session {
       username: string;
     }[];
   }[];
+  price: number;
+  session_type: 'free' | 'paid';
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 }
