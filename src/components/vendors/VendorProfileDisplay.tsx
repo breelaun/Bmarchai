@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import AddContactButton from "@/components/contacts/AddContactButton";
+import { VendorData } from "@/components/types/vendor-setup";
 
-const VendorProfileDisplay = ({ vendorId }: { vendorId: string }) => {
+interface VendorProfileDisplayProps {
+  vendorId: string;
+  vendorData?: VendorData;
+}
+
+const VendorProfileDisplay = ({ vendorId, vendorData }: VendorProfileDisplayProps) => {
   const [vendor, setVendor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

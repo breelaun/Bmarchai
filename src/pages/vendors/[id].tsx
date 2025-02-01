@@ -5,17 +5,7 @@ import { useEffect } from "react";
 import VendorProfileDisplay from "@/components/vendors/VendorProfileDisplay";
 import VendorStore from "@/components/vendors/VendorStore";
 import { supabase } from "@/integrations/supabase/client";
-
-interface VendorData {
-  socialLinks: {
-    facebook: string;
-    instagram: string;
-    twitter: string;
-  };
-  aboutMe: string;
-  enableReviews: boolean;
-  enableFeatured: boolean;
-}
+import { VendorData } from "@/components/types/vendor-setup";
 
 const VendorProfile = () => {
   const { id } = useParams();
@@ -90,8 +80,8 @@ const VendorProfile = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
-        <VendorProfileDisplay vendorData={vendorData} vendorId={id} />
-        <VendorStore vendorId={id} />
+        <VendorProfileDisplay vendorId={id!} vendorData={vendorData} />
+        <VendorStore vendorId={id!} />
       </div>
     </div>
   );
