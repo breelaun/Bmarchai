@@ -2026,6 +2026,7 @@ export type Database = {
       }
       session_participants: {
         Row: {
+          can_share_screen: boolean | null
           created_at: string
           has_completed: boolean | null
           id: string
@@ -2037,12 +2038,14 @@ export type Database = {
           payment_notes: string | null
           payment_status: string | null
           rating: number | null
+          screen_share_enabled: boolean | null
           session_id: string
           tip_amount: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          can_share_screen?: boolean | null
           created_at?: string
           has_completed?: boolean | null
           id?: string
@@ -2054,12 +2057,14 @@ export type Database = {
           payment_notes?: string | null
           payment_status?: string | null
           rating?: number | null
+          screen_share_enabled?: boolean | null
           session_id: string
           tip_amount?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          can_share_screen?: boolean | null
           created_at?: string
           has_completed?: boolean | null
           id?: string
@@ -2071,6 +2076,7 @@ export type Database = {
           payment_notes?: string | null
           payment_status?: string | null
           rating?: number | null
+          screen_share_enabled?: boolean | null
           session_id?: string
           tip_amount?: number | null
           updated_at?: string
@@ -2094,6 +2100,58 @@ export type Database = {
           {
             foreignKeyName: "session_participants_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_product_showcases: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          product_id: number | null
+          session_id: string | null
+          showcased_at: string | null
+          showcased_by: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          product_id?: number | null
+          session_id?: string | null
+          showcased_at?: string | null
+          showcased_by?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          product_id?: number | null
+          session_id?: string | null
+          showcased_at?: string | null
+          showcased_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_product_showcases_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_product_showcases_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_product_showcases_showcased_by_fkey"
+            columns: ["showcased_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
