@@ -51,7 +51,7 @@ const ContactRequests = () => {
         throw error;
       }
 
-      return data || [];
+      return (data || []) as PendingRequest[];
     },
   });
 
