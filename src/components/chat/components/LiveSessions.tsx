@@ -7,6 +7,21 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@/types/session';
 import CreateSessionDialog from './CreateSessionDialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from '@/components/ui/label';
 
 interface LiveSessionsProps {
   sessions: Session[];
@@ -16,40 +31,70 @@ const LiveSessions = ({ sessions }: LiveSessionsProps) => {
   const session = useSession();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<'card' | 'cash'>('card');
 
   const joinSession = useMutation({
     mutationFn: async (sessionData: Session) => {
       if (!session?.user?.id) throw new Error('Not authenticated');
 
       if (sessionData.session_type === 'paid') {
-        // Create Stripe checkout session
-        const response = await supabase.functions.invoke('create-session-checkout', {
-          body: { sessionId: sessionData.id, userId: session.user.id }
-        });
+        if (selectedPaymentMethod === 'card') {
+          // Calculate platform fee (3%) for card payments
+          const platformFeePercentage = 0.03;
+          const platformFeeAmount = sessionData.price * platformFeePercentage;
+          const totalAmount = sessionData.price + platformFeeAmount;
 
-        if (response.error) throw response.error;
-        
-        // Redirect to Stripe checkout
-        window.location.href = response.data.url;
-        return;
+          // Create Stripe checkout session with platform fee
+          const response = await supabase.functions.invoke('create-session-checkout', {
+            body: { 
+              sessionId: sessionData.id, 
+              userId: session.user.id,
+              platformFee: platformFeeAmount,
+              totalAmount: totalAmount
+            }
+          });
+
+          if (response.error) throw response.error;
+          
+          // Redirect to Stripe checkout
+          window.location.href = response.data.url;
+          return;
+        } else {
+          // For cash payments, create participant record with pending status
+          const { error } = await supabase
+            .from('session_participants')
+            .insert({
+              session_id: sessionData.id,
+              user_id: session.user.id,
+              payment_method: 'cash',
+              payment_status: 'pending',
+              has_completed: false
+            });
+
+          if (error) throw error;
+        }
+      } else {
+        // For free sessions, directly add participant
+        const { error } = await supabase
+          .from('session_participants')
+          .insert({
+            session_id: sessionData.id,
+            user_id: session.user.id,
+            has_completed: false,
+            payment_method: 'card',
+            payment_status: 'completed'
+          });
+
+        if (error) throw error;
       }
-
-      // For free sessions, directly add participant
-      const { error } = await supabase
-        .from('session_participants')
-        .insert({
-          session_id: sessionData.id,
-          user_id: session.user.id,
-          has_completed: false
-        });
-
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       toast({
         title: "Success",
-        description: "Successfully joined the session",
+        description: selectedPaymentMethod === 'cash' 
+          ? "Session joined successfully. Please arrange cash payment with the vendor."
+          : "Successfully joined the session",
       });
     },
     onError: (error: Error) => {
@@ -60,6 +105,18 @@ const LiveSessions = ({ sessions }: LiveSessionsProps) => {
       });
     },
   });
+
+  const handleJoinSession = (sessionData: Session) => {
+    if (sessionData.session_type === 'paid') {
+      setShowPaymentDialog(true);
+      setSelectedSession(sessionData);
+    } else {
+      joinSession.mutate(sessionData);
+    }
+  };
+
+  const [showPaymentDialog, setShowPaymentDialog] = React.useState(false);
+  const [selectedSession, setSelectedSession] = React.useState<Session | null>(null);
 
   return (
     <div className="space-y-2">
@@ -85,7 +142,7 @@ const LiveSessions = ({ sessions }: LiveSessionsProps) => {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => joinSession.mutate(session)}
+              onClick={() => handleJoinSession(session)}
               disabled={joinSession.isPending}
             >
               {session.session_type === 'paid' ? `Join ($${session.price})` : 'Join Free'}
@@ -93,6 +150,44 @@ const LiveSessions = ({ sessions }: LiveSessionsProps) => {
           </div>
         ))}
       </div>
+
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select Payment Method</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Payment Method</Label>
+              <Select
+                value={selectedPaymentMethod}
+                onValueChange={(value: 'card' | 'cash') => setSelectedPaymentMethod(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="card">
+                    Card (${selectedSession?.price} + 3% platform fee)
+                  </SelectItem>
+                  <SelectItem value="cash">Cash (${selectedSession?.price})</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button 
+              className="w-full" 
+              onClick={() => {
+                if (selectedSession) {
+                  joinSession.mutate(selectedSession);
+                  setShowPaymentDialog(false);
+                }
+              }}
+            >
+              Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

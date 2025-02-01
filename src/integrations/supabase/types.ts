@@ -2029,6 +2029,13 @@ export type Database = {
           created_at: string
           has_completed: boolean | null
           id: string
+          payment_confirmed_at: string | null
+          payment_confirmed_by: string | null
+          payment_method:
+            | Database["public"]["Enums"]["payment_method_type"]
+            | null
+          payment_notes: string | null
+          payment_status: string | null
           rating: number | null
           session_id: string
           tip_amount: number | null
@@ -2039,6 +2046,13 @@ export type Database = {
           created_at?: string
           has_completed?: boolean | null
           id?: string
+          payment_confirmed_at?: string | null
+          payment_confirmed_by?: string | null
+          payment_method?:
+            | Database["public"]["Enums"]["payment_method_type"]
+            | null
+          payment_notes?: string | null
+          payment_status?: string | null
           rating?: number | null
           session_id: string
           tip_amount?: number | null
@@ -2049,6 +2063,13 @@ export type Database = {
           created_at?: string
           has_completed?: boolean | null
           id?: string
+          payment_confirmed_at?: string | null
+          payment_confirmed_by?: string | null
+          payment_method?:
+            | Database["public"]["Enums"]["payment_method_type"]
+            | null
+          payment_notes?: string | null
+          payment_status?: string | null
           rating?: number | null
           session_id?: string
           tip_amount?: number | null
@@ -2056,6 +2077,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "session_participants_payment_confirmed_by_fkey"
+            columns: ["payment_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "session_participants_session_id_fkey"
             columns: ["session_id"]
@@ -2780,6 +2808,7 @@ export type Database = {
       equipment_status: "available" | "in_use" | "maintenance" | "retired"
       membership_status: "active" | "expired" | "cancelled" | "frozen"
       payment_frequency: "monthly" | "quarterly" | "yearly" | "lifetime"
+      payment_method_type: "cash" | "card" | "bank_transfer"
       payment_provider: "stripe" | "paypal" | "google_pay"
       payment_status:
         | "pending"

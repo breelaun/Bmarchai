@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { sessionId, userId } = await req.json();
+    const { sessionId, userId, platformFee, totalAmount } = await req.json();
 
     // Initialize Supabase client
     const supabaseClient = createClient(
@@ -37,7 +37,7 @@ serve(async (req) => {
       apiVersion: '2023-10-16',
     });
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session with application fee
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -48,7 +48,7 @@ serve(async (req) => {
               name: session.name,
               description: session.description || undefined,
             },
-            unit_amount: Math.round(session.price * 100), // Convert to cents
+            unit_amount: Math.round(totalAmount * 100), // Convert to cents
           },
           quantity: 1,
         },
@@ -59,7 +59,10 @@ serve(async (req) => {
       metadata: {
         sessionId,
         userId,
-        vendorId: session.vendor_id,
+        platformFee,
+      },
+      payment_intent_data: {
+        application_fee_amount: Math.round(platformFee * 100), // Convert to cents
       },
     });
 
