@@ -27,8 +27,14 @@ const Orders = () => {
             )
           ),
           vendor:vendor_profiles (
+            id,
             business_name,
             contact_email
+          ),
+          vendor_user:profiles (
+            id,
+            full_name,
+            username
           )
         `)
         .eq("user_id", session?.user?.id)
@@ -58,6 +64,7 @@ const Orders = () => {
             )
           ),
           user:profiles (
+            id,
             full_name,
             username
           )

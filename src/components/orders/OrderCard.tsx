@@ -22,10 +22,17 @@ interface OrderCardProps {
     vendor_notes?: string;
     order_items: OrderItem[];
     vendor?: {
+      id: string;
       business_name: string;
       contact_email: string;
     };
+    vendor_user?: {
+      id: string;
+      full_name: string;
+      username: string;
+    };
     user?: {
+      id: string;
       full_name: string;
       username: string;
     };
@@ -65,18 +72,35 @@ export const OrderCard = ({ order, type }: OrderCardProps) => {
       <CardContent>
         <div className="space-y-4">
           {type === "made" ? (
-            <p className="text-sm">
-              Vendor: {order.vendor?.business_name || "Unknown Vendor"}
-              {order.vendor?.contact_email && (
-                <span className="text-muted-foreground ml-2">
-                  ({order.vendor.contact_email})
-                </span>
+            <div>
+              <p className="text-sm">
+                <span className="font-medium">Vendor ID:</span> {order.vendor?.id}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Vendor Name:</span>{" "}
+                {order.vendor?.business_name || "Unknown Vendor"}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Vendor Contact:</span>{" "}
+                {order.vendor?.contact_email}
+              </p>
+              {order.vendor_user && (
+                <p className="text-sm">
+                  <span className="font-medium">Vendor Profile:</span>{" "}
+                  {order.vendor_user.full_name || order.vendor_user.username}
+                </p>
               )}
-            </p>
+            </div>
           ) : (
-            <p className="text-sm">
-              Customer: {order.user?.full_name || order.user?.username || "Unknown Customer"}
-            </p>
+            <div>
+              <p className="text-sm">
+                <span className="font-medium">Customer ID:</span> {order.user?.id}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Customer Name:</span>{" "}
+                {order.user?.full_name || order.user?.username || "Unknown Customer"}
+              </p>
+            </div>
           )}
           <div className="space-y-2">
             {order.order_items?.map((item) => (
