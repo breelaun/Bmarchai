@@ -21,6 +21,7 @@ const AddContactButton = ({ targetUserId, className = "" }: AddContactButtonProp
     queryKey: ['contact-status', targetUserId],
     queryFn: async () => {
       if (!session?.user?.id || !targetUserId || targetUserId === 'profile') return null;
+      console.log('Checking contact status between:', session.user.id, 'and', targetUserId);
       
       const { data, error } = await supabase
         .from('contacts')
@@ -29,7 +30,11 @@ const AddContactButton = ({ targetUserId, className = "" }: AddContactButtonProp
         .or(`requester_id.eq.${targetUserId},receiver_id.eq.${targetUserId}`)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking contact status:', error);
+        throw error;
+      }
+      console.log('Contact status result:', data);
       return data;
     },
     enabled: !!session?.user?.id && !!targetUserId && targetUserId !== 'profile' && session.user.id !== targetUserId
@@ -41,15 +46,28 @@ const AddContactButton = ({ targetUserId, className = "" }: AddContactButtonProp
         throw new Error('Invalid user IDs');
       }
       
-      const { error } = await supabase
+      console.log('Attempting to add contact:', {
+        requester_id: session.user.id,
+        receiver_id: targetUserId,
+      });
+
+      const { data, error } = await supabase
         .from('contacts')
         .insert({
           requester_id: session.user.id,
           receiver_id: targetUserId,
           status: 'pending'
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding contact:', error);
+        throw error;
+      }
+      
+      console.log('Successfully added contact:', data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact-status', targetUserId] });
