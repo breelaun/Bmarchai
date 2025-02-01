@@ -10,36 +10,40 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip } from '@/components/ui/tooltip';
 
-const ChatLayout = ({
-  channels,
-  pendingRequests,
-  onlineUsers,
-  selectedChannel,
-  setSelectedChannel,
-  session
-}) => {
+const ChatLayout = () => {
   const [isNavExpanded, setIsNavExpanded] = useState(false);
-  const [activeSection, setActiveSection] = useState('chat'); // chat, requests, online
+  const [activeSection, setActiveSection] = useState('chat');
+  const [selectedChannel, setSelectedChannel] = useState(null);
 
-  const NavButton = ({ icon: Icon, label, badge, onClick }) => (
-    <Tooltip content={label} side="right" disabled={isNavExpanded}>
-      <Button
-        variant="ghost"
-        className={`w-full flex items-center justify-start gap-3 p-2 text-gray-400 hover:text-white hover:bg-gray-800
-          ${activeSection === label.toLowerCase() ? 'bg-gray-800 text-white' : ''}`}
-        onClick={onClick}
-      >
-        <Icon className="h-5 w-5" style={{ color: '#f7bd00' }} />
-        {isNavExpanded && (
-          <span className="flex-1 text-left">{label}</span>
-        )}
-        {badge && isNavExpanded && (
-          <span className="bg-primary px-2 py-0.5 rounded-full text-xs">
-            {badge}
-          </span>
-        )}
-      </Button>
-    </Tooltip>
+  // Safe access to data with default values
+  const channels = [];
+  const pendingRequests = [];
+  const onlineUsers = [];
+
+  const NavButton = ({ icon: Icon, label, badge = 0, onClick }) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            className={`w-full flex items-center justify-start gap-3 p-2 text-gray-400 hover:text-white hover:bg-gray-800
+              ${activeSection === label.toLowerCase() ? 'bg-gray-800 text-white' : ''}`}
+            onClick={onClick}
+          >
+            <Icon className="h-5 w-5" style={{ color: '#f7bd00' }} />
+            {isNavExpanded && (
+              <span className="flex-1 text-left">{label}</span>
+            )}
+            {badge > 0 && isNavExpanded && (
+              <span className="bg-primary px-2 py-0.5 rounded-full text-xs">
+                {badge}
+              </span>
+            )}
+          </Button>
+        </TooltipTrigger>
+        {!isNavExpanded && <TooltipContent side="right">{label}</TooltipContent>}
+      </Tooltip>
+    </TooltipProvider>
   );
 
   return (
@@ -91,7 +95,7 @@ const ChatLayout = ({
                     key={channel.id}
                     variant="ghost"
                     className={`w-full justify-start gap-2 text-sm ${
-                      selectedChannel === channel.id 
+                      selectedChannel === channel?.id 
                         ? 'bg-gray-800 text-white' 
                         : 'text-gray-400 hover:text-white hover:bg-gray-800'
                     }`}
@@ -111,18 +115,31 @@ const ChatLayout = ({
       <div className="flex-1 flex flex-col">
         <div className="flex-1 overflow-hidden">
           {activeSection === 'chat' && (
-            <MessageArea channelId={selectedChannel} userId={session?.user?.id} />
+            <div className="h-full flex items-center justify-center text-gray-400">
+              {selectedChannel ? (
+                <div className="p-4">Chat content will appear here</div>
+              ) : (
+                <div className="text-center">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-4" />
+                  <p>Select a channel to start chatting</p>
+                </div>
+              )}
+            </div>
           )}
           {activeSection === 'requests' && (
             <div className="p-4">
-              <h2 className="text-xl font-bold mb-4">Pending Requests</h2>
-              {/* Requests content */}
+              <h2 className="text-xl font-bold mb-4 text-white">Pending Requests</h2>
+              {pendingRequests.length === 0 ? (
+                <p className="text-gray-400">No pending requests</p>
+              ) : null}
             </div>
           )}
           {activeSection === 'online' && (
             <div className="p-4">
-              <h2 className="text-xl font-bold mb-4">Online Users</h2>
-              {/* Online users content */}
+              <h2 className="text-xl font-bold mb-4 text-white">Online Users</h2>
+              {onlineUsers.length === 0 ? (
+                <p className="text-gray-400">No users currently online</p>
+              ) : null}
             </div>
           )}
         </div>
@@ -131,15 +148,32 @@ const ChatLayout = ({
         <div className="border-t border-gray-800 p-4 bg-gray-900">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <Paperclip className="h-5 w-5 text-gray-400" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Image className="h-5 w-5 text-gray-400" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Package className="h-5 w-5 text-gray-400" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Paperclip className="h-5 w-5 text-gray-400" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Attach files</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Image className="h-5 w-5 text-gray-400" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Upload images</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Package className="h-5 w-5 text-gray-400" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Select products</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <input
               type="text"
