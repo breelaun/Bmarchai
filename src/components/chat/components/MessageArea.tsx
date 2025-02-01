@@ -1,49 +1,92 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Message } from "../types";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from 'date-fns';
-import type { Message } from '../types';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface MessageAreaProps {
-  messages: Message[];
-  currentUserId?: string;
+  channelId: string;
+  userId: string;
 }
 
-const MessageArea = ({ messages, currentUserId }: MessageAreaProps) => {
+const MessageArea = ({ channelId, userId }: MessageAreaProps) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const { data: channelMessages } = useQuery({
+    queryKey: ['messages', channelId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select(`
+          *,
+          sender:profiles(username, avatar_url)
+        `)
+        .eq('channel_id', channelId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data as Message[];
+    },
+    enabled: !!channelId,
+  });
+
+  useEffect(() => {
+    if (channelMessages) {
+      setMessages(channelMessages);
+    }
+  }, [channelMessages]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `channel_id=eq.${channelId}`,
+        },
+        (payload) => {
+          const newMessage = payload.new as Message;
+          setMessages((current) => [...current, newMessage]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [channelId]);
+
   return (
-    <ScrollArea className="flex-1 p-4">
+    <ScrollArea className="h-full p-4">
       <div className="space-y-4">
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex items-start gap-3 ${
-              message.sender_id === currentUserId ? 'flex-row-reverse' : ''
+              message.sender_id === userId ? 'flex-row-reverse' : ''
             }`}
           >
-            <Avatar className="w-8 h-8">
+            <Avatar className="h-8 w-8">
               <AvatarImage src={message.sender?.avatar_url} />
               <AvatarFallback>
-                {message.sender?.username?.[0]?.toUpperCase() || 'U'}
+                {message.sender?.username?.[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className={`flex flex-col ${
-              message.sender_id === currentUserId ? 'items-end' : ''
-            }`}>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-white">
-                  {message.sender?.username}
-                </span>
-                <span className="text-xs text-gray-400">
-                  {format(new Date(message.created_at), 'HH:mm')}
-                </span>
-              </div>
-              <div className={`mt-1 rounded-lg px-4 py-2 max-w-md ${
-                message.sender_id === currentUserId
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-800 text-white/90'
-              }`}>
-                {message.content}
-              </div>
+            <div
+              className={`rounded-lg p-3 max-w-[70%] ${
+                message.sender_id === userId
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted'
+              }`}
+            >
+              <p className="text-sm font-medium mb-1">
+                {message.sender?.username}
+              </p>
+              <p className="text-sm">{message.content}</p>
             </div>
           </div>
         ))}

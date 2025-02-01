@@ -18,9 +18,13 @@ const ChatLayout = () => {
   }, []);
 
   const fetchChannels = async () => {
+    if (!session?.user?.id) return;
+    
+    console.log('Fetching channels for user:', session.user.id);
     const { data, error } = await supabase
       .from("chat_channels")
       .select("*")
+      .or(`is_public.eq.true,owner_id.eq.${session.user.id}`)
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -28,6 +32,7 @@ const ChatLayout = () => {
       return;
     }
 
+    console.log('Fetched channels:', data);
     setChannels(data);
     if (data.length > 0 && !selectedChannel) {
       setSelectedChannel(data[0].id);
@@ -53,9 +58,15 @@ const ChatLayout = () => {
           {selectedChannel && (
             <>
               <div className="flex-1 overflow-y-auto">
-                <MessageArea channelId={selectedChannel} userId={session.user.id} />
+                <MessageArea 
+                  channelId={selectedChannel} 
+                  userId={session.user.id} 
+                />
               </div>
-              <MessageInput channelId={selectedChannel} userId={session.user.id} />
+              <MessageInput 
+                channelId={selectedChannel} 
+                userId={session.user.id} 
+              />
             </>
           )}
         </div>
