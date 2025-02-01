@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Menu, Hash, Users, Package, ChevronLeft, MessageSquare, Settings, Home, Sparkles, Info } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { motion, AnimatePresence } from "framer-motion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
+import type { Channel, Message } from "./types";
 
-import ServerList from "./components/ServerList";
-import ChannelList from "./components/ChannelList";
-import UserProfile from "./components/UserProfile";
-import MessageList from "./components/MessageList";
+import LeftSidebar from "./components/LeftSidebar";
+import ChatHeader from "./components/ChatHeader";
+import MessageArea from "./components/MessageArea";
 import MessageInput from "./components/MessageInput";
 import MembersList from "./components/MembersList";
 import ProductsList from "./components/ProductsList";
-import type { Channel, Message } from "./types";
 
 const ChatLayout = () => {
   const session = useSession();
@@ -211,165 +207,27 @@ const ChatLayout = () => {
       transition={{ duration: 0.5 }}
       className={`relative flex h-screen ${gradients[activeGradient]} overflow-hidden`}
     >
-      {/* Glassmorphic Overlay */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-      {/* Main Content */}
+      
       <div className="relative z-10 flex w-full">
-        {/* Left Sidebar - Server Navigation */}
-        <motion.div 
-          initial={{ x: -100 }}
-          animate={{ x: 0 }}
-          className={`${showSidebar ? 'w-20' : 'w-0'} bg-white/10 backdrop-blur-lg border-r border-white/20 transition-all duration-300 flex flex-col items-center py-4 space-y-6`}
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
-                  <Home className="h-6 w-6 text-white" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Home</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          {channels.map((channel) => (
-            <TooltipProvider key={channel.id}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={`p-2 rounded-xl hover:bg-black/20 ${
-                      selectedChannel === channel.id ? 'bg-black/30' : 'bg-black/10'
-                    }`}
-                    onClick={() => setSelectedChannel(channel.id)}
-                  >
-                    <MessageSquare className="h-6 w-6 text-white" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{channel.name}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ))}
-          
-          <div className="mt-auto">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
-                    <Settings className="h-6 w-6 text-white" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Settings</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </motion.div>
+        <LeftSidebar 
+          channels={channels}
+          selectedChannel={selectedChannel}
+          setSelectedChannel={setSelectedChannel}
+          showSidebar={showSidebar}
+        />
 
-        {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="h-16 bg-white/10 backdrop-blur-lg border-b border-white/20 flex items-center justify-between px-6"
-          >
-            <div className="flex items-center space-x-4">
-              {isMobile && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setShowSidebar(!showSidebar)}
-                  className="bg-black/10 hover:bg-black/20"
-                >
-                  {showSidebar ? <ChevronLeft className="h-5 w-5 text-white" /> : <Menu className="h-5 w-5 text-white" />}
-                </Button>
-              )}
-              <div className="flex items-center space-x-2">
-                <Hash className="h-5 w-5 text-white" />
-                <h3 className="font-semibold text-white text-lg">
-                  {channels.find((c) => c.id === selectedChannel)?.name || "Select a channel"}
-                </h3>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="rounded-xl hover:bg-black/20 bg-black/10"
-                      onClick={() => setShowProducts(!showProducts)}
-                    >
-                      <Package className="h-5 w-5 text-white" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Products</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+          <ChatHeader 
+            channels={channels}
+            selectedChannel={selectedChannel}
+            isMobile={isMobile}
+            showSidebar={showSidebar}
+            setShowSidebar={setShowSidebar}
+          />
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="rounded-xl hover:bg-black/20 bg-black/10"
-                      onClick={() => setShowMembers(!showMembers)}
-                    >
-                      <Users className="h-5 w-5 text-white" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Members</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </motion.div>
+          <MessageArea messages={messages} />
 
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto">
-            <AnimatePresence>
-              {messages.map((message) => (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                  className="bg-black/20 hover:bg-black/30 transition-all p-4 flex items-start space-x-3"
-                >
-                  <img
-                    src={message.sender?.avatar_url || "/placeholder.svg"}
-                    alt="avatar"
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium text-white">
-                        {message.sender?.username || "Anonymous"}
-                      </span>
-                      <span className="text-xs text-white/60">
-                        {new Date(message.created_at).toLocaleTimeString()}
-                      </span>
-                    </div>
-                    <p className="text-white/80 mt-1">{message.content}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-          {/* Message Input */}
           <div className="p-4 bg-white/10 backdrop-blur-lg border-t border-white/20">
             <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
               <input
@@ -388,38 +246,6 @@ const ChatLayout = () => {
             </form>
           </div>
         </div>
-
-        {/* Right Sidebar - Members & Products */}
-        <AnimatePresence>
-          {(showMembers || showProducts) && (
-            <motion.div 
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 100, opacity: 0 }}
-              className="w-64 bg-white/10 backdrop-blur-lg border-l border-white/20 transition-all duration-300"
-            >
-              {showMembers && (
-                <MembersList
-                  members={channelMembers}
-                  session={session}
-                  isMobile={isMobile}
-                  showMembers={showMembers}
-                  showSidebar={showSidebar}
-                />
-              )}
-              {showProducts && (
-                <ProductsList
-                  products={channelProducts}
-                  session={session}
-                  isMobile={isMobile}
-                  showProducts={showProducts}
-                  channelId={selectedChannel}
-                  showSidebar={showSidebar}
-                />
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </motion.div>
   );
