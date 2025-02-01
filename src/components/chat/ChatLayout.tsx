@@ -33,9 +33,18 @@ const ChatLayout = () => {
   const [activeGradient, setActiveGradient] = useState(0);
 
   const gradients = [
-    'bg-gradient-to-br from-black via-[#1a1a1a] to-[#1B1500]',
-    'bg-gradient-to-br from-[#1a1a2e] to-[#001E6D]',
-    'bg-gradient-to-br from-[#f7bd00] via-[#f7bd00] to-[#f7bd00]'
+    'bg-gradient-to-br from-black via-[#000000] to-[#000000]',
+    'bg-gradient-to-br from-[#00030b] to-[#00030b]',
+    'bg-gradient-to-br from-[#00081f] to-[#00081f]',
+    'bg-gradient-to-br from-[#000e32] to-[#000e32]',
+    'bg-gradient-to-br from-[#001346] to-[#001346]',
+    'bg-gradient-to-br from-[#001959] to-[#001959]',
+    'bg-gradient-to-br from-[#001E6D] to-[#001E6D]',
+    'bg-gradient-to-br from-[#001959] to-[#001959]',
+    'bg-gradient-to-br from-[#001346] to-[#001346]',
+    'bg-gradient-to-br from-[#000e32] to-[#000e32]',
+    'bg-gradient-to-br from-[#00081f] to-[#00081f]',
+    
   ];
 
   useEffect(() => {
