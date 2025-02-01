@@ -6,13 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, ShoppingBag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { useEffect } from "react";
-import { toast } from "@/components/ui/use-toast";
 
 const Orders = () => {
   const session = useSession();
 
-  // Orders made by the user (as a buyer)
   const { data: ordersMade, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders-made", session?.user?.id],
     queryFn: async () => {
@@ -27,11 +24,9 @@ const Orders = () => {
               image_url
             )
           ),
-          vendor:profiles!orders_vendor_id_fkey (
-            id,
-            full_name,
-            username,
-            email
+          vendor:vendor_profiles!orders_vendor_id_fkey (
+            business_name,
+            contact_email
           )
         `)
         .eq("user_id", session?.user?.id)
@@ -43,7 +38,6 @@ const Orders = () => {
     enabled: !!session?.user?.id,
   });
 
-  // Orders received (as a seller)
   const { data: ordersReceived, isLoading: receivedLoading } = useQuery({
     queryKey: ["orders-received", session?.user?.id],
     queryFn: async () => {
@@ -58,49 +52,37 @@ const Orders = () => {
               image_url
             )
           ),
-          buyer:profiles!orders_user_id_fkey (
-            id,
+          user:profiles!orders_user_id_fkey (
             full_name,
-            username,
-            email
+            username
           )
         `)
         .eq("vendor_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
+      console.log("Orders received data:", data);
+      console.log("Orders received error:", error);
+      
       if (error) throw error;
       return data;
     },
     enabled: !!session?.user?.id,
   });
 
-  // Subscribe to new orders (as a seller)
-  useEffect(() => {
-    if (!session?.user?.id) return;
-
-    const channel = supabase
-      .channel('orders')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'orders',
-          filter: `vendor_id=eq.${session.user.id}`,
-        },
-        (payload) => {
-          toast({
-            title: "New Order Received!",
-            description: `Order #${payload.new.id.slice(0, 8)} has been placed.`,
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [session?.user?.id]);
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
+      case "confirmed":
+        return "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20";
+      case "completed":
+        return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+      case "cancelled":
+        return "bg-red-500/10 text-red-500 hover:bg-red-500/20";
+      default:
+        return "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20";
+    }
+  };
 
   const renderOrderCard = (order: any, type: "made" | "received") => (
     <Card key={order.id} className="mb-4">
@@ -120,9 +102,9 @@ const Orders = () => {
       <CardContent>
         <div className="space-y-4">
           {type === "made" ? (
-            <p className="text-sm">Seller: {order.vendor?.full_name || "Unknown Seller"}</p>
+            <p className="text-sm">Vendor: {order.vendor?.business_name || "Unknown Vendor"}</p>
           ) : (
-            <p className="text-sm">Buyer: {order.buyer?.full_name || "Unknown Buyer"}</p>
+            <p className="text-sm">Customer: {order.user?.full_name || "Unknown Customer"}</p>
           )}
           <div className="space-y-2">
             {order.order_items?.map((item: any) => (
@@ -152,7 +134,7 @@ const Orders = () => {
           </p>
           {order.vendor_notes && type === "made" && (
             <div className="mt-4 p-3 bg-muted rounded-lg">
-              <p className="text-sm font-medium">Seller Notes:</p>
+              <p className="text-sm font-medium">Vendor Notes:</p>
               <p className="text-sm text-muted-foreground">{order.vendor_notes}</p>
             </div>
           )}
@@ -160,6 +142,18 @@ const Orders = () => {
       </CardContent>
     </Card>
   );
+
+  if (ordersLoading || receivedLoading) {
+    return (
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/4" />
+          <div className="h-[200px] bg-muted rounded" />
+          <div className="h-[200px] bg-muted rounded" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
@@ -174,7 +168,7 @@ const Orders = () => {
             Orders Received
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="made">
+        <TabsContent value="made" className="mt-4">
           {ordersMade?.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-8">
@@ -187,7 +181,7 @@ const Orders = () => {
             ordersMade?.map((order) => renderOrderCard(order, "made"))
           )}
         </TabsContent>
-        <TabsContent value="received">
+        <TabsContent value="received" className="mt-4">
           {ordersReceived?.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-8">
