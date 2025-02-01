@@ -36,7 +36,7 @@ const ChatLayout = () => {
         .from("chat_channels")
         .select(`
           *,
-          chat_members!inner(*)
+          chat_members(*)
         `)
         .or(`is_public.eq.true,owner_id.eq.${session?.user?.id}`)
         .or(`chat_members.user_id.eq.${session?.user?.id}`);
