@@ -3,7 +3,17 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Play, Pause } from "lucide-react";
+import { 
+  Loader2, 
+  Play, 
+  Pause, 
+  Video, 
+  Mic, 
+  MicOff, 
+  Camera, 
+  CameraOff,
+  Users
+} from "lucide-react";
 import type { Channel } from '../types';
 
 interface LiveSessionProps {
@@ -12,6 +22,8 @@ interface LiveSessionProps {
 
 const LiveSession = ({ channel }: LiveSessionProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMicOn, setIsMicOn] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(false);
 
   const { data: activeSession, isLoading } = useQuery({
     queryKey: ['live-session', channel.id],
@@ -37,14 +49,27 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
     );
   }
 
+  const handleStartSession = async () => {
+    // Implementation for starting a new session will go here
+    setIsPlaying(true);
+  };
+
   if (!activeSession) {
     return (
       <div className="p-4">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 flex flex-col items-center gap-4">
+            <Video className="h-12 w-12 text-muted-foreground" />
             <p className="text-center text-muted-foreground">
               No active live session at the moment.
             </p>
+            <Button 
+              onClick={handleStartSession}
+              className="flex items-center gap-2"
+            >
+              <Video className="h-4 w-4" />
+              Start Live Session
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -56,23 +81,53 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Live Session</span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsPlaying(!isPlaying)}
-            >
-              {isPlaying ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Video className="h-5 w-5 text-primary" />
+              <span>Live Session</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsMicOn(!isMicOn)}
+                className={isMicOn ? 'bg-primary/10' : ''}
+              >
+                {isMicOn ? (
+                  <Mic className="h-4 w-4" />
+                ) : (
+                  <MicOff className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsCameraOn(!isCameraOn)}
+                className={isCameraOn ? 'bg-primary/10' : ''}
+              >
+                {isCameraOn ? (
+                  <Camera className="h-4 w-4" />
+                ) : (
+                  <CameraOff className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsPlaying(!isPlaying)}
+                className={isPlaying ? 'bg-primary/10' : ''}
+              >
+                {isPlaying ? (
+                  <Pause className="h-4 w-4" />
+                ) : (
+                  <Play className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {channel.stream_config?.embed_url && (
-            <div className="aspect-video">
+            <div className="aspect-video rounded-lg overflow-hidden border border-border">
               <iframe
                 src={channel.stream_config.embed_url}
                 className="w-full h-full"
@@ -81,13 +136,14 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
               />
             </div>
           )}
-          <div className="mt-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+            <p>
               Session started: {new Date(activeSession.started_at).toLocaleString()}
             </p>
             {activeSession.metadata?.viewers && (
-              <p className="text-sm text-muted-foreground">
-                Viewers: {activeSession.metadata.viewers}
+              <p className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                {activeSession.metadata.viewers} viewers
               </p>
             )}
           </div>
