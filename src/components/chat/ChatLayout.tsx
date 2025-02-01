@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
 import type { Channel, Message } from "./types";
@@ -23,12 +23,6 @@ const ChatLayout = () => {
   const [messageInput, setMessageInput] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showSidebar, setShowSidebar] = useState(!isMobile);
-
-  // Fetch channels that user has access to
-  useEffect(() => {
-    if (!session?.user?.id) return;
-    fetchChannels();
-  }, [session?.user?.id]);
 
   const fetchChannels = async () => {
     try {
@@ -57,7 +51,11 @@ const ChatLayout = () => {
     }
   };
 
-  // Subscribe to messages for selected channel
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetchChannels();
+  }, [session?.user?.id]);
+
   useEffect(() => {
     if (!selectedChannel || !session?.user?.id || isSubscribed) return;
 
@@ -80,7 +78,6 @@ const ChatLayout = () => {
 
     fetchMessages();
 
-    // Set up real-time subscription
     const channel = supabase
       .channel(`chat-${selectedChannel}`)
       .on(
@@ -151,6 +148,7 @@ const ChatLayout = () => {
         selectedChannel={selectedChannel}
         setSelectedChannel={setSelectedChannel}
         showSidebar={showSidebar}
+        onChannelCreated={fetchChannels}
       />
 
       <div className="flex-1 flex flex-col">

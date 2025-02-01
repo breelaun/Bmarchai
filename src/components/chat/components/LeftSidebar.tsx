@@ -1,23 +1,31 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Home, MessageSquare, Users, Package, Settings, Sparkles, Info } from "lucide-react";
+import { Home, MessageSquare, Users, Package, Settings, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Channel } from "../types";
+import CreateChannelDialog from "./CreateChannelDialog";
 
 interface LeftSidebarProps {
   channels: Channel[];
   selectedChannel: string | null;
   setSelectedChannel: (id: string) => void;
   showSidebar: boolean;
+  onChannelCreated: () => void;
 }
 
-const LeftSidebar = ({ channels, selectedChannel, setSelectedChannel, showSidebar }: LeftSidebarProps) => {
+const LeftSidebar = ({ 
+  channels, 
+  selectedChannel, 
+  setSelectedChannel, 
+  showSidebar,
+  onChannelCreated 
+}: LeftSidebarProps) => {
   return (
     <motion.div 
       initial={{ x: -100 }}
       animate={{ x: 0 }}
-      className={`${showSidebar ? 'w-20' : 'w-0'} bg-white/10 backdrop-blur-lg border-r border-white/20 transition-all duration-300 flex flex-col items-center py-4 space-y-6`}
+      className={`${showSidebar ? 'w-20' : 'w-0'} bg-white/10 backdrop-blur-lg border-r border-white/20 transition-all duration-300 flex flex-col items-center py-4 space-y-6 relative`}
     >
       <TooltipProvider>
         <Tooltip>
@@ -93,6 +101,8 @@ const LeftSidebar = ({ channels, selectedChannel, setSelectedChannel, showSideba
           </Tooltip>
         </TooltipProvider>
       </div>
+
+      <CreateChannelDialog onChannelCreated={onChannelCreated} />
     </motion.div>
   );
 };
