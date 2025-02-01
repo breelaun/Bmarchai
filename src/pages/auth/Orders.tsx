@@ -1,14 +1,17 @@
+import { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, ShoppingBag } from "lucide-react";
+import { Package, ShoppingBag, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 const Orders = () => {
   const session = useSession();
+  const queryClient = useQueryClient();
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   const { data: ordersMade, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders-made", session?.user?.id],
@@ -24,7 +27,7 @@ const Orders = () => {
               image_url
             )
           ),
-          vendor_profiles (
+          vendor:vendor_profiles (
             business_name,
             contact_email
           )
@@ -32,12 +35,15 @@ const Orders = () => {
         .eq("user_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Orders made error:", error);
+        throw error;
+      }
+      console.log("Orders made data:", data);
       return data;
     },
     enabled: !!session?.user?.id,
   });
-
 
   const { data: ordersReceived, isLoading: receivedLoading } = useQuery({
     queryKey: ["orders-received", session?.user?.id],
@@ -49,21 +55,73 @@ const Orders = () => {
           created_at,
           total_amount,
           order_status,
-          user:profiles ( full_name, username ),
-          order_items ( 
-            quantity, 
-            price_at_time, 
-            product:products ( name, image_url ) 
+          user:profiles (
+            full_name,
+            username
+          ),
+          order_items (
+            quantity,
+            price_at_time,
+            product:products (
+              name,
+              image_url
+            )
           )
         `)
         .eq("vendor_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Orders received error:", error);
+        throw error;
+      }
+      console.log("Orders received data:", data);
       return data;
     },
     enabled: !!session?.user?.id,
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!session?.user?.id || isSubscribed) return;
+
+    const channel = supabase
+      .channel("orders-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders",
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          console.log("Orders real-time update:", payload);
+          queryClient.invalidateQueries({ queryKey: ["orders-made"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "orders",
+          filter: `vendor_id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          console.log("Vendor orders real-time update:", payload);
+          queryClient.invalidateQueries({ queryKey: ["orders-received"] });
+        }
+      )
+      .subscribe();
+
+    setIsSubscribed(true);
+
+    return () => {
+      supabase.removeChannel(channel);
+      setIsSubscribed(false);
+    };
+  }, [session?.user?.id, queryClient, isSubscribed]);
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -142,10 +200,8 @@ const Orders = () => {
   if (ordersLoading || receivedLoading) {
     return (
       <div className="container max-w-4xl mx-auto py-8 px-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/4" />
-          <div className="h-[200px] bg-muted rounded" />
-          <div className="h-[200px] bg-muted rounded" />
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       </div>
     );
