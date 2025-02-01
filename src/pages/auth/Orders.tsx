@@ -54,7 +54,7 @@ const Orders = () => {
           ),
           user:profiles!orders_user_id_fkey (
             full_name,
-            email
+            username
           )
         `)
         .eq("vendor_id", session?.user?.id)
