@@ -44,14 +44,15 @@ const ContactRequests = () => {
           )
         `)
         .eq('receiver_id', user.user.id)
-        .eq('status', 'pending');
+        .eq('status', 'pending')
+        .returns<PendingRequest[]>();
 
       if (error) {
         console.error('Error fetching contact requests:', error);
         throw error;
       }
 
-      return (data || []) as PendingRequest[];
+      return data || [];
     },
   });
 
