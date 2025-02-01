@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Users, Plus, Edit2, Trash2, TrendingUp } from "lucide-react";
+import { Calendar, Clock, Users, Plus, Edit2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatToLocalTime } from "@/utils/timezone";
 import SessionForm from "./SessionForm";
@@ -132,7 +132,7 @@ const VendorSessionManager = () => {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
-                              {formatToLocalTime(session.start_time)}
+                              {formatToLocalTime(session.start_time, 'PPp')}
                             </span>
                             <span className="flex items-center gap-1">
                               <Users className="h-4 w-4" />

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import type { Session } from '@/types/session';
 import {
   Table,
   TableBody,
@@ -82,9 +83,9 @@ const SessionParticipantManager = ({ sessionId, participants }: SessionParticipa
                 <Badge 
                   variant={
                     participant.payment_status === 'completed' 
-                      ? 'success' 
+                      ? 'default' 
                       : participant.payment_status === 'pending' 
-                        ? 'warning' 
+                        ? 'secondary' 
                         : 'destructive'
                   }
                 >
@@ -103,7 +104,7 @@ const SessionParticipantManager = ({ sessionId, participants }: SessionParticipa
                 )}
                 {participant.payment_confirmed_at && (
                   <span className="text-sm text-muted-foreground">
-                    Confirmed at {formatToLocalTime(participant.payment_confirmed_at)}
+                    Confirmed at {formatToLocalTime(participant.payment_confirmed_at, 'PPp')}
                   </span>
                 )}
               </TableCell>
