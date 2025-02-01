@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Gift, ImagePlus, Smile } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
 
 interface MessageInputProps {
   messageInput: string;
@@ -9,32 +9,30 @@ interface MessageInputProps {
   handleSendMessage: (e: React.FormEvent) => void;
 }
 
-const MessageInput = ({ messageInput, setMessageInput, handleSendMessage }: MessageInputProps) => {
+const MessageInput = ({
+  messageInput,
+  setMessageInput,
+  handleSendMessage,
+}: MessageInputProps) => {
   return (
-    <div className="p-4">
-      <form onSubmit={handleSendMessage} className="relative">
+    <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-gray-900/50">
+      <div className="flex gap-2">
         <Input
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
-          placeholder="Message #general"
-          className="bg-[#383A40] border-none text-white placeholder:text-[#949BA4] pr-32"
+          placeholder="Type a message..."
+          className="flex-1 bg-gray-800 border-gray-700 text-white"
         />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white hidden sm:inline-flex">
-            <PlusCircle className="h-5 w-5" />
-          </Button>
-          <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white hidden sm:inline-flex">
-            <Gift className="h-5 w-5" />
-          </Button>
-          <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
-            <ImagePlus className="h-5 w-5" />
-          </Button>
-          <Button type="button" variant="ghost" size="icon" className="text-[#949BA4] hover:text-white">
-            <Smile className="h-5 w-5" />
-          </Button>
-        </div>
-      </form>
-    </div>
+        <Button 
+          type="submit" 
+          size="icon"
+          className="bg-emerald-500 hover:bg-emerald-600"
+          disabled={!messageInput.trim()}
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
+    </form>
   );
 };
 

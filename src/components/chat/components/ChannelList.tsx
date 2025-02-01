@@ -8,14 +8,12 @@ interface ChannelListProps {
   channels: Channel[];
   selectedChannel: string | null;
   onChannelSelect: (channelId: string) => void;
-  isMobile?: boolean;
-  showSidebar?: boolean;
 }
 
-const ChannelList = ({ channels, selectedChannel, onChannelSelect, isMobile, showSidebar }: ChannelListProps) => {
+const ChannelList = ({ channels, selectedChannel, onChannelSelect }: ChannelListProps) => {
   return (
-    <div className={`${isMobile ? (showSidebar ? 'absolute left-[72px] z-20' : 'hidden') : ''} w-60 bg-[#2B2D31] flex flex-col h-full`}>
-      <div className="p-4 border-b border-[#1F2023] shadow">
+    <div className="w-60 bg-gray-900/50 backdrop-blur-lg border-r border-white/10 flex flex-col h-full">
+      <div className="p-4 border-b border-white/10">
         <h2 className="font-semibold text-white">Channels</h2>
       </div>
       <ScrollArea className="flex-1">
@@ -24,7 +22,9 @@ const ChannelList = ({ channels, selectedChannel, onChannelSelect, isMobile, sho
             <Button
               key={channel.id}
               variant={selectedChannel === channel.id ? "secondary" : "ghost"}
-              className="w-full justify-start text-[#949BA4] hover:text-white"
+              className={`w-full justify-start text-white/70 hover:text-white ${
+                selectedChannel === channel.id ? 'bg-white/10' : ''
+              }`}
               onClick={() => onChannelSelect(channel.id)}
             >
               <Hash className="w-4 h-4 mr-2" />

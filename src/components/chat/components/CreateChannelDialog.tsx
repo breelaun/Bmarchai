@@ -54,11 +54,15 @@ const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => voi
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="absolute bottom-4 left-4">
-          <Plus className="h-6 w-6 text-white" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-500"
+        >
+          <Plus className="h-6 w-6" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-gray-900 text-white border-gray-800">
         <DialogHeader>
           <DialogTitle>Create New Channel</DialogTitle>
         </DialogHeader>
@@ -70,6 +74,7 @@ const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => voi
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter channel name"
+              className="bg-gray-800 border-gray-700"
               required
             />
           </div>
@@ -80,6 +85,7 @@ const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => voi
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter channel description"
+              className="bg-gray-800 border-gray-700"
             />
           </div>
           <div className="flex items-center space-x-2">
@@ -90,7 +96,7 @@ const CreateChannelDialog = ({ onChannelCreated }: { onChannelCreated: () => voi
             />
             <Label htmlFor="public">Make channel public</Label>
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-600">
             Create Channel
           </Button>
         </form>
