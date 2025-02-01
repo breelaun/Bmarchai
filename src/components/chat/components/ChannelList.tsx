@@ -1,38 +1,35 @@
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Hash } from "lucide-react";
-import type { Channel } from '../types';
+import { Hash } from 'lucide-react';
+
+interface Channel {
+  id: string;
+  name: string;
+}
 
 interface ChannelListProps {
   channels: Channel[];
   selectedChannel: string | null;
-  onChannelSelect: (channelId: string) => void;
+  onSelectChannel: (id: string) => void;
 }
 
-const ChannelList = ({ channels, selectedChannel, onChannelSelect }: ChannelListProps) => {
+const ChannelList = ({ channels, selectedChannel, onSelectChannel }: ChannelListProps) => {
   return (
-    <div className="w-60 bg-gray-900/50 backdrop-blur-lg border-r border-white/10 flex flex-col h-full">
-      <div className="p-4 border-b border-white/10">
-        <h2 className="font-semibold text-white">Channels</h2>
-      </div>
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-[2px]">
-          {channels.map((channel) => (
-            <Button
-              key={channel.id}
-              variant={selectedChannel === channel.id ? "secondary" : "ghost"}
-              className={`w-full justify-start text-white/70 hover:text-white ${
-                selectedChannel === channel.id ? 'bg-white/10' : ''
-              }`}
-              onClick={() => onChannelSelect(channel.id)}
-            >
-              <Hash className="w-4 h-4 mr-2" />
-              {channel.name}
-            </Button>
-          ))}
+    <div className="space-y-1">
+      <h3 className="px-2 text-sm font-medium text-muted-foreground">Channels</h3>
+      {channels.map((channel) => (
+        <div 
+          key={channel.id}
+          onClick={() => onSelectChannel(channel.id)}
+          className={`flex items-center space-x-2 px-2 py-1.5 text-sm ${
+            selectedChannel === channel.id 
+              ? 'text-foreground bg-accent' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+          } rounded-md cursor-pointer`}
+        >
+          <Hash className="h-4 w-4" />
+          <span>{channel.name}</span>
         </div>
-      </ScrollArea>
+      ))}
     </div>
   );
 };
