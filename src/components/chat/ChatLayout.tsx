@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Menu, Hash, Users, Package, ChevronLeft, MessageSquare, Settings, Home, Sparkles } from "lucide-react";
+import { Menu, Hash, Users, Package, ChevronLeft, MessageSquare, Settings, Home, Sparkles, Info } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import ServerList from "./components/ServerList";
 import ChannelList from "./components/ChannelList";
@@ -211,7 +212,7 @@ const ChatLayout = () => {
       className={`relative flex h-screen ${gradients[activeGradient]} overflow-hidden`}
     >
       {/* Glassmorphic Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       {/* Main Content */}
       <div className="relative z-10 flex w-full">
@@ -221,27 +222,53 @@ const ChatLayout = () => {
           animate={{ x: 0 }}
           className={`${showSidebar ? 'w-20' : 'w-0'} bg-white/10 backdrop-blur-lg border-r border-white/20 transition-all duration-300 flex flex-col items-center py-4 space-y-6`}
         >
-          <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
-            <Home className="h-6 w-6 text-white" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
+                  <Home className="h-6 w-6 text-white" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Home</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           
           {channels.map((channel) => (
-            <Button
-              key={channel.id}
-              variant="ghost"
-              className={`p-2 rounded-xl hover:bg-black/20 ${
-                selectedChannel === channel.id ? 'bg-black/30' : 'bg-black/10'
-              }`}
-              onClick={() => setSelectedChannel(channel.id)}
-            >
-              <MessageSquare className="h-6 w-6 text-white" />
-            </Button>
+            <TooltipProvider key={channel.id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`p-2 rounded-xl hover:bg-black/20 ${
+                      selectedChannel === channel.id ? 'bg-black/30' : 'bg-black/10'
+                    }`}
+                    onClick={() => setSelectedChannel(channel.id)}
+                  >
+                    <MessageSquare className="h-6 w-6 text-white" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{channel.name}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
           
           <div className="mt-auto">
-            <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
-              <Settings className="h-6 w-6 text-white" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
+                    <Settings className="h-6 w-6 text-white" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Settings</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </motion.div>
 
@@ -273,20 +300,39 @@ const ChatLayout = () => {
             </div>
             
             <div className="flex items-center space-x-3">
-              <Button
-                variant="ghost"
-                className="rounded-xl hover:bg-black/20 bg-black/10"
-                onClick={() => setShowProducts(!showProducts)}
-              >
-                <Package className="h-5 w-5 text-white" />
-              </Button>
-              <Button
-                variant="ghost"
-                className="rounded-xl hover:bg-black/20 bg-black/10"
-                onClick={() => setShowMembers(!showMembers)}
-              >
-                <Users className="h-5 w-5 text-white" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="rounded-xl hover:bg-black/20 bg-black/10"
+                      onClick={() => setShowProducts(!showProducts)}
+                    >
+                      <Package className="h-5 w-5 text-white" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Products</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="rounded-xl hover:bg-black/20 bg-black/10"
+                      onClick={() => setShowMembers(!showMembers)}
+                    >
+                      <Users className="h-5 w-5 text-white" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Members</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </motion.div>
 
@@ -303,7 +349,7 @@ const ChatLayout = () => {
                   className="bg-black/20 hover:bg-black/30 transition-all p-4 flex items-start space-x-3"
                 >
                   <img
-                    src={message.sender?.avatar_url || "/api/placeholder/32/32"}
+                    src={message.sender?.avatar_url || "/placeholder.svg"}
                     alt="avatar"
                     className="w-8 h-8 rounded-full"
                   />
@@ -344,31 +390,36 @@ const ChatLayout = () => {
         </div>
 
         {/* Right Sidebar - Members & Products */}
-        <div 
-          className={`${
-            (showMembers || showProducts) ? 'w-64' : 'w-0'
-          } bg-white/10 backdrop-blur-lg border-l border-white/20 transition-all duration-300 overflow-hidden`}
-        >
-          {showMembers && (
-            <MembersList
-              members={channelMembers}
-              session={session}
-              isMobile={isMobile}
-              showMembers={showMembers}
-              showSidebar={showSidebar}
-            />
+        <AnimatePresence>
+          {(showMembers || showProducts) && (
+            <motion.div 
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 100, opacity: 0 }}
+              className="w-64 bg-white/10 backdrop-blur-lg border-l border-white/20 transition-all duration-300"
+            >
+              {showMembers && (
+                <MembersList
+                  members={channelMembers}
+                  session={session}
+                  isMobile={isMobile}
+                  showMembers={showMembers}
+                  showSidebar={showSidebar}
+                />
+              )}
+              {showProducts && (
+                <ProductsList
+                  products={channelProducts}
+                  session={session}
+                  isMobile={isMobile}
+                  showProducts={showProducts}
+                  channelId={selectedChannel}
+                  showSidebar={showSidebar}
+                />
+              )}
+            </motion.div>
           )}
-          {showProducts && (
-            <ProductsList
-              products={channelProducts}
-              session={session}
-              isMobile={isMobile}
-              showProducts={showProducts}
-              channelId={selectedChannel}
-              showSidebar={showSidebar}
-            />
-          )}
-        </div>
+        </AnimatePresence>
       </div>
     </motion.div>
   );
