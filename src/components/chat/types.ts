@@ -40,6 +40,13 @@ export interface ChannelProduct {
   is_featured: boolean;
   added_by: string;
   added_at: string;
+  products?: {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    image_url: string;
+  };
 }
 
 export interface Cell {
