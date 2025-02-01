@@ -16,17 +16,15 @@ const Orders = () => {
       const { data, error } = await supabase
         .from("orders")
         .select(`
-          *,
-          order_items (
-            *,
-            product:products (
-              name,
-              image_url
-            )
-          ),
-          vendor:vendor_profiles!orders_vendor_id_fkey (
-            business_name,
-            contact_email
+          id,
+          created_at,
+          total_amount,
+          order_status,
+          vendor:vendor_profiles ( business_name, contact_email ),
+          order_items ( 
+            quantity, 
+            price_at_time, 
+            product:products ( name, image_url ) 
           )
         `)
         .eq("user_id", session?.user?.id)
@@ -44,25 +42,20 @@ const Orders = () => {
       const { data, error } = await supabase
         .from("orders")
         .select(`
-          *,
-          order_items (
-            *,
-            product:products (
-              name,
-              image_url
-            )
-          ),
-          user:profiles!orders_user_id_fkey (
-            full_name,
-            username
+          id,
+          created_at,
+          total_amount,
+          order_status,
+          user:profiles ( full_name, username ),
+          order_items ( 
+            quantity, 
+            price_at_time, 
+            product:products ( name, image_url ) 
           )
         `)
         .eq("vendor_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
-      console.log("Orders received data:", data);
-      console.log("Orders received error:", error);
-      
       if (error) throw error;
       return data;
     },
