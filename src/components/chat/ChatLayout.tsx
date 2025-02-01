@@ -34,7 +34,7 @@ const ChatLayout = () => {
 
   const gradients = [
     'bg-gradient-to-br from-black via-[#1a1a1a] to-[#1B1500]',
-    'bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]',
+    'bg-[url(https://qyblzbqpyasfoirqzdpo.supabase.co/storage/v1/object/public/backgrounds//GMNY3qPrSoOD7hasQwRSfQ.jpeg)] bg-cover bg-center',
     'bg-gradient-to-br from-[#333333] via-[#1a1a1a] to-[#f7bd00]'
   ];
 
@@ -204,7 +204,7 @@ const ChatLayout = () => {
       className={`relative flex h-screen ${gradients[activeGradient]} overflow-hidden`}
     >
       {/* Glassmorphic Overlay */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-lg" />
 
       {/* Main Content */}
       <div className="relative z-10 flex w-full">
