@@ -16,15 +16,17 @@ const Orders = () => {
       const { data, error } = await supabase
         .from("orders")
         .select(`
-          id,
-          created_at,
-          total_amount,
-          order_status,
-          vendor:vendor_profiles ( business_name, contact_email ),
-          order_items ( 
-            quantity, 
-            price_at_time, 
-            product:products ( name, image_url ) 
+          *,
+          order_items (
+            *,
+            product:products (
+              name,
+              image_url
+            )
+          ),
+          vendor_profiles (
+            business_name,
+            contact_email
           )
         `)
         .eq("user_id", session?.user?.id)
@@ -35,6 +37,7 @@ const Orders = () => {
     },
     enabled: !!session?.user?.id,
   });
+
 
   const { data: ordersReceived, isLoading: receivedLoading } = useQuery({
     queryKey: ["orders-received", session?.user?.id],
