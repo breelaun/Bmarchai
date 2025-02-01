@@ -44,16 +44,12 @@ const ChatLayout = () => {
     'bg-gradient-to-br from-[#001346] to-[#001346]',
     'bg-gradient-to-br from-[#000e32] to-[#000e32]',
     'bg-gradient-to-br from-[#00081f] to-[#00081f]',
-    
   ];
 
   useEffect(() => {
     const gradientInterval = setInterval(() => {
       setActiveGradient((prev) => (prev + 1) % gradients.length);
     }, 10000);
-    return () => clearInterval(gradientInterval);
-  }, []);
-
     return () => clearInterval(gradientInterval);
   }, []);
 
@@ -155,7 +151,7 @@ const ChatLayout = () => {
         .order("created_at", { ascending: true });
 
       if (messagesError) throw messagesError;
-      setMessages(messagesData);
+      setMessages(messagesData || []);
     };
 
     fetchMessages();
@@ -304,7 +300,7 @@ const ChatLayout = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.5, ease: "easeInOut" }}
-                  className={`relative flex h-screen ${gradients[activeGradient]} transition-all duration-1000 ease-in-out overflow-hidden items-start space-x-3 hover:bg-white/5 p-3 rounded-lg`}
+                  className="bg-black/20 hover:bg-black/30 transition-all p-4 flex items-start space-x-3"
                 >
                   <img
                     src={message.sender?.avatar_url || "/api/placeholder/32/32"}
