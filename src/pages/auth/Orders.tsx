@@ -60,6 +60,9 @@ const Orders = () => {
         .eq("vendor_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
+      console.log("Orders received data:", data);
+      console.log("Orders received error:", error);
+      
       if (error) throw error;
       return data;
     },
