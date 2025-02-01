@@ -24,8 +24,9 @@ const Orders = () => {
               image_url
             )
           ),
-          vendor:vendor_profiles (
-            business_name
+          vendor:vendor_profiles!orders_vendor_id_fkey (
+            business_name,
+            contact_email
           )
         `)
         .eq("user_id", session?.user?.id)
@@ -51,7 +52,7 @@ const Orders = () => {
               image_url
             )
           ),
-          user:profiles (
+          user:profiles!orders_user_id_fkey (
             full_name,
             email
           )
@@ -100,7 +101,7 @@ const Orders = () => {
           {type === "made" ? (
             <p className="text-sm">Vendor: {order.vendor?.business_name || "Unknown Vendor"}</p>
           ) : (
-            <p className="text-sm">Customer: {order.customer?.full_name || "Unknown Customer"}</p>
+            <p className="text-sm">Customer: {order.user?.full_name || "Unknown Customer"}</p>
           )}
           <div className="space-y-2">
             {order.order_items?.map((item: any) => (
