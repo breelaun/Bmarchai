@@ -51,6 +51,8 @@ const ChatLayout = () => {
     const gradientInterval = setInterval(() => {
       setActiveGradient((prev) => (prev + 1) % gradients.length);
     }, 10000);
+    return () => clearInterval(gradientInterval);
+  }, []);
 
     return () => clearInterval(gradientInterval);
   }, []);
@@ -301,7 +303,8 @@ const ChatLayout = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="flex items-start space-x-3 hover:bg-white/5 p-3 rounded-lg transition-colors"
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className={`relative flex h-screen ${gradients[activeGradient]} transition-all duration-1000 ease-in-out overflow-hidden items-start space-x-3 hover:bg-white/5 p-3 rounded-lg`}
                 >
                   <img
                     src={message.sender?.avatar_url || "/api/placeholder/32/32"}
