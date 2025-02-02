@@ -1748,6 +1748,7 @@ export type Database = {
           order_status: string | null
           payment_method: string
           payment_status: string
+          seller_profile_id: string | null
           status: string
           total_amount: number
           updated_at: string
@@ -1763,6 +1764,7 @@ export type Database = {
           order_status?: string | null
           payment_method: string
           payment_status?: string
+          seller_profile_id?: string | null
           status?: string
           total_amount: number
           updated_at?: string
@@ -1778,6 +1780,7 @@ export type Database = {
           order_status?: string | null
           payment_method?: string
           payment_status?: string
+          seller_profile_id?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
@@ -1788,6 +1791,13 @@ export type Database = {
           vendor_profile_name?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_seller_profile_id_fkey"
+            columns: ["seller_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_user_id_fkey"
             columns: ["user_id"]
@@ -1880,6 +1890,7 @@ export type Database = {
           tags: string[] | null
           updated_at: string
           vendor_id: string
+          vendor_profile_id: string | null
         }
         Insert: {
           category?: string | null
@@ -1896,6 +1907,7 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string
           vendor_id: string
+          vendor_profile_id?: string | null
         }
         Update: {
           category?: string | null
@@ -1912,6 +1924,7 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string
           vendor_id?: string
+          vendor_profile_id?: string | null
         }
         Relationships: [
           {
@@ -1919,6 +1932,13 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_vendor_profile_id_fkey"
+            columns: ["vendor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

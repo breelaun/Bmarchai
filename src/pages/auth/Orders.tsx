@@ -12,6 +12,7 @@ const Orders = () => {
   const queryClient = useQueryClient();
   const [isSubscribed, setIsSubscribed] = useState(false);
 
+  // Orders made by the user (as a buyer)
   const { data: ordersMade, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders-made", session?.user?.id],
     queryFn: async () => {
@@ -23,7 +24,8 @@ const Orders = () => {
             *,
             product:products (
               name,
-              image_url
+              image_url,
+              vendor_profile_id
             )
           ),
           vendor:vendor_profiles (
@@ -49,6 +51,7 @@ const Orders = () => {
     enabled: !!session?.user?.id,
   });
 
+  // Orders received by the user (as a vendor)
   const { data: ordersReceived, isLoading: receivedLoading } = useQuery({
     queryKey: ["orders-received", session?.user?.id],
     queryFn: async () => {
@@ -69,7 +72,7 @@ const Orders = () => {
             username
           )
         `)
-        .eq("vendor_id", session?.user?.id)
+        .eq("seller_profile_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -104,7 +107,7 @@ const Orders = () => {
           event: "*",
           schema: "public",
           table: "orders",
-          filter: `vendor_id=eq.${session.user.id}`,
+          filter: `seller_profile_id=eq.${session.user.id}`,
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ["orders-received"] });
