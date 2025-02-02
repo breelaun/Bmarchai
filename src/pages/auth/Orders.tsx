@@ -64,9 +64,8 @@ const Orders = () => {
             )
           ),
           user:profiles (
-            id,
             full_name,
-            email
+            username  // changed from email since we have username
           )
         `)
         .eq("vendor_id", session?.user?.id)
