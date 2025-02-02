@@ -4,6 +4,7 @@ import Controls from './Controls';
 import MessageArea from './components/MessageArea';
 import LiveSessions from './components/LiveSessions';
 import ChannelList from './components/ChannelList';
+import SessionForm from './components/SessionForm';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageSquare, Users } from 'lucide-react';
@@ -63,7 +64,7 @@ const ChatLayout = () => {
       <div className="w-16 bg-background border-r flex flex-col items-center py-6 space-y-4">
         <button 
           className="border px-2 py-1 rounded-2xl rotate-180 [writing-mode:vertical-lr]" 
-          onClick={() => setShowSessionForm(!showSessionForm)}
+          onClick={() => setShowSessionForm(true)}
         >
           + Session
         </button>
@@ -73,7 +74,7 @@ const ChatLayout = () => {
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
-          {showSessionForm && <LiveSessions />}
+          {showSessionForm && <SessionForm onClose={() => setShowSessionForm(false)} />}
           <MessageArea 
             channelId={selectedChannel || ''}
             userId={session?.session?.user?.id || ''}
