@@ -72,7 +72,7 @@ const Orders = () => {
             username
           )
         `)
-        .eq("seller_profile_id", session?.user?.id)
+        .eq("vendor_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -107,7 +107,7 @@ const Orders = () => {
           event: "*",
           schema: "public",
           table: "orders",
-          filter: `seller_profile_id=eq.${session.user.id}`,
+          filter: `vendor_id=eq.${session.user.id}`,
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ["orders-received"] });

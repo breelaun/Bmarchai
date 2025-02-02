@@ -1752,6 +1752,7 @@ export type Database = {
           total_amount: number
           updated_at: string
           user_id: string | null
+          user_name: string | null
           user_profile_name: string | null
           vendor_id: string | null
           vendor_notes: string | null
@@ -1766,6 +1767,7 @@ export type Database = {
           total_amount: number
           updated_at?: string
           user_id?: string | null
+          user_name?: string | null
           user_profile_name?: string | null
           vendor_id?: string | null
           vendor_notes?: string | null
@@ -1780,6 +1782,7 @@ export type Database = {
           total_amount?: number
           updated_at?: string
           user_id?: string | null
+          user_name?: string | null
           user_profile_name?: string | null
           vendor_id?: string | null
           vendor_notes?: string | null
