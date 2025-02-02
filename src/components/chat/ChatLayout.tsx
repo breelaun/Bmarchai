@@ -10,7 +10,13 @@ import { Button } from "@/components/ui/button";
 import Grid from './Grid';
 import Controls from './Controls';
 import MessageArea from './components/MessageArea';
-import SessionForm from './components/SessionForm';
+import ServerList from "./components/ServerList";
+import ChannelList from "./components/ChannelList";
+import UserProfile from "./components/UserProfile";
+import MessageList from "./components/MessageList";
+import MessageInput from "./components/MessageInput";
+import MembersList from "./components/MembersList";
+import ProductsList from "./components/ProductsList";
 import type { Session, Channel, Message } from '@/types';
 
 const ChatLayout = () => {
