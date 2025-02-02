@@ -12,6 +12,7 @@ import type { Session } from '@/types/session';
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [session, setSession] = useState<any>(null);
+  const [showSessionForm, setShowSessionForm] = useState(false);
   
   const { data: channels = [] } = useQuery({
     queryKey: ['channels'],
@@ -60,7 +61,10 @@ const ChatLayout = () => {
     <div className="h-[calc(100vh-4rem)] flex">
       {/* Primary Vertical Navigation */}
       <div className="w-16 bg-background border-r flex flex-col items-center py-6 space-y-4">
-        <button className="border px-2 py-1 rounded-md rotate-180 [writing-mode:vertical-lr]" onClick={() => {/* Add form opening logic here */}}>
+        <button 
+          className="border px-2 py-1 rounded-2xl rotate-180 [writing-mode:vertical-lr]" 
+          onClick={() => setShowSessionForm(!showSessionForm)}
+        >
           + Session
         </button>
         <span className="rotate-180 [writing-mode:vertical-lr]">Chat</span>
@@ -69,6 +73,7 @@ const ChatLayout = () => {
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
+          {showSessionForm && <LiveSessions />}
           <MessageArea 
             channelId={selectedChannel || ''}
             userId={session?.session?.user?.id || ''}
