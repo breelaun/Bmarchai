@@ -7,13 +7,14 @@ import ChannelList from './components/ChannelList';
 import SidebarActions from './components/SidebarActions';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Session } from '@/types/session';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [session, setSession] = useState<any>(null);
-  
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const { data: channels = [] } = useQuery({
     queryKey: ['channels'],
     queryFn: async () => {
@@ -98,37 +99,51 @@ const ChatLayout = () => {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
-      <Grid>
-        <div className="col-span-1 bg-background border-r">
-          <div className="flex flex-col space-y-4 p-4">
-            <div className="flex items-center space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer">
-              <MessageSquare className="h-4 w-4" />
-              <span>Chat</span>
-            </div>
-            
-            <LiveSessions sessions={sessions} />
-            
-            <ChannelList 
-              channels={channels}
-              selectedChannel={selectedChannel}
-              onSelectChannel={setSelectedChannel}
-            />
-
-            <SidebarActions 
-              pendingRequests={pendingRequests.length}
-              onlineUsers={onlineUsers.length}
-            />
+    <div className="h-[calc(100vh-4rem)] flex">
+      <div className={`bg-background transition-all duration-300 flex flex-col relative ${isExpanded ? 'w-64' : 'w-16'}`}>
+        <div className="absolute -right-3 top-2 z-10">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="rounded-full p-1 bg-background shadow-md hover:bg-accent"
+          >
+            {isExpanded ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        
+        <div className="flex flex-col space-y-4 p-4">
+          <div className="flex items-center space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer">
+            <MessageSquare className="h-4 w-4 flex-shrink-0" />
+            {isExpanded && <span>Chat</span>}
           </div>
-        </div>
-        <div className="col-span-11 bg-background flex flex-col">
-          <MessageArea 
-            channelId={selectedChannel || ''}
-            userId={session?.session?.user?.id || ''}
+          
+          <LiveSessions sessions={sessions} isExpanded={isExpanded} />
+          
+          <ChannelList 
+            channels={channels}
+            selectedChannel={selectedChannel}
+            onSelectChannel={setSelectedChannel}
+            isExpanded={isExpanded}
           />
-          <Controls />
+
+          <SidebarActions 
+            pendingRequests={pendingRequests.length}
+            onlineUsers={onlineUsers.length}
+            isExpanded={isExpanded}
+          />
         </div>
-      </Grid>
+      </div>
+      
+      <div className="flex-1 bg-background flex flex-col">
+        <MessageArea 
+          channelId={selectedChannel || ''}
+          userId={session?.session?.user?.id || ''}
+        />
+        <Controls />
+      </div>
     </div>
   );
 };
