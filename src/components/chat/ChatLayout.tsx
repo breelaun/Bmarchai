@@ -120,19 +120,17 @@ const ChatLayout = () => {
             {isExpanded && <span>Chat</span>}
           </div>
           
-          <LiveSessions sessions={sessions} isExpanded={isExpanded} />
+          <LiveSessions sessions={sessions} />
           
           <ChannelList 
             channels={channels}
             selectedChannel={selectedChannel}
             onSelectChannel={setSelectedChannel}
-            isExpanded={isExpanded}
           />
 
           <SidebarActions 
             pendingRequests={pendingRequests.length}
             onlineUsers={onlineUsers.length}
-            isExpanded={isExpanded}
           />
         </div>
       </div>
