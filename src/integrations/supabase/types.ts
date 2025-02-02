@@ -1748,7 +1748,6 @@ export type Database = {
           order_status: string | null
           payment_method: string
           payment_status: string
-          seller_profile_id: string | null
           status: string
           total_amount: number
           updated_at: string
@@ -1756,7 +1755,6 @@ export type Database = {
           user_profile_name: string | null
           vendor_id: string | null
           vendor_notes: string | null
-          vendor_profile_name: string | null
         }
         Insert: {
           created_at?: string
@@ -1764,7 +1762,6 @@ export type Database = {
           order_status?: string | null
           payment_method: string
           payment_status?: string
-          seller_profile_id?: string | null
           status?: string
           total_amount: number
           updated_at?: string
@@ -1772,7 +1769,6 @@ export type Database = {
           user_profile_name?: string | null
           vendor_id?: string | null
           vendor_notes?: string | null
-          vendor_profile_name?: string | null
         }
         Update: {
           created_at?: string
@@ -1780,7 +1776,6 @@ export type Database = {
           order_status?: string | null
           payment_method?: string
           payment_status?: string
-          seller_profile_id?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
@@ -1788,16 +1783,8 @@ export type Database = {
           user_profile_name?: string | null
           vendor_id?: string | null
           vendor_notes?: string | null
-          vendor_profile_name?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "orders_seller_profile_id_fkey"
-            columns: ["seller_profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "orders_user_id_fkey"
             columns: ["user_id"]
@@ -1889,6 +1876,7 @@ export type Database = {
           start_datetime: string | null
           tags: string[] | null
           updated_at: string
+          user_name: string | null
           vendor_id: string
           vendor_profile_id: string | null
         }
@@ -1906,6 +1894,7 @@ export type Database = {
           start_datetime?: string | null
           tags?: string[] | null
           updated_at?: string
+          user_name?: string | null
           vendor_id: string
           vendor_profile_id?: string | null
         }
@@ -1923,6 +1912,7 @@ export type Database = {
           start_datetime?: string | null
           tags?: string[] | null
           updated_at?: string
+          user_name?: string | null
           vendor_id?: string
           vendor_profile_id?: string | null
         }
