@@ -68,7 +68,7 @@ const ChatLayout = () => {
           {['Chat', 'Contacts', 'Online'].map((item) => (
             <div
               key={item}
-              className="text-sm font-medium transform rotate-180 whitespace-nowrap"
+              className="text-sm font-medium transform rotate-90 whitespace-nowrap"
             >
               {item}
             </div>
