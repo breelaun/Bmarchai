@@ -6,96 +6,70 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, ShoppingBag, Loader2 } from "lucide-react";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { EmptyOrderState } from "@/components/orders/EmptyOrderState";
-import { useToast } from "@/components/ui/use-toast";
 
 const Orders = () => {
   const session = useSession();
   const queryClient = useQueryClient();
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const { toast } = useToast();
 
-  // Orders made by the user (as a buyer)
   const { data: ordersMade, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders-made", session?.user?.id],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("orders")
-          .select(`
+      const { data, error } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          order_items (
             *,
-            order_items (
-              *,
-              product:products (
-                name,
-                image_url,
-                vendor_profile_id
-              )
-            ),
-            vendor:vendor_profiles (
-              id,
-              business_name,
-              contact_email
-            ),
-            vendor_user:profiles (
-              id,
-              full_name,
-              username
+            product:products (
+              name,
+              image_url
             )
-          `)
-          .eq("user_id", session?.user?.id)
-          .order("created_at", { ascending: false });
+          ),
+          vendor:vendor_profiles (
+            business_name,
+            contact_email
+          )
+        `)
+        .eq("user_id", session?.user?.id)
+        .order("created_at", { ascending: false });
 
-        if (error) throw error;
-        return data || [];
-      } catch (error) {
+      if (error) {
         console.error("Orders made error:", error);
-        toast({
-          title: "Error loading orders",
-          description: "There was a problem loading your orders.",
-          variant: "destructive",
-        });
-        return [];
+        throw error;
       }
+      return data;
     },
     enabled: !!session?.user?.id,
   });
 
-  // Orders received by the user (as a vendor)
   const { data: ordersReceived, isLoading: receivedLoading } = useQuery({
     queryKey: ["orders-received", session?.user?.id],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("orders")
-          .select(`
+      const { data, error } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          order_items (
             *,
-            order_items (
-              *,
-              product:products (
-                name,
-                image_url
-              )
-            ),
-            user:profiles (
-              id,
-              full_name,
-              username
+            product:products (
+              name,
+              image_url
             )
-          `)
-          .eq("vendor_id", session?.user?.id)
-          .order("created_at", { ascending: false });
+          ),
+          user:profiles (
+            full_name,
+            username
+          )
+        `)
+        .eq("vendor_id", session?.user?.id)
+        .order("created_at", { ascending: false });
 
-        if (error) throw error;
-        return data || [];
-      } catch (error) {
+      if (error) {
         console.error("Orders received error:", error);
-        toast({
-          title: "Error loading received orders",
-          description: "There was a problem loading orders received.",
-          variant: "destructive",
-        });
-        return [];
+        throw error;
       }
+      return data;
     },
     enabled: !!session?.user?.id,
   });
@@ -129,11 +103,9 @@ const Orders = () => {
           queryClient.invalidateQueries({ queryKey: ["orders-received"] });
         }
       )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          setIsSubscribed(true);
-        }
-      });
+      .subscribe();
+
+    setIsSubscribed(true);
 
     return () => {
       supabase.removeChannel(channel);
@@ -165,19 +137,19 @@ const Orders = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="made" className="mt-4">
-          {!ordersMade || ordersMade.length === 0 ? (
+          {ordersMade?.length === 0 ? (
             <EmptyOrderState type="made" />
           ) : (
-            ordersMade.map((order) => (
+            ordersMade?.map((order) => (
               <OrderCard key={order.id} order={order} type="made" />
             ))
           )}
         </TabsContent>
         <TabsContent value="received" className="mt-4">
-          {!ordersReceived || ordersReceived.length === 0 ? (
+          {ordersReceived?.length === 0 ? (
             <EmptyOrderState type="received" />
           ) : (
-            ordersReceived.map((order) => (
+            ordersReceived?.map((order) => (
               <OrderCard key={order.id} order={order} type="received" />
             ))
           )}

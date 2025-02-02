@@ -1752,8 +1752,6 @@ export type Database = {
           total_amount: number
           updated_at: string
           user_id: string | null
-          user_name: string | null
-          user_profile_name: string | null
           vendor_id: string | null
           vendor_notes: string | null
         }
@@ -1767,8 +1765,6 @@ export type Database = {
           total_amount: number
           updated_at?: string
           user_id?: string | null
-          user_name?: string | null
-          user_profile_name?: string | null
           vendor_id?: string | null
           vendor_notes?: string | null
         }
@@ -1782,8 +1778,6 @@ export type Database = {
           total_amount?: number
           updated_at?: string
           user_id?: string | null
-          user_name?: string | null
-          user_profile_name?: string | null
           vendor_id?: string | null
           vendor_notes?: string | null
         }
@@ -1879,9 +1873,7 @@ export type Database = {
           start_datetime: string | null
           tags: string[] | null
           updated_at: string
-          user_name: string | null
           vendor_id: string
-          vendor_profile_id: string | null
         }
         Insert: {
           category?: string | null
@@ -1897,9 +1889,7 @@ export type Database = {
           start_datetime?: string | null
           tags?: string[] | null
           updated_at?: string
-          user_name?: string | null
           vendor_id: string
-          vendor_profile_id?: string | null
         }
         Update: {
           category?: string | null
@@ -1915,9 +1905,7 @@ export type Database = {
           start_datetime?: string | null
           tags?: string[] | null
           updated_at?: string
-          user_name?: string | null
           vendor_id?: string
-          vendor_profile_id?: string | null
         }
         Relationships: [
           {
@@ -1925,13 +1913,6 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendor_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_vendor_profile_id_fkey"
-            columns: ["vendor_profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1946,7 +1927,7 @@ export type Database = {
           date_of_birth: string
           default_banner_url: string | null
           email_notifications: boolean | null
-          full_name: string
+          full_name: string | null
           gender: string | null
           id: string
           is_vendor: boolean | null
@@ -1966,7 +1947,7 @@ export type Database = {
           date_of_birth?: string
           default_banner_url?: string | null
           email_notifications?: boolean | null
-          full_name: string
+          full_name?: string | null
           gender?: string | null
           id: string
           is_vendor?: boolean | null
@@ -1986,7 +1967,7 @@ export type Database = {
           date_of_birth?: string
           default_banner_url?: string | null
           email_notifications?: boolean | null
-          full_name?: string
+          full_name?: string | null
           gender?: string | null
           id?: string
           is_vendor?: boolean | null
