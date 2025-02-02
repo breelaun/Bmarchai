@@ -98,10 +98,10 @@ const ChatLayout = () => {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
-      <Grid>
-        <div className="col-span-1 bg-background">
-          <div className="flex flex-col space-y-4 p-4">
+    <div className="h-[calc(100vh-4rem)] relative">
+      <Grid className="absolute inset-0">
+        <div className="col-span-1 bg-background border-r relative z-10">
+          <div className="flex flex-col space-y-4 p-4 h-full overflow-y-auto">
             <div className="flex items-center space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer">
               <MessageSquare className="h-4 w-4" />
               <span>Chat</span>
@@ -121,12 +121,16 @@ const ChatLayout = () => {
             />
           </div>
         </div>
-        <div className="col-span-11 bg-background flex flex-col">
-          <MessageArea 
-            channelId={selectedChannel || ''}
-            userId={session?.session?.user?.id || ''}
-          />
-          <Controls />
+        <div className="col-span-11 bg-background relative z-10 flex flex-col">
+          <div className="flex-1 overflow-y-auto">
+            <MessageArea 
+              channelId={selectedChannel || ''}
+              userId={session?.session?.user?.id || ''}
+            />
+          </div>
+          <div className="z-20">
+            <Controls />
+          </div>
         </div>
       </Grid>
     </div>
