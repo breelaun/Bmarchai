@@ -102,8 +102,8 @@ const ChatLayout = () => {
     <div className="h-[calc(100vh-4rem)]">
       <Grid>
         <div className="col-span-1 bg-background border-r flex">
-          <div className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-accent hover:text-foreground transition-colors duration-200">
-            <MessageSquare className="h-4 w-4 rotate-180 mb-2" />
+          <div className="writing-mode-vertical-rl rotate-90 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-accent hover:text-foreground transition-colors duration-200">
+            <MessageSquare className="h-4 w-4 rotate-90 mb-2" />
             <span className="text-sm">Chat</span>
           </div>
           
