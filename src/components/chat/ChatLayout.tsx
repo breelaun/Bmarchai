@@ -7,7 +7,7 @@ import ChannelList from './components/ChannelList';
 import SessionForm from './components/SessionForm';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, Users } from 'lucide-react';
+import { MessageSquare, Users, Plus, Settings, Bell } from 'lucide-react';
 import type { Session } from '@/types/session';
 
 const ChatLayout = () => {
@@ -58,28 +58,71 @@ const ChatLayout = () => {
     getSession();
   }, []);
 
+  const MenuItem = ({ icon: Icon, text, onClick }: { icon: any; text: string; onClick?: () => void }) => (
+    <div 
+      className="group flex flex-col items-center py-4 cursor-pointer hover:bg-accent/50 transition-colors w-full"
+      onClick={onClick}
+    >
+      <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground mb-2" />
+      <span className="rotate-180 [writing-mode:vertical-lr] text-sm text-muted-foreground group-hover:text-foreground whitespace-nowrap">
+        {text}
+      </span>
+    </div>
+  );
+
   return (
     <div className="h-[calc(100vh-4rem)] flex">
       {/* Primary Vertical Navigation */}
-      <div className="w-16 bg-background border-r flex flex-col items-center py-6 space-y-4">
-        <button 
-          className="border px-2 py-1 rounded-2xl rotate-180 [writing-mode:vertical-lr]" 
-          onClick={() => setShowSessionForm(true)}
-        >
-          + Session
-        </button>
-        <span className="rotate-180 [writing-mode:vertical-lr]">Chat</span>
-        <span className="rotate-180 [writing-mode:vertical-lr]">Contacts</span>
-        <span className="rotate-180 [writing-mode:vertical-lr]">Online</span>
+      <div className="w-16 bg-background border-r flex flex-col justify-between">
+        <div className="flex flex-col">
+          <MenuItem 
+            icon={Plus} 
+            text="New Session" 
+            onClick={() => setShowSessionForm(true)}
+          />
+          <MenuItem icon={MessageSquare} text="Chat" />
+          <MenuItem icon={Users} text="Contacts" />
+          <MenuItem icon={Bell} text="Notifications" />
+        </div>
+        <div className="mb-4">
+          <MenuItem icon={Settings} text="Settings" />
+        </div>
       </div>
+
+      {/* Main Content Area with Grid */}
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
-          {showSessionForm && <SessionForm onClose={() => setShowSessionForm(false)} />}
-          <MessageArea 
-            channelId={selectedChannel || ''}
-            userId={session?.session?.user?.id || ''}
-          />
-          <Controls />
+          <div className="flex-1 flex overflow-hidden">
+            {/* Secondary Sidebar */}
+            {selectedChannel && (
+              <div className="w-60 border-r bg-background">
+                <div className="flex flex-col h-full">
+                  <LiveSessions sessions={sessions} />
+                  <ChannelList 
+                    channels={channels}
+                    selectedChannel={selectedChannel}
+                    onSelectChannel={setSelectedChannel}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Chat Area */}
+            <div className="flex-1 flex flex-col">
+              {showSessionForm && <SessionForm onClose={() => setShowSessionForm(false)} />}
+              <div className="flex-1 overflow-auto">
+                <MessageArea 
+                  channelId={selectedChannel || ''}
+                  userId={session?.session?.user?.id || ''}
+                />
+              </div>
+              <div className="w-full border-t">
+                <div className="max-w-[1200px] mx-auto">
+                  <Controls />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </Grid>
     </div>
