@@ -97,39 +97,39 @@ const ChatLayout = () => {
     getSession();
   }, []);
 
+
   return (
-    <div className="h-[calc(100vh-4rem)] flex">
-      <div className="w-16 bg-background border-r flex flex-col items-center py-4 gap-8">
-        <div className="flex flex-col items-center gap-1 text-sm text-muted-foreground hover:text-foreground cursor-pointer">
-          <MessageSquare className="h-6 w-6" />
-          <span className="text-xs">Chat</span>
-        </div>
-        
-        <SidebarActions 
-          pendingRequests={pendingRequests.length}
-          onlineUsers={onlineUsers.length}
-        />
-      </div>
-
-      <div className="w-64 bg-background border-r">
-        <div className="flex flex-col p-4">
-          <LiveSessions sessions={sessions} />
+    <div className="h-[calc(100vh-4rem)]">
+      <Grid>
+        <div className="col-span-1 bg-background border-r flex">
+          <div className="writing-mode-vertical-rl rotate-180 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-accent hover:text-foreground transition-colors duration-200">
+            <MessageSquare className="h-4 w-4 rotate-180 mb-2" />
+            <span className="text-sm">Chat</span>
+          </div>
           
-          <ChannelList 
-            channels={channels}
-            selectedChannel={selectedChannel}
-            onSelectChannel={setSelectedChannel}
-          />
-        </div>
-      </div>
+          <div className="flex-1 flex flex-col space-y-4 p-4">
+            <LiveSessions sessions={sessions} />
+            
+            <ChannelList 
+              channels={channels}
+              selectedChannel={selectedChannel}
+              onSelectChannel={setSelectedChannel}
+            />
 
-      <div className="flex-1 bg-background flex flex-col">
-        <MessageArea 
-          channelId={selectedChannel || ''}
-          userId={session?.session?.user?.id || ''}
-        />
-        <Controls />
-      </div>
+            <SidebarActions 
+              pendingRequests={pendingRequests.length}
+              onlineUsers={onlineUsers.length}
+            />
+          </div>
+        </div>
+        <div className="col-span-11 bg-background flex flex-col">
+          <MessageArea 
+            channelId={selectedChannel || ''}
+            userId={session?.session?.user?.id || ''}
+          />
+          <Controls />
+        </div>
+      </Grid>
     </div>
   );
 };
