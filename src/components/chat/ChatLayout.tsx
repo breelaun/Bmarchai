@@ -100,7 +100,7 @@ const ChatLayout = () => {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       <Grid>
-        <div className="col-span-1 bg-background border-r">
+        <div className="col-span-1 bg-background">
           <div className="flex flex-col space-y-4 p-4">
             <div className="flex items-center space-x-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md cursor-pointer">
               <MessageSquare className="h-4 w-4" />
