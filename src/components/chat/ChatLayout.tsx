@@ -1,225 +1,131 @@
 import React, { useState, useEffect } from 'react';
-import { useSession } from "@supabase/auth-helpers-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from "@/components/ui/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { MessageSquare, Users, Package, Hash, Settings, Home } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-
 import Grid from './Grid';
 import Controls from './Controls';
 import MessageArea from './components/MessageArea';
+import LiveSessions from './components/LiveSessions';
+import ChannelList from './components/ChannelList';
 import SessionForm from './components/SessionForm';
-import type { Session, Channel, Message } from '@/types';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { MessageSquare, Users, Plus, Settings, Bell } from 'lucide-react';
+import type { Session } from '@/types/session';
 
 const ChatLayout = () => {
-  const session = useSession();
-  const { toast } = useToast();
-  const isMobile = useIsMobile();
-  
-  // State Management
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
+  const [session, setSession] = useState<any>(null);
   const [showSessionForm, setShowSessionForm] = useState(false);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [showMembers, setShowMembers] = useState(!isMobile);
-  const [channelMembers, setChannelMembers] = useState<any[]>([]);
-  const [activeGradient, setActiveGradient] = useState(0);
+  
+  const { data: channels = [] } = useQuery({
+    queryKey: ['channels'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('chat_channels')
+        .select('*, chat_members(*)')
+        .order('created_at', { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
-  // Gradient definitions
-  const gradients = [
-    'bg-gradient-to-br from-black via-[#1a1a1a] to-[#1B1500]',
-    'bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]',
-    'bg-gradient-to-br from-[#333333] via-[#1a1a1a] to-[#f7bd00]'
-  ];
+  const { data: sessions = [] } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select(`
+          *,
+          vendor_profiles (
+            business_name,
+            profiles (
+              username
+            )
+          )
+        `)
+        .eq('status', 'scheduled')
+        .order('start_time', { ascending: true });
+      
+      if (error) throw error;
+      return data as Session[];
+    }
+  });
 
-  // Gradient rotation effect
   useEffect(() => {
-    const gradientInterval = setInterval(() => {
-      setActiveGradient((prev) => (prev + 1) % gradients.length);
-    }, 10000);
-
-    return () => clearInterval(gradientInterval);
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data);
+    };
+    getSession();
   }, []);
 
-  // Fetch initial channels
-  useEffect(() => {
-    if (!session?.user?.id) return;
-    fetchChannels();
-  }, [session?.user?.id]);
-
-  const fetchChannels = async () => {
-    try {
-      const { data: channelsData, error: channelsError } = await supabase
-        .from("chat_channels")
-        .select("*")
-        .order('created_at', { ascending: true });
-
-      if (channelsError) throw channelsError;
-      setChannels(channelsData);
-      if (channelsData.length > 0 && !selectedChannel) {
-        setSelectedChannel(channelsData[0].id);
-      }
-    } catch (error: any) {
-      console.error("Error fetching channels:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load channels",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Real-time message subscription
-  useEffect(() => {
-    if (!selectedChannel || !session?.user?.id || isSubscribed) return;
-
-    const channel = supabase
-      .channel("chat-updates")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "chat_messages",
-          filter: `channel_id=eq.${selectedChannel}`,
-        },
-        (payload) => {
-          console.log("Real-time update:", payload);
-          fetchMessages();
-        }
-      )
-      .subscribe();
-
-    setIsSubscribed(true);
-
-    return () => {
-      supabase.removeChannel(channel);
-      setIsSubscribed(false);
-    };
-  }, [selectedChannel, session?.user?.id, isSubscribed]);
-
-  const fetchMessages = async () => {
-    if (!selectedChannel) return;
-    
-    const { data, error } = await supabase
-      .from("chat_messages")
-      .select(`
-        *,
-        sender:sender_id (
-          username,
-          avatar_url
-        )
-      `)
-      .eq("channel_id", selectedChannel)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching messages:", error);
-      return;
-    }
-
-    setMessages(data);
-  };
+  const MenuItem = ({ icon: Icon, text, onClick }: { icon: any; text: string; onClick?: () => void }) => (
+    <div 
+      className="group flex flex-col items-center py-4 cursor-pointer hover:bg-accent/50 transition-colors w-full"
+      onClick={onClick}
+    >
+      <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground mb-2" />
+      <span className="rotate-180 [writing-mode:vertical-lr] text-sm text-muted-foreground group-hover:text-foreground whitespace-nowrap">
+        {text}
+      </span>
+    </div>
+  );
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className={`h-[calc(100vh-4rem)] relative ${gradients[activeGradient]}`}
-    >
-      {/* Glassmorphic Overlay */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-xl" />
-
-      <div className="relative z-10 flex h-full">
-        {/* Primary Vertical Navigation */}
-        <motion.div 
-          initial={{ x: -100 }}
-          animate={{ x: 0 }}
-          className="w-16 bg-white/10 backdrop-blur-lg border-r border-white/20 flex flex-col items-center py-6 space-y-4"
-        >
-          <button 
-            className="border border-white/20 px-2 py-1 rounded-2xl rotate-180 [writing-mode:vertical-lr] text-white hover:bg-white/10 transition-colors"
+    <div className="h-[calc(100vh-4rem)] flex">
+      {/* Primary Vertical Navigation */}
+      <div className="w-16 bg-background border-r flex flex-col justify-between">
+        <div className="flex flex-col">
+          <MenuItem 
+            icon={Plus} 
+            text="New Session" 
             onClick={() => setShowSessionForm(true)}
-          >
-            + Session
-          </button>
-          
-          <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
-            <Home className="h-6 w-6 text-white" />
-          </Button>
-          
-          {channels.map((channel) => (
-            <Button
-              key={channel.id}
-              variant="ghost"
-              className={`p-2 rounded-xl hover:bg-black/20 ${
-                selectedChannel === channel.id ? 'bg-black/30' : 'bg-black/10'
-              }`}
-              onClick={() => setSelectedChannel(channel.id)}
-            >
-              <MessageSquare className="h-6 w-6 text-white" />
-            </Button>
-          ))}
-          
-          <div className="mt-auto">
-            <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
-              <Settings className="h-6 w-6 text-white" />
-            </Button>
-          </div>
-        </motion.div>
+          />
+          <MenuItem icon={MessageSquare} text="Chat" />
+          <MenuItem icon={Users} text="Contacts" />
+          <MenuItem icon={Bell} text="Notifications" />
+        </div>
+        <div className="mb-4">
+          <MenuItem icon={Settings} text="Settings" />
+        </div>
+      </div>
 
-        <Grid>
-          <div className="col-span-11 flex flex-col">
-            {/* Session Form Modal */}
-            <AnimatePresence>
-              {showSessionForm && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-                >
-                  <SessionForm onClose={() => setShowSessionForm(false)} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Chat Header */}
-            <div className="h-16 bg-white/10 backdrop-blur-lg border-b border-white/20 flex items-center justify-between px-6">
-              <div className="flex items-center space-x-2">
-                <Hash className="h-5 w-5 text-white" />
-                <h3 className="font-semibold text-white text-lg">
-                  {channels.find((c) => c.id === selectedChannel)?.name || "Select a channel"}
-                </h3>
+      {/* Main Content Area with Grid */}
+      <Grid>
+        <div className="col-span-11 bg-background flex flex-col">
+          <div className="flex-1 flex overflow-hidden">
+            {/* Secondary Sidebar */}
+            {selectedChannel && (
+              <div className="w-60 border-r bg-background">
+                <div className="flex flex-col h-full">
+                  <LiveSessions sessions={sessions} />
+                  <ChannelList 
+                    channels={channels}
+                    selectedChannel={selectedChannel}
+                    onSelectChannel={setSelectedChannel}
+                  />
+                </div>
               </div>
-              
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="ghost"
-                  className="rounded-xl hover:bg-black/20 bg-black/10"
-                  onClick={() => setShowMembers(!showMembers)}
-                >
-                  <Users className="h-5 w-5 text-white" />
-                </Button>
+            )}
+
+            {/* Chat Area */}
+            <div className="flex-1 flex flex-col">
+              {showSessionForm && <SessionForm onClose={() => setShowSessionForm(false)} />}
+              <div className="flex-1 overflow-auto">
+                <MessageArea 
+                  channelId={selectedChannel || ''}
+                  userId={session?.session?.user?.id || ''}
+                />
+              </div>
+              <div className="w-full border-t">
+                <div className="max-w-[1200px] mx-auto">
+                  <Controls />
+                </div>
               </div>
             </div>
-
-            {/* Message Area */}
-            <MessageArea 
-              channelId={selectedChannel || ''}
-              userId={session?.user?.id || ''}
-              messages={messages}
-            />
-            
-            {/* Controls */}
-            <Controls />
           </div>
-        </Grid>
-      </div>
-    </motion.div>
+        </div>
+      </Grid>
+    </div>
   );
 };
 
