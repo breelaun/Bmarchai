@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +11,14 @@ import { format } from "date-fns";
 const Orders = () => {
   const session = useSession();
 
+  useEffect(() => {
+    console.log("Current session user ID:", session?.user?.id);
+  }, [session?.user?.id]);
+
   const { data: ordersMade, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders-made", session?.user?.id],
     queryFn: async () => {
+      console.log("Fetching orders made for user:", session?.user?.id);
       const { data, error } = await supabase
         .from("orders")
         .select(`
@@ -25,13 +31,18 @@ const Orders = () => {
             )
           ),
           vendor:vendor_profiles (
+            id,
             business_name
           )
         `)
         .eq("user_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching orders made:", error);
+        throw error;
+      }
+      console.log("Orders made data:", data);
       return data;
     },
     enabled: !!session?.user?.id,
@@ -40,6 +51,7 @@ const Orders = () => {
   const { data: ordersReceived, isLoading: receivedLoading } = useQuery({
     queryKey: ["orders-received", session?.user?.id],
     queryFn: async () => {
+      console.log("Fetching orders received for vendor:", session?.user?.id);
       const { data, error } = await supabase
         .from("orders")
         .select(`
@@ -52,6 +64,7 @@ const Orders = () => {
             )
           ),
           user:profiles (
+            id,
             full_name,
             email
           )
@@ -59,7 +72,11 @@ const Orders = () => {
         .eq("vendor_id", session?.user?.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching orders received:", error);
+        throw error;
+      }
+      console.log("Orders received data:", data);
       return data;
     },
     enabled: !!session?.user?.id,
