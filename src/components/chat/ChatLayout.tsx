@@ -13,7 +13,7 @@ import type { Session } from '@/types/session';
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [session, setSession] = useState<any>(null);
-  
+
   const { data: channels = [] } = useQuery({
     queryKey: ['channels'],
     queryFn: async () => {
@@ -21,71 +21,8 @@ const ChatLayout = () => {
         .from('chat_channels')
         .select('*, chat_members(*)')
         .order('created_at', { ascending: true });
-      
       if (error) throw error;
       return data;
-    }
-  });
-
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('sessions')
-        .select(`
-          *,
-          vendor_profiles (
-            business_name,
-            profiles (
-              username
-            )
-          )
-        `)
-        .eq('status', 'scheduled')
-        .order('start_time', { ascending: true });
-      
-      if (error) throw error;
-      return data as Session[];
-    }
-  });
-
-  const { data: pendingRequests = [] } = useQuery({
-    queryKey: ['pending-contacts'],
-    queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user?.user?.id) return [];
-
-      const { data, error } = await supabase
-        .from('contacts')
-        .select(`
-          id,
-          requester_id,
-          receiver_id,
-          status,
-          profiles!contacts_profiles_requester_fk (
-            username,
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq('receiver_id', user.user.id)
-        .eq('status', 'pending');
-
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  const { data: onlineUsers = [] } = useQuery({
-    queryKey: ['online-users'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .limit(10);
-      
-      if (error) throw error;
-      return data || [];
     }
   });
 
@@ -97,39 +34,38 @@ const ChatLayout = () => {
     getSession();
   }, []);
 
-
   return (
-    <div className="h-[calc(100vh-4rem)]">
-      <Grid>
-        <div className="col-span-1 bg-background border-r flex">
-          <div className="writing-mode-vertical-rl rotate-270 h-auto py-4 flex items-center justify-center bg-black text-white hover:bg-accent hover:text-foreground transition-colors duration-200">
-            <MessageSquare className="h-4 w-4 rotate-270 mb-2" />
-            <span className="text-sm">Chat</span>
-          </div>
-          
-          <div className="flex-1 flex flex-col space-y-4 p-4">
-            <LiveSessions sessions={sessions} />
-            
-            <ChannelList 
-              channels={channels}
-              selectedChannel={selectedChannel}
-              onSelectChannel={setSelectedChannel}
-            />
-
-            <SidebarActions 
-              pendingRequests={pendingRequests.length}
-              onlineUsers={onlineUsers.length}
-            />
-          </div>
+    <div className="h-[calc(100vh-4rem)] flex">
+      {/* Sidebar with vertical menu */}
+      <div className="w-16 bg-background border-r flex flex-col items-center py-4 space-y-6">
+        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
+          Chat
         </div>
-        <div className="col-span-11 bg-background flex flex-col">
-          <MessageArea 
-            channelId={selectedChannel || ''}
-            userId={session?.session?.user?.id || ''}
-          />
-          <Controls />
+        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
+          Entertainment
         </div>
-      </Grid>
+        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
+          CRM
+        </div>
+        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
+          Blogs
+        </div>
+        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
+          Admin
+        </div>
+        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
+          Vendors
+        </div>
+        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
+          Profile
+        </div>
+      </div>
+      
+      {/* Main chat content */}
+      <div className="flex-1 bg-background flex flex-col">
+        <MessageArea channelId={selectedChannel || ''} userId={session?.session?.user?.id || ''} />
+        <Controls />
+      </div>
     </div>
   );
 };
