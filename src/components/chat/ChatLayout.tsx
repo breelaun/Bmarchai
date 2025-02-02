@@ -67,9 +67,9 @@ const ChatLayout = () => {
         >
           + Session
         </button>
-        <span className="[writing-mode:vertical-lr] rotate-180">ʇɐɥƆ</span>
-        <span className="[writing-mode:vertical-lr] rotate-180">sʇɔɐʇuoƆ</span>
-        <span className="[writing-mode:vertical-lr] rotate-180">ǝuıluO</span>
+        <span className="[writing-mode:vertical-lr] -rotate-90">Chat</span>
+        <span className="[writing-mode:vertical-lr] -rotate-90">Contacts</span>
+        <span className="[writing-mode:vertical-lr] -rotate-90">Online</span>
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
