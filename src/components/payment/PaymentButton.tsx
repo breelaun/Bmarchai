@@ -28,6 +28,7 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
 
   const handlePayment = async () => {
     if (!vendorId) {
+      console.error("Missing vendorId");
       toast({
         title: "Error",
         description: "Vendor information is missing",
@@ -38,22 +39,39 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
 
     setIsLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      console.log("Current user ID:", user.id);
+      console.log("Vendor ID:", vendorId);
+
       if (paymentMethod === "cash") {
         // Create order for cash payment
+        const orderData = {
+          user_id: user.id,
+          vendor_id: vendorId,
+          payment_method: 'cash',
+          payment_status: 'pending',
+          status: 'pending', // Match the column name in your orders table
+          order_status: 'pending',
+          total_amount: amount,
+        };
+        
+        console.log("Creating order with data:", orderData);
+        
         const { data: order, error: orderError } = await supabase
           .from('orders')
-          .insert({
-            user_id: (await supabase.auth.getUser()).data.user?.id,
-            vendor_id: vendorId,
-            payment_method: 'cash',
-            payment_status: 'pending',
-            order_status: 'pending',
-            total_amount: amount,
-          })
+          .insert(orderData)
           .select()
           .single();
 
-        if (orderError) throw orderError;
+        if (orderError) {
+          console.error("Order creation error:", orderError);
+          throw orderError;
+        }
+
+        console.log("Created order:", order);
 
         // Create order items
         const orderItems = items.map(item => ({
@@ -63,11 +81,16 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
           price_at_time: item.product.price,
         }));
 
+        console.log("Creating order items:", orderItems);
+
         const { error: itemsError } = await supabase
           .from('order_items')
           .insert(orderItems);
 
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          console.error("Order items creation error:", itemsError);
+          throw itemsError;
+        }
 
         // Clear cart and redirect to orders page
         await clearCart();
@@ -79,12 +102,15 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
         return;
       }
 
+      // Card payment
+      console.log("Initiating card payment for amount:", amount);
       const response = await fetch(
         "https://qyblzbqpyasfoirqzdpo.functions.supabase.co/create-checkout",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
           },
           body: JSON.stringify({
             amount,
@@ -95,7 +121,9 @@ const PaymentButton = ({ amount, vendorId, className }: PaymentButtonProps) => {
       );
 
       if (!response.ok) {
-        throw new Error("Payment initiation failed");
+        const errorText = await response.text();
+        console.error("Payment API error:", errorText);
+        throw new Error(`Payment initiation failed: ${errorText}`);
       }
 
       const { url } = await response.json();
