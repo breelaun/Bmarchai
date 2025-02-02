@@ -123,7 +123,6 @@ const ChatLayout = () => {
 
     setMessages(data);
   };
-
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -138,7 +137,7 @@ const ChatLayout = () => {
         <motion.div 
           initial={{ x: -100 }}
           animate={{ x: 0 }}
-          className="w-16 bg-white/10 backdrop-blur-lg border-r border-white/20 flex flex-col items-center py-6 space-y-4"
+          className="w-16 bg-white/10 backdrop-blur-lg flex flex-col items-center py-6 space-y-6"
         >
           <button 
             className="border border-white/20 px-2 py-1 rounded-2xl rotate-180 [writing-mode:vertical-lr] text-white hover:bg-white/10 transition-colors"
@@ -150,6 +149,8 @@ const ChatLayout = () => {
           <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
             <Home className="h-6 w-6 text-white" />
           </Button>
+
+          <span className="rotate-180 [writing-mode:vertical-lr] text-white/60">Chat</span>
           
           {channels.map((channel) => (
             <Button
@@ -163,6 +164,9 @@ const ChatLayout = () => {
               <MessageSquare className="h-6 w-6 text-white" />
             </Button>
           ))}
+          
+          <span className="rotate-180 [writing-mode:vertical-lr] text-white/60">Contacts</span>
+          <span className="rotate-180 [writing-mode:vertical-lr] text-white/60">Online</span>
           
           <div className="mt-auto">
             <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
@@ -187,35 +191,32 @@ const ChatLayout = () => {
               )}
             </AnimatePresence>
 
-            {/* Chat Header */}
-            <div className="h-16 bg-white/10 backdrop-blur-lg border-b border-white/20 flex items-center justify-between px-6">
-              <div className="flex items-center space-x-2">
-                <Hash className="h-5 w-5 text-white" />
-                <h3 className="font-semibold text-white text-lg">
-                  {channels.find((c) => c.id === selectedChannel)?.name || "Select a channel"}
-                </h3>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="ghost"
-                  className="rounded-xl hover:bg-black/20 bg-black/10"
-                  onClick={() => setShowMembers(!showMembers)}
-                >
-                  <Users className="h-5 w-5 text-white" />
+            {/* Message Area */}
+            <div className="flex-1 overflow-hidden">
+              <MessageArea 
+                channelId={selectedChannel || ''}
+                userId={session?.user?.id || ''}
+                messages={messages}
+              />
+            </div>
+            
+            {/* Enhanced Controls */}
+            <div className="p-4 bg-white/10 backdrop-blur-lg">
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
+                  <Paperclip className="h-5 w-5 text-white" />
                 </Button>
+                <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
+                  <Image className="h-5 w-5 text-white" />
+                </Button>
+                <Button variant="ghost" className="p-2 rounded-xl bg-black/10 hover:bg-black/20">
+                  <Package className="h-5 w-5 text-white" />
+                </Button>
+                <div className="flex-1">
+                  <Controls />
+                </div>
               </div>
             </div>
-
-            {/* Message Area */}
-            <MessageArea 
-              channelId={selectedChannel || ''}
-              userId={session?.user?.id || ''}
-              messages={messages}
-            />
-            
-            {/* Controls */}
-            <Controls />
           </div>
         </Grid>
       </div>
