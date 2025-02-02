@@ -35,39 +35,26 @@ const ChatLayout = () => {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex">
-      {/* Sidebar with vertical menu */}
-      <div className="w-16 bg-background border-r flex flex-col items-center py-4 space-y-6">
-        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
-          Chat
-        </div>
-        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
-          Entertainment
-        </div>
-        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
-          CRM
-        </div>
-        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
-          Blogs
-        </div>
-        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
-          Admin
-        </div>
-        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
-          Vendors
-        </div>
-        <div className="transform rotate-180 [writing-mode:vertical-rl] text-muted-foreground text-lg font-bold">
-          Profile
-        </div>
+    <div className="flex h-screen">
+      {/* Sidebar */}
+      <div className="w-16 bg-black text-white flex flex-col items-center py-4 space-y-4">
+        <div className="transform rotate-90 whitespace-nowrap">+ Session</div>
+        <div className="transform rotate-90 whitespace-nowrap">Chats</div>
+        <div className="transform rotate-90 whitespace-nowrap">Contacts</div>
+        <div className="transform rotate-90 whitespace-nowrap">Settings</div>
       </div>
-      
-      {/* Main chat content */}
-      <div className="flex-1 bg-background flex flex-col">
-        <MessageArea channelId={selectedChannel || ''} userId={session?.session?.user?.id || ''} />
-        <Controls />
+
+      {/* Main Chat Area */}
+      <div className="flex-1 bg-black text-white flex flex-col">
+        <div className="flex-1">Chat Area</div>
+        <div className="bg-yellow-600 p-2 flex items-center">
+          <input type="text" className="flex-1 bg-transparent border-none outline-none text-white" placeholder="Type a message..." />
+          <button className="bg-yellow-500 px-4 py-2 ml-2">Send</button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default ChatLayout;
+
