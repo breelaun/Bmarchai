@@ -58,6 +58,7 @@ export default function SessionCreationForm({ onSubmit, onClose }: SessionCreati
     const sessionData = {
       ...data,
       price: data.sessionType === 'free' ? 0 : Number(data.price),
+      // Convert minutes to proper interval format
       duration: `${data.duration} minutes`,
     };
     onSubmit(sessionData);
