@@ -77,6 +77,9 @@ const ChatLayout = () => {
         return;
       }
 
+      // Ensure price is always a valid number
+      const finalPrice = sessionType === 'paid' ? sessionPrice : 0;
+
       const { data, error } = await supabase
         .from('sessions')
         .insert([
@@ -84,10 +87,13 @@ const ChatLayout = () => {
             name: sessionName,
             vendor_id: user.id,
             session_type: sessionType,
-            price: sessionType === 'paid' ? sessionPrice : 0,
+            price: finalPrice,
             status: 'scheduled',
             is_private: isPrivate,
-            format: sessionFormat
+            format: sessionFormat,
+            // Add required fields with default values
+            start_time: new Date().toISOString(),
+            duration: '1 hour'
           }
         ])
         .select()
