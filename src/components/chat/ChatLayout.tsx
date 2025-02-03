@@ -77,8 +77,8 @@ const ChatLayout = () => {
         return;
       }
 
-      // Ensure price is always a valid number
-      const finalPrice = sessionType === 'paid' ? sessionPrice : 0;
+      // Initialize price as 0 for free sessions or the entered price for paid sessions
+      const finalPrice = sessionType === 'paid' ? (sessionPrice || 0) : 0;
 
       const { data, error } = await supabase
         .from('sessions')
@@ -91,7 +91,6 @@ const ChatLayout = () => {
             status: 'scheduled',
             is_private: isPrivate,
             format: sessionFormat,
-            // Add required fields with default values
             start_time: new Date().toISOString(),
             duration: '1 hour'
           }
