@@ -58,124 +58,132 @@ export default function SessionCreationForm({ onSubmit, onClose }: SessionCreati
     const sessionData = {
       ...data,
       price: data.sessionType === 'free' ? 0 : Number(data.price),
-      // Convert minutes to proper interval format
       duration: `${data.duration} minutes`,
     };
     onSubmit(sessionData);
   };
 
   return (
-    <DialogContent className="sm:max-w-[425px]">
+    <DialogContent className="sm:max-w-[600px] h-[90vh]">
       <DialogHeader>
         <DialogTitle>Create New Session</DialogTitle>
       </DialogHeader>
-      <ScrollArea className="h-[400px] pr-4">
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 p-1">
-          <div className="space-y-2">
-            <Label htmlFor="sessionName">Session Name</Label>
-            <Input
-              id="sessionName"
-              {...form.register('name')}
-              placeholder="Enter session name"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              {...form.register('description')}
-              placeholder="Session description"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Session Type</Label>
-            <RadioGroup
-              value={form.watch('sessionType')}
-              onValueChange={(value: 'free' | 'paid') => form.setValue('sessionType', value)}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="free" id="free" />
-                <Label htmlFor="free">Free Session</Label>
+      <ScrollArea className="h-[calc(100%-8rem)] px-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="sessionName">Session Name *</Label>
+                <Input
+                  id="sessionName"
+                  {...form.register('name')}
+                  placeholder="Enter session name"
+                  className="w-full"
+                />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="paid" id="paid" />
-                <Label htmlFor="paid">Paid Session</Label>
-              </div>
-            </RadioGroup>
-          </div>
 
-          {form.watch('sessionType') === 'paid' && (
-            <div className="space-y-2">
-              <Label htmlFor="price">Price (USD)</Label>
-              <Input
-                id="price"
-                type="number"
-                min="0"
-                step="0.01"
-                {...form.register('price')}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  {...form.register('description')}
+                  placeholder="Session description"
+                  className="w-full"
+                />
+              </div>
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label>Duration</Label>
-            <Select 
-              value={form.watch('duration')} 
-              onValueChange={(value) => form.setValue('duration', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select duration" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="30">30 minutes</SelectItem>
-                <SelectItem value="60">1 hour</SelectItem>
-                <SelectItem value="90">1.5 hours</SelectItem>
-                <SelectItem value="120">2 hours</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-4">
+              <Label>Session Type</Label>
+              <RadioGroup
+                value={form.watch('sessionType')}
+                onValueChange={(value: 'free' | 'paid') => form.setValue('sessionType', value)}
+                className="flex flex-col space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="free" id="free" />
+                  <Label htmlFor="free">Free Session</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="paid" id="paid" />
+                  <Label htmlFor="paid">Paid Session</Label>
+                </div>
+              </RadioGroup>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Session Format</Label>
-            <RadioGroup
-              value={form.watch('sessionFormat')}
-              onValueChange={(value: SessionFormat) => 
-                form.setValue('sessionFormat', value)
-              }
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="live" id="live" />
-                <Label htmlFor="live">Live Stream</Label>
+            {form.watch('sessionType') === 'paid' && (
+              <div className="space-y-2">
+                <Label htmlFor="price">Price (USD) *</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  {...form.register('price')}
+                  className="w-full"
+                />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="embed" id="embed" />
-                <Label htmlFor="embed">Embedded Content</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="product" id="product" />
-                <Label htmlFor="product">Product Showcase</Label>
-              </div>
-            </RadioGroup>
-          </div>
+            )}
 
-          <SessionFormatControls 
-            form={form} 
-            sessionFormat={form.watch('sessionFormat')}
-          />
+            <div className="space-y-2">
+              <Label>Duration *</Label>
+              <Select 
+                value={form.watch('duration')} 
+                onValueChange={(value) => form.setValue('duration', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30 minutes</SelectItem>
+                  <SelectItem value="60">1 hour</SelectItem>
+                  <SelectItem value="90">1.5 hours</SelectItem>
+                  <SelectItem value="120">2 hours</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
-              checked={form.watch('isPrivate')}
-              onCheckedChange={(checked) => form.setValue('isPrivate', checked)}
-              id="private"
+            <div className="space-y-4">
+              <Label>Session Format *</Label>
+              <RadioGroup
+                value={form.watch('sessionFormat')}
+                onValueChange={(value: SessionFormat) => 
+                  form.setValue('sessionFormat', value)
+                }
+                className="flex flex-col space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="live" id="live" />
+                  <Label htmlFor="live">Live Stream</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="embed" id="embed" />
+                  <Label htmlFor="embed">Embedded Content</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="product" id="product" />
+                  <Label htmlFor="product">Product Showcase</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <SessionFormatControls 
+              form={form} 
+              sessionFormat={form.watch('sessionFormat')}
             />
-            <Label htmlFor="private">Private Session</Label>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <Switch
+                checked={form.watch('isPrivate')}
+                onCheckedChange={(checked) => form.setValue('isPrivate', checked)}
+                id="private"
+              />
+              <Label htmlFor="private">Private Session</Label>
+            </div>
           </div>
         </form>
       </ScrollArea>
-      <div className="flex justify-end space-x-2 pt-4">
+      <div className="flex justify-end space-x-2 pt-4 border-t">
         <Button variant="outline" onClick={onClose}>Cancel</Button>
         <Button onClick={form.handleSubmit(handleSubmit)}>Create Session</Button>
       </div>
