@@ -86,12 +86,12 @@ const ChatLayout = () => {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex">
-      <div className="w-16 bg-background border-r flex flex-col">
+    <div className="h-screen flex flex-col md:flex-row">
+      <div className="w-full md:w-16 bg-background border-r flex flex-col">
         <Dialog open={showSessionForm} onOpenChange={setShowSessionForm}>
           <DialogTrigger asChild>
             <button 
-              className="border px-2 py-1 rounded-2xl [writing-mode:vertical-lr] rotate-180 flex-shrink-0 m-6"
+              className="px-2 py-1 bg-transparent hover:bg-accent/10 transition-colors duration-200 flex-shrink-0 m-2 md:m-6 text-sm"
             >
               + Session
             </button>
@@ -101,28 +101,27 @@ const ChatLayout = () => {
             onClose={() => setShowSessionForm(false)}
           />
         </Dialog>
-        <div className="flex-1 overflow-y-auto py-4">
-          <div className="flex flex-col items-center space-y-4">
-            <span className="[writing-mode:vertical-lr] -rotate-180">Chat</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Contacts</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Online</span>
-            {/* Added more items to demonstrate scrolling */}
-            <span className="[writing-mode:vertical-lr] -rotate-180">Messages</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Settings</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Profile</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Help</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">About</span>
+        <div className="flex-1 overflow-x-hidden">
+          <div className="flex flex-row md:flex-col items-center space-x-4 md:space-x-0 md:space-y-4 p-2 overflow-x-auto scrollbar-hide">
+            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Chat</span>
+            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Contacts</span>
+            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Online</span>
+            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Messages</span>
+            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Settings</span>
+            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Profile</span>
+            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Help</span>
+            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">About</span>
           </div>
         </div>
       </div>
-      <Grid>
-        <div className="col-span-11 bg-background flex flex-col">
+      <Grid className="flex-1">
+        <div className="col-span-full md:col-span-11 bg-background flex flex-col">
           <LiveSessions sessions={sessions} />
           <MessageArea 
             channelId={selectedChannel || ''}
             userId={session?.session?.user?.id || ''}
           />
-          <Controls />
+          <Controls className="w-full" />
         </div>
       </Grid>
     </div>
@@ -130,3 +129,6 @@ const ChatLayout = () => {
 };
 
 export default ChatLayout;
+
+
+Claude can make mistakes. Please double-check responses.
