@@ -15,8 +15,27 @@ interface SessionCreationFormProps {
   onClose: () => void;
 }
 
+type SessionFormat = 'live' | 'embed' | 'product';
+
+interface FormValues {
+  name: string;
+  description: string;
+  sessionType: 'free' | 'paid';
+  price: number;
+  isPrivate: boolean;
+  sessionFormat: SessionFormat;
+  duration: string;
+  embedUrl: string;
+  productUrl: string;
+  cameraConfig: {
+    front: boolean;
+    rear: boolean;
+    enabled: boolean;
+  };
+}
+
 export default function SessionCreationForm({ onSubmit, onClose }: SessionCreationFormProps) {
-  const form = useForm({
+  const form = useForm<FormValues>({
     defaultValues: {
       name: '',
       description: '',
@@ -35,7 +54,7 @@ export default function SessionCreationForm({ onSubmit, onClose }: SessionCreati
     }
   });
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: FormValues) => {
     const sessionData = {
       ...data,
       price: data.sessionType === 'free' ? 0 : Number(data.price),
@@ -73,7 +92,7 @@ export default function SessionCreationForm({ onSubmit, onClose }: SessionCreati
             <Label>Session Type</Label>
             <RadioGroup
               value={form.watch('sessionType')}
-              onValueChange={(value) => form.setValue('sessionType', value)}
+              onValueChange={(value: 'free' | 'paid') => form.setValue('sessionType', value)}
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="free" id="free" />
@@ -121,7 +140,7 @@ export default function SessionCreationForm({ onSubmit, onClose }: SessionCreati
             <Label>Session Format</Label>
             <RadioGroup
               value={form.watch('sessionFormat')}
-              onValueChange={(value: 'live' | 'embed' | 'product') => 
+              onValueChange={(value: SessionFormat) => 
                 form.setValue('sessionFormat', value)
               }
             >
