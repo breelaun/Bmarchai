@@ -64,12 +64,12 @@ export default function SessionCreationForm({ onSubmit, onClose }: SessionCreati
   };
 
   return (
-    <DialogContent className="sm:max-w-[600px] h-[90vh]">
+    <DialogContent className="max-h-screen">
       <DialogHeader>
         <DialogTitle>Create New Session</DialogTitle>
       </DialogHeader>
-      <ScrollArea className="h-[calc(100%-8rem)] px-4">
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <ScrollArea className="flex-1 max-h-[calc(100vh-10rem)]">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 px-4">
           <div className="space-y-4">
             <div className="grid gap-4">
               <div className="space-y-2">
