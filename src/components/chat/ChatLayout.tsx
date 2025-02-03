@@ -87,11 +87,11 @@ const ChatLayout = () => {
 
   return (
     <div className="h-[calc(100vh-4rem)] flex">
-      <div className="w-16 bg-background border-r flex flex-col items-center py-6 space-y-4">
+      <div className="w-16 bg-background border-r flex flex-col">
         <Dialog open={showSessionForm} onOpenChange={setShowSessionForm}>
           <DialogTrigger asChild>
             <button 
-              className="border px-2 py-1 rounded-2xl [writing-mode:vertical-lr] rotate-180"
+              className="border px-2 py-1 rounded-2xl [writing-mode:vertical-lr] rotate-180 flex-shrink-0 m-6"
             >
               + Session
             </button>
@@ -101,9 +101,19 @@ const ChatLayout = () => {
             onClose={() => setShowSessionForm(false)}
           />
         </Dialog>
-        <span className="[writing-mode:vertical-lr] -rotate-180">Chat</span>
-        <span className="[writing-mode:vertical-lr] -rotate-180">Contacts</span>
-        <span className="[writing-mode:vertical-lr] -rotate-180">Online</span>
+        <div className="flex-1 overflow-y-auto py-4">
+          <div className="flex flex-col items-center space-y-4">
+            <span className="[writing-mode:vertical-lr] -rotate-180">Chat</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180">Contacts</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180">Online</span>
+            {/* Added more items to demonstrate scrolling */}
+            <span className="[writing-mode:vertical-lr] -rotate-180">Messages</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180">Settings</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180">Profile</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180">Help</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180">About</span>
+          </div>
+        </div>
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
