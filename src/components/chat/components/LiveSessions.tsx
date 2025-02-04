@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@/types/session';
-import CreateSessionDialog from './CreateSessionDialog';
 import {
   Dialog,
   DialogContent,
@@ -123,7 +122,6 @@ const LiveSessions = ({ sessions }: LiveSessionsProps) => {
       <div className="flex items-center justify-between px-2">
         <h3 className="text-sm font-semibold">Live Sessions</h3>
       </div>
-      <CreateSessionDialog />
       <div className="space-y-1">
         {sessions.map((session) => (
           <div
