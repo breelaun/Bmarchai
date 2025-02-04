@@ -7,7 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import SessionCreationForm from './components/SessionCreationForm';
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import CreateSessionDialog from './components/CreateSessionDialog';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
@@ -35,44 +37,6 @@ const ChatLayout = () => {
       return data;
     }
   });
-
-  const handleCreateSession = async (sessionData: any) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to create a session",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('sessions')
-        .insert([{
-          ...sessionData,
-          vendor_id: user.id,
-          status: 'scheduled'
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Session created successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  };
 
   useEffect(() => {
     const getSession = async () => {
@@ -152,6 +116,14 @@ const ChatLayout = () => {
             >
               Settings
             </button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans hover:text-primary transition-colors">
+                  + Session
+                </Button>
+              </DialogTrigger>
+              <CreateSessionDialog />
+            </Dialog>
           </div>
         </div>
       </div>
@@ -162,7 +134,7 @@ const ChatLayout = () => {
             channelId={selectedChannel || ''}
             userId={session?.session?.user?.id || ''}
           />
-          <Controls className="w-full" />
+          <Controls />
         </div>
       </Grid>
     </div>
