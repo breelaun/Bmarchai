@@ -130,5 +130,3 @@ const ChatLayout = () => {
 
 export default ChatLayout;
 
-
-Claude can make mistakes. Please double-check responses.
