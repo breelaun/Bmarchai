@@ -87,7 +87,7 @@ const ChatLayout = () => {
 
   return (
     <div className="h-[calc(100vh-4rem)] flex">
-      <div className="w-16 bg-background border-r flex flex-col">
+      <div className="w-16 bg-black border-r flex flex-col">
         <div className="flex-1 overflow-y-auto py-4">
           <div className="flex flex-col items-center space-y-4">
             <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Chat</span>
