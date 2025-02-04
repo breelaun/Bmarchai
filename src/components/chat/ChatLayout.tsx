@@ -5,9 +5,28 @@ import MessageArea from './components/MessageArea';
 import LiveSessions from './components/LiveSessions';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import SessionCreationForm from './components/SessionCreationForm';
+import { Video } from 'lucide-react';
+import { useSession } from '@supabase/auth-helpers-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import type { Session } from '@/types/session';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
+import { Label } from '@/components/ui/label';
+
+
+interface LiveSessionsProps {
+  sessions: Session[];
+}
+
+const LiveSessions = ({ sessions }: LiveSessionsProps) => {
+  const session = useSession();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<'card' | 'cash'>('card');
+
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
