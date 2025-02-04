@@ -12,7 +12,6 @@ import SessionCreationForm from './components/SessionCreationForm';
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [session, setSession] = useState<any>(null);
-  const [showSessionForm, setShowSessionForm] = useState(false);
   const { toast } = useToast();
 
   const { data: sessions = [] } = useQuery({
@@ -66,8 +65,6 @@ const ChatLayout = () => {
         title: "Success",
         description: "Session created successfully",
       });
-
-      setShowSessionForm(false);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -85,32 +82,76 @@ const ChatLayout = () => {
     getSession();
   }, []);
 
+  // Function to handle menu item clicks
+  const handleMenuClick = async (action: string) => {
+    switch (action) {
+      case 'chat':
+        // Already in chat view
+        break;
+      case 'contacts':
+        const { data: contacts } = await supabase
+          .from('contacts')
+          .select('*')
+          .or(`requester_id.eq.${session?.user?.id},receiver_id.eq.${session?.user?.id}`);
+        console.log('Contacts:', contacts);
+        break;
+      case 'online':
+        // Would need real-time presence data
+        console.log('Online users feature');
+        break;
+      case 'messages':
+        const { data: messages } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .eq('sender_id', session?.user?.id);
+        console.log('Messages:', messages);
+        break;
+      case 'settings':
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session?.user?.id)
+          .single();
+        console.log('Profile settings:', profile);
+        break;
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col md:flex-row">
       <div className="w-full md:w-16 bg-background border-r flex flex-col">
-        <Dialog open={showSessionForm} onOpenChange={setShowSessionForm}>
-          <DialogTrigger asChild>
-            <button 
-              className="px-2 py-1 bg-transparent hover:bg-accent/10 transition-colors duration-200 flex-shrink-0 m-2 md:m-6 text-sm"
-            >
-              + Session
-            </button>
-          </DialogTrigger>
-          <SessionCreationForm 
-            onSubmit={handleCreateSession}
-            onClose={() => setShowSessionForm(false)}
-          />
-        </Dialog>
         <div className="flex-1 overflow-x-hidden">
           <div className="flex flex-row md:flex-col items-center space-x-4 md:space-x-0 md:space-y-4 p-2 overflow-x-auto scrollbar-hide">
-            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Chat</span>
-            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Contacts</span>
-            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Online</span>
-            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Messages</span>
-            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Settings</span>
-            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Profile</span>
-            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">Help</span>
-            <span className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans">About</span>
+            <button 
+              onClick={() => handleMenuClick('chat')}
+              className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans hover:text-primary transition-colors"
+            >
+              Chat
+            </button>
+            <button 
+              onClick={() => handleMenuClick('contacts')}
+              className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans hover:text-primary transition-colors"
+            >
+              Contacts
+            </button>
+            <button 
+              onClick={() => handleMenuClick('online')}
+              className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans hover:text-primary transition-colors"
+            >
+              Online
+            </button>
+            <button 
+              onClick={() => handleMenuClick('messages')}
+              className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans hover:text-primary transition-colors"
+            >
+              Messages
+            </button>
+            <button 
+              onClick={() => handleMenuClick('settings')}
+              className="text-xs md:[writing-mode:vertical-lr] md:-rotate-180 whitespace-nowrap font-sans hover:text-primary transition-colors"
+            >
+              Settings
+            </button>
           </div>
         </div>
       </div>
@@ -129,6 +170,3 @@ const ChatLayout = () => {
 };
 
 export default ChatLayout;
-
-
-Claude can make mistakes. Please double-check responses.
