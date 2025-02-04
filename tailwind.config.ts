@@ -1,20 +1,6 @@
 import type { Config } from "tailwindcss";
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      fontFamily: {
-        'poppins': ['Poppins', 'sans-serif'],
-      },
-    },
-  },
-  plugins: [],
-}
-
 export default {
   darkMode: ["class"],
   content: [
@@ -34,57 +20,40 @@ export default {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "#000000",
-        foreground: "#FFFFFF",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
         primary: {
-          DEFAULT: "#f7bd00",
-          foreground: "#1A1F2C",
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
         },
         secondary: {
-          DEFAULT: "#222222",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
         },
         muted: {
-          DEFAULT: "#2A2A2A",
-          foreground: "#A0A0A0",
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
         },
         accent: {
-          DEFAULT: "#f7bd00",
-          foreground: "#1A1F2C",
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
         },
         card: {
-          DEFAULT: "#222222",
-          foreground: "#FFFFFF",
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
         },
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
         heading: ["Poppins", "sans-serif"],
         mono: ["Roboto Mono", "monospace"],
-        playfair: ["Playfair Display", "serif"],
-        merriweather: ["Merriweather", "serif"],
-        lora: ["Lora", "serif"],
-        montserrat: ["Montserrat", "sans-serif"],
-        raleway: ["Raleway", "sans-serif"],
-        oswald: ["Oswald", "sans-serif"],
-        quicksand: ["Quicksand", "sans-serif"],
-        fira: ["Fira Code", "monospace"],
-        "source-code": ["Source Code Pro", "monospace"],
-        crimson: ["Crimson Pro", "serif"],
-        libre: ["Libre Baskerville", "serif"],
-        nunito: ["Nunito", "sans-serif"],
-        space: ["Space Grotesk", "sans-serif"],
-        "dm-sans": ["DM Sans", "sans-serif"],
-        josefin: ["Josefin Sans", "sans-serif"],
-        archivo: ["Archivo", "sans-serif"],
-        work: ["Work Sans", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
