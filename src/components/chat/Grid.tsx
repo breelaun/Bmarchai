@@ -7,7 +7,7 @@ interface GridProps {
 
 const Grid = ({ children }: GridProps) => {
   return (
-    <div className="grid grid-cols-12 h-full">
+    <div className="grid grid-cols-1 md:grid-cols-12 flex-1 w-full">
       {children}
     </div>
   );

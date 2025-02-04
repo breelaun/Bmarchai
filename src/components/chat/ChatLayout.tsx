@@ -86,12 +86,12 @@ const ChatLayout = () => {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex">
-      <div className="w-16 bg-black border-r flex flex-col">
-                <Dialog open={showSessionForm} onOpenChange={setShowSessionForm}>
+    <div className="h-[calc(100vh-4rem)] flex flex-col md:flex-row">
+      <div className="w-full md:w-16 bg-black border-r flex md:flex-col justify-between md:justify-start items-center md:items-stretch p-2 md:p-0">
+        <Dialog open={showSessionForm} onOpenChange={setShowSessionForm}>
           <DialogTrigger asChild>
             <button 
-              className="border px-2 py-1 rounded-2xl [writing-mode:vertical-lr] rotate-180 flex-shrink-0 m-6"
+              className="border px-2 py-1 rounded-2xl md:[writing-mode:vertical-lr] md:rotate-180 flex-shrink-0 md:m-6 text-sm"
             >
               + Session
             </button>
@@ -101,17 +101,16 @@ const ChatLayout = () => {
             onClose={() => setShowSessionForm(false)}
           />
         </Dialog>
-        <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
-          <div className="flex flex-col items-center space-y-4">
-            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Chat</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Contacts</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Online</span>
-            {/* Added more items to demonstrate scrolling */}
-            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Messages</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Settings</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Profile</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Help</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">About</span>
+        <div className="flex md:flex-col items-center md:items-stretch gap-4 md:gap-0 md:flex-1 md:overflow-y-auto md:py-4 scrollbar-hide">
+          <div className="flex md:flex-col items-center space-x-4 md:space-x-0 md:space-y-4">
+            <span className="md:[writing-mode:vertical-lr] md:-rotate-180 font-poppins text-sm">Chat</span>
+            <span className="md:[writing-mode:vertical-lr] md:-rotate-180 font-poppins text-sm">Contacts</span>
+            <span className="md:[writing-mode:vertical-lr] md:-rotate-180 font-poppins text-sm">Online</span>
+            <span className="md:[writing-mode:vertical-lr] md:-rotate-180 font-poppins text-sm">Messages</span>
+            <span className="md:[writing-mode:vertical-lr] md:-rotate-180 font-poppins text-sm">Settings</span>
+            <span className="md:[writing-mode:vertical-lr] md:-rotate-180 font-poppins text-sm">Profile</span>
+            <span className="md:[writing-mode:vertical-lr] md:-rotate-180 font-poppins text-sm">Help</span>
+            <span className="md:[writing-mode:vertical-lr] md:-rotate-180 font-poppins text-sm">About</span>
           </div>
         </div>
       </div>
