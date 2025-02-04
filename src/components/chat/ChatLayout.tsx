@@ -5,28 +5,9 @@ import MessageArea from './components/MessageArea';
 import LiveSessions from './components/LiveSessions';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import SessionCreationForm from './components/SessionCreationForm';
-import { Video } from 'lucide-react';
-import { useSession } from '@supabase/auth-helpers-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import type { Session } from '@/types/session';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
-import { Label } from '@/components/ui/label';
-
-
-interface LiveSessionsProps {
-  sessions: Session[];
-}
-
-const LiveSessions = ({ sessions }: LiveSessionsProps) => {
-  const session = useSession();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<'card' | 'cash'>('card');
-
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
@@ -107,30 +88,17 @@ const ChatLayout = () => {
   return (
     <div className="h-[calc(100vh-4rem)] flex">
       <div className="w-16 bg-background border-r flex flex-col">
-        <Dialog open={showSessionForm} onOpenChange={setShowSessionForm}>
-          <DialogTrigger asChild>
-            <button 
-              className="border px-2 py-1 rounded-2xl [writing-mode:vertical-lr] rotate-180 flex-shrink-0 m-6"
-            >
-              + Session
-            </button>
-          </DialogTrigger>
-          <SessionCreationForm 
-            onSubmit={handleCreateSession}
-            onClose={() => setShowSessionForm(false)}
-          />
-        </Dialog>
         <div className="flex-1 overflow-y-auto py-4">
           <div className="flex flex-col items-center space-y-4">
-            <span className="[writing-mode:vertical-lr] -rotate-180">Chat</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Contacts</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Online</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Chat</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Contacts</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Online</span>
             {/* Added more items to demonstrate scrolling */}
-            <span className="[writing-mode:vertical-lr] -rotate-180">Messages</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Settings</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Profile</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">Help</span>
-            <span className="[writing-mode:vertical-lr] -rotate-180">About</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Messages</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Settings</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Profile</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">Help</span>
+            <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm">About</span>
           </div>
         </div>
       </div>
