@@ -1,13 +1,13 @@
 import React from 'react';
+import { Cell } from './types';
 
 interface GridProps {
   children: React.ReactNode;
-  className?: string;
 }
 
-const Grid = ({ children, className = "" }: GridProps) => {
+const Grid = ({ children }: GridProps) => {
   return (
-    <div className={`grid grid-cols-12 h-full ${className}`}>
+    <div className="grid grid-cols-12 h-full">
       {children}
     </div>
   );
