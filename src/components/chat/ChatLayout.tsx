@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
-import MessageArea from './components/MessageArea';
-import LiveSessions from './components/LiveSessions';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import SessionCreationForm from './components/SessionCreationForm';
-import { MessageCircle, Users, UserCircle, Settings, HelpCircle, Info, Mail, Contact } from "lucide-react";
+import { MessageCircle, Users, UserCircle, Settings, HelpCircle, Info, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Messages from './sections/Messages';
+import Contacts from './sections/Contacts';
 
 type MenuSection = 'chat' | 'contacts' | 'online' | 'messages' | 'settings' | 'profile' | 'help' | 'about';
 
@@ -84,17 +84,6 @@ const ChatLayout = () => {
 
   const handleMenuClick = (section: MenuSection) => {
     setActiveSection(section);
-    // Add specific actions for each section
-    switch (section) {
-      case 'chat':
-        // Handle chat section
-        break;
-      case 'contacts':
-        // Handle contacts section
-        break;
-      // Add cases for other sections
-    }
-    
     toast({
       title: `${section.charAt(0).toUpperCase() + section.slice(1)}`,
       description: `Switched to ${section} section`,
@@ -115,10 +104,32 @@ const ChatLayout = () => {
     { id: 'online', label: 'Online', icon: UserCircle },
     { id: 'messages', label: 'Messages', icon: Mail },
     { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'profile', label: 'Profile', icon: Contact },
     { id: 'help', label: 'Help', icon: HelpCircle },
     { id: 'about', label: 'About', icon: Info }
   ];
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'chat':
+        return (
+          <Messages 
+            channelId={selectedChannel || ''} 
+            userId={session?.session?.user?.id || ''} 
+            sessions={sessions}
+          />
+        );
+      case 'contacts':
+        return <Contacts />;
+      default:
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-muted-foreground">
+              {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} section coming soon...
+            </p>
+          </div>
+        );
+    }
+  };
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-row">
@@ -161,11 +172,7 @@ const ChatLayout = () => {
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
-          <LiveSessions sessions={sessions} />
-          <MessageArea 
-            channelId={selectedChannel || ''}
-            userId={session?.session?.user?.id || ''}
-          />
+          {renderContent()}
           <Controls />
         </div>
       </Grid>
