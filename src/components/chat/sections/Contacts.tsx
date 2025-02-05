@@ -4,10 +4,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Contacts = () => {
+  const { data: { user } = {} } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getUser();
+      return data;
+    }
+  });
+
   const { data: contacts = [] } = useQuery({
     queryKey: ['contacts'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user?.id) return [];
 
       const { data, error } = await supabase
@@ -22,7 +29,8 @@ const Contacts = () => {
       
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: !!user?.id
   });
 
   return (
@@ -30,8 +38,6 @@ const Contacts = () => {
       <h2 className="text-lg font-semibold">Contacts</h2>
       <div className="space-y-2">
         {contacts.map((contact) => {
-          // Determine if the current user is the requester or receiver
-          const { data: { user } } = await supabase.auth.getUser();
           const isRequester = contact.requester_id === user?.id;
           const contactProfile = isRequester ? contact.receiver : contact.requester;
 
