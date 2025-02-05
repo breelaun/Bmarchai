@@ -6,12 +6,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import SessionCreationForm from './components/SessionCreationForm';
-import { MessageCircle, Users, UserCircle, Settings, HelpCircle, Info, Mail } from "lucide-react";
+import { MessageCircle, Users, UserCircle, Settings, HelpCircle, Info, Mail, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Messages from './sections/Messages';
 import Contacts from './sections/Contacts';
 
-type MenuSection = 'chat' | 'contacts' | 'online' | 'messages' | 'settings' | 'profile' | 'help' | 'about';
+type MenuSection = 'chat' | 'contacts' | 'online' | 'messages' | 'settings' | 'help' | 'about' | 'requests';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
@@ -103,6 +103,7 @@ const ChatLayout = () => {
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'online', label: 'Online', icon: UserCircle },
     { id: 'messages', label: 'Messages', icon: Mail },
+    { id: 'requests', label: 'Requests', icon: Inbox },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'help', label: 'Help', icon: HelpCircle },
     { id: 'about', label: 'About', icon: Info }
