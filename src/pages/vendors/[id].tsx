@@ -7,6 +7,8 @@ import VendorStore from "@/components/vendors/VendorStore";
 import { supabase } from "@/integrations/supabase/client";
 import { VendorData } from "@/components/types/vendor-setup";
 
+import SendMessageButton from "@/components/chat/components/SendMessageButton";
+
 const VendorProfile = () => {
   const { id } = useParams();
   const session = useSession();
@@ -80,6 +82,11 @@ const VendorProfile = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
+        <div className="flex justify-end gap-2">
+          {session?.user?.id && id !== "profile" && id !== session.user.id && (
+            <SendMessageButton recipientId={id!} />
+          )}
+        </div>
         <VendorProfileDisplay vendorId={id!} vendorData={vendorData} />
         <VendorStore vendorId={id!} />
       </div>

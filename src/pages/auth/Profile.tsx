@@ -9,6 +9,7 @@ import BlogCard from "@/components/blogs/BlogCard";
 import { useQuery } from "@tanstack/react-query";
 import { EditVendorProfileButton } from "@/components/ui/EditVendorProfileButton";
 import AddContactButton from "@/components/contacts/AddContactButton";
+import SendMessageButton from "@/components/chat/components/SendMessageButton";
 import type { ProfileData } from "@/components/profile/types";
 import type { BlogData } from "@/types/blog";
 
@@ -109,7 +110,10 @@ const Profile = () => {
       <div className="relative z-10 flex justify-end gap-2 px-4 py-2">
         {profile.is_vendor && <EditVendorProfileButton />}
         {session?.user?.id && session.user.id !== profile.id && (
-          <AddContactButton userId={profile.id} />
+          <>
+            <AddContactButton userId={profile.id} />
+            <SendMessageButton recipientId={profile.id} />
+          </>
         )}
       </div>
       
