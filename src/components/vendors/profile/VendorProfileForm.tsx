@@ -40,7 +40,12 @@ interface VendorProfileFormData {
   };
 }
 
-export default function VendorProfileForm({ initialData }: { initialData?: Partial<VendorProfileFormData> }) {
+interface VendorProfileFormProps {
+  initialData?: Partial<VendorProfileFormData>;
+  onSuccess?: () => void;
+}
+
+export default function VendorProfileForm({ initialData, onSuccess }: VendorProfileFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,6 +142,10 @@ export default function VendorProfileForm({ initialData }: { initialData?: Parti
         title: "Profile updated",
         description: "Your vendor profile has been updated successfully.",
       });
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -221,7 +230,6 @@ export default function VendorProfileForm({ initialData }: { initialData?: Parti
 
           <div className="space-y-2">
             <Label>Location</Label>
-            {/* This is a simplified version - you might want to make this dynamic with add/remove location functionality */}
             <div className="space-y-4">
               <Input
                 placeholder="Address"

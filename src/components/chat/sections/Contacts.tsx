@@ -7,6 +7,9 @@ const Contacts = () => {
   const { data: contacts = [] } = useQuery({
     queryKey: ['contacts'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) return [];
+
       const { data, error } = await supabase
         .from('contacts')
         .select(`
@@ -14,7 +17,8 @@ const Contacts = () => {
           receiver:profiles!contacts_receiver_id_fkey(username, avatar_url),
           requester:profiles!contacts_requester_id_fkey(username, avatar_url)
         `)
-        .eq('status', 'accepted');
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`);
       
       if (error) throw error;
       return data;
@@ -25,19 +29,26 @@ const Contacts = () => {
     <div className="p-4 space-y-4">
       <h2 className="text-lg font-semibold">Contacts</h2>
       <div className="space-y-2">
-        {contacts.map((contact) => (
-          <div key={contact.id} className="flex items-center gap-3 p-3 rounded-lg bg-accent/50">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={contact.receiver.avatar_url} />
-              <AvatarFallback>
-                {contact.receiver.username?.[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{contact.receiver.username}</p>
+        {contacts.map((contact) => {
+          // Determine if the current user is the requester or receiver
+          const { data: { user } } = await supabase.auth.getUser();
+          const isRequester = contact.requester_id === user?.id;
+          const contactProfile = isRequester ? contact.receiver : contact.requester;
+
+          return (
+            <div key={contact.id} className="flex items-center gap-3 p-3 rounded-lg bg-accent/50">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={contactProfile.avatar_url} />
+                <AvatarFallback>
+                  {contactProfile.username?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">{contactProfile.username}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
