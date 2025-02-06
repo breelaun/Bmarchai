@@ -43,18 +43,14 @@ const Requests = () => {
       if (error) throw error;
       
       // Transform the data to match the ContactRequest interface
-      const transformedData = data ? data.map(item => ({
+      const transformedData = data.map(item => ({
         id: item.id,
         requester_id: item.requester_id,
         receiver_id: item.receiver_id,
-        profiles: {
-          username: item.profiles.username,
-          full_name: item.profiles.full_name,
-          avatar_url: item.profiles.avatar_url
-        }
-      })) : [];
+        profiles: item.profiles
+      }));
 
-      return transformedData as ContactRequest[];
+      return transformedData;
     },
   });
 
@@ -105,7 +101,7 @@ const Requests = () => {
                 </Avatar>
                 <div>
                   <p className="font-medium">
-                    {request.profiles.full_name || request.profiles.username || 'Unknown User'}
+                    {request.profiles.full_name || request.profiles.username}
                   </p>
                   {request.profiles.username && (
                     <p className="text-sm text-muted-foreground">
