@@ -38,22 +38,21 @@ const Requests = () => {
           )
         `)
         .eq('receiver_id', user.id)
-        .eq('status', 'pending')
-        .single();
+        .eq('status', 'pending');
 
       if (error) throw error;
       
       // Transform the data to match the ContactRequest interface
-      const transformedData = data ? [{
-        id: data.id,
-        requester_id: data.requester_id,
-        receiver_id: data.receiver_id,
+      const transformedData = data ? data.map(item => ({
+        id: item.id,
+        requester_id: item.requester_id,
+        receiver_id: item.receiver_id,
         profiles: {
-          username: data.profiles.username,
-          full_name: data.profiles.full_name,
-          avatar_url: data.profiles.avatar_url
+          username: item.profiles.username,
+          full_name: item.profiles.full_name,
+          avatar_url: item.profiles.avatar_url
         }
-      }] : [];
+      })) : [];
 
       return transformedData as ContactRequest[];
     },
