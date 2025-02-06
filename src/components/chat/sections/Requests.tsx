@@ -6,6 +6,17 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { UserCheck, UserX } from "lucide-react";
 
+interface ContactRequest {
+  id: string;
+  requester_id: string;
+  receiver_id: string;
+  profiles: {
+    username: string;
+    full_name: string;
+    avatar_url: string;
+  };
+}
+
 const Requests = () => {
   const { toast } = useToast();
   const { data: pendingRequests = [], refetch } = useQuery({
@@ -30,7 +41,7 @@ const Requests = () => {
         .eq('status', 'pending');
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as ContactRequest[];
     },
   });
 
@@ -74,16 +85,16 @@ const Requests = () => {
             >
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={request.profiles?.avatar_url || ''} />
+                  <AvatarImage src={request.profiles.avatar_url || ''} />
                   <AvatarFallback>
-                    {request.profiles?.username?.[0]?.toUpperCase() || '?'}
+                    {request.profiles.username?.[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">
-                    {request.profiles?.full_name || request.profiles?.username || 'Unknown User'}
+                    {request.profiles.full_name || request.profiles.username || 'Unknown User'}
                   </p>
-                  {request.profiles?.username && (
+                  {request.profiles.username && (
                     <p className="text-sm text-muted-foreground">
                       @{request.profiles.username}
                     </p>
