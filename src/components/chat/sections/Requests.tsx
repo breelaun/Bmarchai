@@ -38,10 +38,24 @@ const Requests = () => {
           )
         `)
         .eq('receiver_id', user.id)
-        .eq('status', 'pending');
+        .eq('status', 'pending')
+        .single();
 
       if (error) throw error;
-      return (data || []) as ContactRequest[];
+      
+      // Transform the data to match the ContactRequest interface
+      const transformedData = data ? [{
+        id: data.id,
+        requester_id: data.requester_id,
+        receiver_id: data.receiver_id,
+        profiles: {
+          username: data.profiles.username,
+          full_name: data.profiles.full_name,
+          avatar_url: data.profiles.avatar_url
+        }
+      }] : [];
+
+      return transformedData as ContactRequest[];
     },
   });
 
@@ -87,7 +101,7 @@ const Requests = () => {
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={request.profiles.avatar_url || ''} />
                   <AvatarFallback>
-                    {request.profiles.username?.[0]?.toUpperCase() || '?'}
+                    {request.profiles.username[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
