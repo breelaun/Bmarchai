@@ -11,9 +11,9 @@ interface ContactRequest {
   requester_id: string;
   receiver_id: string;
   profiles: {
-    username: string;
+    username: string | null;
     full_name: string;
-    avatar_url: string;
+    avatar_url: string | null;
   };
 }
 
@@ -42,15 +42,12 @@ const Requests = () => {
 
       if (error) throw error;
       
-      // Transform the data to match the ContactRequest interface
-      const transformedData = data.map(item => ({
+      return data.map(item => ({
         id: item.id,
         requester_id: item.requester_id,
         receiver_id: item.receiver_id,
         profiles: item.profiles
       }));
-
-      return transformedData;
     },
   });
 
@@ -96,12 +93,12 @@ const Requests = () => {
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={request.profiles.avatar_url || ''} />
                   <AvatarFallback>
-                    {request.profiles.username[0]?.toUpperCase() || '?'}
+                    {request.profiles.username?.[0]?.toUpperCase() || request.profiles.full_name[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">
-                    {request.profiles.full_name || request.profiles.username}
+                    {request.profiles.full_name || request.profiles.username || 'Unknown User'}
                   </p>
                   {request.profiles.username && (
                     <p className="text-sm text-muted-foreground">
