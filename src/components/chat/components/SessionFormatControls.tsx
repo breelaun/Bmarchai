@@ -36,6 +36,15 @@ export function SessionFormatControls({ form, sessionFormat }: SessionFormatCont
                 />
                 <Label>Rear Camera</Label>
               </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={form.watch('cameraConfig.enabled')}
+                  onCheckedChange={(checked) => 
+                    form.setValue('cameraConfig.enabled', checked)
+                  }
+                />
+                <Label>Enable Camera</Label>
+              </div>
             </div>
           </div>
         </div>

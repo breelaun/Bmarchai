@@ -59,6 +59,7 @@ export default function SessionCreationForm({ onSubmit, onClose }: SessionCreati
       ...data,
       price: data.sessionType === 'free' ? 0 : Number(data.price),
       duration: `${data.duration} minutes`,
+      camera_config: data.cameraConfig // Ensure this matches the database column name
     };
     onSubmit(sessionData);
   };

@@ -2224,6 +2224,7 @@ export type Database = {
         Row: {
           autoplay_end: unknown | null
           autoplay_start: unknown | null
+          camera_config: Json | null
           created_at: string
           description: string | null
           duration: unknown
@@ -2241,6 +2242,7 @@ export type Database = {
         Insert: {
           autoplay_end?: unknown | null
           autoplay_start?: unknown | null
+          camera_config?: Json | null
           created_at?: string
           description?: string | null
           duration: unknown
@@ -2258,6 +2260,7 @@ export type Database = {
         Update: {
           autoplay_end?: unknown | null
           autoplay_start?: unknown | null
+          camera_config?: Json | null
           created_at?: string
           description?: string | null
           duration?: unknown
