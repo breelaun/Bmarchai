@@ -10,6 +10,7 @@ import { MessageCircle, Users, UserCircle, Settings, HelpCircle, Info, Mail, Inb
 import { cn } from "@/lib/utils";
 import Messages from './sections/Messages';
 import Contacts from './sections/Contacts';
+import Requests from './sections/Requests';
 
 type MenuSection = 'chat' | 'contacts' | 'online' | 'messages' | 'settings' | 'help' | 'about' | 'requests';
 
@@ -121,6 +122,8 @@ const ChatLayout = () => {
         );
       case 'contacts':
         return <Contacts />;
+      case 'requests':
+        return <Requests />;
       default:
         return (
           <div className="flex items-center justify-center h-full">
