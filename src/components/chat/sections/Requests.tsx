@@ -48,7 +48,11 @@ const Requests = () => {
         id: item.id,
         requester_id: item.requester_id,
         receiver_id: item.receiver_id,
-        profiles: item.profiles
+        profiles: {
+          username: item.profiles?.username || null,
+          full_name: item.profiles?.full_name || '',
+          avatar_url: item.profiles?.avatar_url || null
+        }
       })) as ContactRequest[];
     },
   });
@@ -137,3 +141,4 @@ const Requests = () => {
 };
 
 export default Requests;
+
