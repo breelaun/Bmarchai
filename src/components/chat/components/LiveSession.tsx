@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,9 +10,7 @@ import {
   Pause, 
   Video, 
   Mic, 
-  MicOff, 
-  Camera, 
-  CameraOff,
+  MicOff,
   Users,
   ScreenShare,
   ScreenShareOff,
@@ -22,6 +21,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCart } from "@/components/cart/CartProvider";
 import type { Channel } from '../types';
 import ProductsList from './ProductsList';
+import { useCamera } from '@/hooks/useCamera';
+import CameraPreview from './CameraPreview';
 
 interface LiveSessionProps {
   channel: Channel;
@@ -30,12 +31,23 @@ interface LiveSessionProps {
 const LiveSession = ({ channel }: LiveSessionProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMicOn, setIsMicOn] = useState(false);
-  const [isCameraOn, setIsCameraOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [showProducts, setShowProducts] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { addToCart } = useCart();
+
+  const {
+    stream,
+    error,
+    isLoading: isCameraLoading,
+    switchCamera,
+    startCamera,
+    stopCamera,
+    currentFacingMode
+  } = useCamera({
+    initialConfig: channel.stream_config?.camera_config
+  });
 
   const { data: activeSession, isLoading } = useQuery({
     queryKey: ['live-session', channel.id],
@@ -119,6 +131,17 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
     }
   };
 
+  const handleStartSession = async () => {
+    setIsPlaying(true);
+    await startCamera();
+  };
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -126,11 +149,6 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
       </div>
     );
   }
-
-  const handleStartSession = async () => {
-    // Implementation for starting a new session will go here
-    setIsPlaying(true);
-  };
 
   if (!activeSession) {
     return (
@@ -179,18 +197,6 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setIsCameraOn(!isCameraOn)}
-                className={isCameraOn ? 'bg-primary/10' : ''}
-              >
-                {isCameraOn ? (
-                  <Camera className="h-4 w-4" />
-                ) : (
-                  <CameraOff className="h-4 w-4" />
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
                 onClick={() => toggleScreenShare.mutate()}
                 className={isScreenSharing ? 'bg-primary/10' : ''}
                 disabled={!participant?.can_share_screen}
@@ -223,7 +229,17 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <CameraPreview 
+            stream={stream}
+            error={error}
+            isLoading={isCameraLoading}
+            onStart={startCamera}
+            onStop={stopCamera}
+            onSwitch={switchCamera}
+            isCameraOn={!!stream}
+          />
+
           {channel.stream_config?.embed_url && (
             <div className="aspect-video rounded-lg overflow-hidden border border-border">
               <iframe
