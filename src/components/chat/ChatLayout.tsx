@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
@@ -96,6 +97,31 @@ const ChatLayout = () => {
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
+          {activeSessionType === 'live' && (
+            <div className="p-4 space-y-4">
+              <h2 className="text-lg font-semibold">Live Sessions</h2>
+              {isLoading ? (
+                <p>Loading sessions...</p>
+              ) : sessions.length === 0 ? (
+                <p className="text-muted-foreground">No live sessions available</p>
+              ) : (
+                <div className="space-y-2">
+                  {sessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
+                      onClick={() => setSelectedChannel({ id: session.id } as Channel)}
+                    >
+                      <h3 className="font-medium">{session.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {session.vendor_profiles?.[0]?.business_name || 'Unknown Vendor'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {activeSessionType === 'live' && selectedChannel && <LiveSession channel={selectedChannel} />}
           <Controls />
         </div>
