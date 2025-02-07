@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Store, Calendar, User, LogOut, LogIn, Film, Palette, MessageSquare, Gamepad2, Package, ShoppingBag } from "lucide-react";
@@ -56,7 +57,6 @@ const Navigation = () => {
       path: "/shop",
       submenu: [
         { name: "Browse Products", path: "/shop", icon: <Store className="h-4 w-4 mr-2" /> },
-        { name: "Sessions", path: "/sessions", icon: <Calendar className="h-4 w-4 mr-2" /> },
       ]
     },
     { 
@@ -70,7 +70,6 @@ const Navigation = () => {
     },
     { name: "CRM", path: "/crm" },
     { name: "Blogs", path: "/blogs" },
-    { name: "Chat", path: "/chat" },
   ];
 
   if (profile?.admin) {
@@ -80,6 +79,7 @@ const Navigation = () => {
   const vendorSubmenu: SubMenuItem[] = [
     { name: "All Vendors", path: "/vendors", icon: <Store className="h-4 w-4 mr-2" /> },
     { name: "Vendor Profile", path: "/vendors/profile", icon: <User className="h-4 w-4 mr-2" /> },
+    { name: "Sessions", path: "/sessions", icon: <Calendar className="h-4 w-4 mr-2" /> },
   ];
 
   const handleLogout = async () => {
@@ -90,6 +90,7 @@ const Navigation = () => {
   const profileSubmenu: SubMenuItem[] = [
     { name: "Profile", path: "/profile", icon: <User className="h-4 w-4 mr-2" /> },
     { name: "Orders", path: "/orders", icon: <Package className="h-4 w-4 mr-2" /> },
+    { name: "Chat", path: "/chat", icon: <MessageSquare className="h-4 w-4 mr-2" /> },
     { 
       name: "Logout", 
       path: "#", 

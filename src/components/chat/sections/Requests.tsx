@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,12 +43,7 @@ const Requests = () => {
 
       if (error) throw error;
       
-      return data.map(item => ({
-        id: item.id,
-        requester_id: item.requester_id,
-        receiver_id: item.receiver_id,
-        profiles: item.profiles
-      }));
+      return data as ContactRequest[];
     },
   });
 

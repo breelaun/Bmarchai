@@ -10,11 +10,12 @@ import { Video, Laptop, ShoppingBag, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Messages from './sections/Messages';
 import LiveSession from './components/LiveSession';
+import { Channel } from './types';
 
 type SessionType = 'live' | 'embed' | 'product' | 'custom';
 
 const ChatLayout = () => {
-  const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [showSessionForm, setShowSessionForm] = useState(false);
   const [activeSessionType, setActiveSessionType] = useState<SessionType>('live');
   const { toast } = useToast();
@@ -95,8 +96,7 @@ const ChatLayout = () => {
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
-          {activeSessionType === 'live' && <LiveSession channel={selectedChannel} />}
-          {/* Other session type components will be added here */}
+          {activeSessionType === 'live' && selectedChannel && <LiveSession channel={selectedChannel} />}
           <Controls />
         </div>
       </Grid>
