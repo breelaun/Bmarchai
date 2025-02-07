@@ -80,34 +80,24 @@ export const YouTubeEmbedsList = ({ embeds, onEdit }: YouTubeEmbedsListProps) =>
                   </p>
                 )}
               </div>
-              {/* ✅ Corrected YouTube Embed Handling */}
-              <iframe
-                width="100%"
-                height="200"
-                src={
-                  embed.embed_type === "playlist"
-                    ? `https://www.youtube.com/embed/videoseries?list=${embed.embed_id}`
-                    : embed.embed_type === "channel"
-                    ? `https://www.youtube.com/embed?src=${embed.embed_id}`
-                    : `https://www.youtube.com/embed/${embed.embed_id}`
-                }
-                title={embed.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onEdit(embed)}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => deleteEmbed.mutate(embed.id)}
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={() => onEdit(embed)}>
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <Button variant="destructive" size="icon" onClick={() => deleteEmbed.mutate(embed.id)}>
-                <Trash className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
+          ))}
         </div>
       )}
     </div>
