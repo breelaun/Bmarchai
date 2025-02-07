@@ -43,7 +43,13 @@ const Requests = () => {
 
       if (error) throw error;
       
-      return data as ContactRequest[];
+      // Transform the data to match our interface
+      return (data || []).map(item => ({
+        id: item.id,
+        requester_id: item.requester_id,
+        receiver_id: item.receiver_id,
+        profiles: item.profiles
+      })) as ContactRequest[];
     },
   });
 
