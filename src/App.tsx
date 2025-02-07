@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./components/cart/CartProvider";
+import { VideoProvider } from "@/contexts/VideoPlayerContext";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
@@ -28,12 +29,16 @@ import ProductPage from "./pages/products/[id]";
 import SessionsPage from "./pages/sessions";
 import CRMPage from "./pages/crm";
 import { supabase } from "./integrations/supabase/client";
-import { VideoProvider } from "@/contexts/VideoPlayerContext";
 import PersistentPlayer from "./components/PersistentPlayer";
 import { useVideo } from "@/contexts/VideoPlayerContext";
 import SqeresPage from "./pages/sqeres";
-import ChatPage from "./pages/chat";
 import EditVendorProfile from "./pages/vendor/EditProfile";
+
+// Chat related pages
+import ChatPage from "./pages/chat/Chat";
+import ContactsPage from "./pages/chat/Contacts";
+import RequestsPage from "./pages/chat/Requests";
+import ChatLayout from "./components/chat/ChatLayout";
 
 const queryClient = new QueryClient();
 
@@ -66,10 +71,19 @@ const AppContent = () => {
           <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products/:id" element={<ProductPage />} />
-          <Route path="/sessions" element={<SessionsPage />} />
+          <Route path="/sessions" element={<ChatLayout />} />
           <Route path="/crm" element={<CRMPage />} />
           <Route path="/sqeres" element={<SqeresPage />} />
+          
+          {/* Chat related routes */}
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/contacts" element={<ContactsPage />} />
+          <Route path="/requests" element={<RequestsPage />} />
+          <Route path="/messages" element={<ChatPage />} />
+          <Route path="/online" element={<div className="container mx-auto p-4 pt-20">Coming soon...</div>} />
+          <Route path="/settings" element={<div className="container mx-auto p-4 pt-20">Coming soon...</div>} />
+          <Route path="/help" element={<div className="container mx-auto p-4 pt-20">Coming soon...</div>} />
+          <Route path="/about" element={<div className="container mx-auto p-4 pt-20">Coming soon...</div>} />
         </Routes>
       </main>
       <Footer />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
 import { useQuery } from '@tanstack/react-query';
@@ -6,22 +6,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import SessionCreationForm from './components/SessionCreationForm';
-import { MessageCircle, Users, UserCircle, Settings, HelpCircle, Info, Mail, Inbox } from "lucide-react";
+import { Video, Laptop, ShoppingBag, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Messages from './sections/Messages';
-import Contacts from './sections/Contacts';
-import Requests from './sections/Requests';
+import LiveSession from './components/LiveSession';
 
-type MenuSection = 'chat' | 'contacts' | 'online' | 'messages' | 'settings' | 'help' | 'about' | 'requests';
+type SessionType = 'live' | 'embed' | 'product' | 'custom';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
-  const [session, setSession] = useState<any>(null);
   const [showSessionForm, setShowSessionForm] = useState(false);
-  const [activeSection, setActiveSection] = useState<MenuSection>('chat');
+  const [activeSessionType, setActiveSessionType] = useState<SessionType>('live');
   const { toast } = useToast();
 
-  const { data: sessions = [] } = useQuery({
+  const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sessions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -43,97 +41,12 @@ const ChatLayout = () => {
     }
   });
 
-  const handleCreateSession = async (sessionData: any) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to create a session",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('sessions')
-        .insert([{
-          ...sessionData,
-          vendor_id: user.id,
-          status: 'scheduled'
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Session created successfully",
-      });
-
-      setShowSessionForm(false);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleMenuClick = (section: MenuSection) => {
-    setActiveSection(section);
-    toast({
-      title: `${section.charAt(0).toUpperCase() + section.slice(1)}`,
-      description: `Switched to ${section} section`,
-    });
-  };
-
-  useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data);
-    };
-    getSession();
-  }, []);
-
-  const menuItems = [
-    { id: 'chat', label: 'Chat', icon: MessageCircle },
-    { id: 'contacts', label: 'Contacts', icon: Users },
-    { id: 'online', label: 'Online', icon: UserCircle },
-    { id: 'messages', label: 'Messages', icon: Mail },
-    { id: 'requests', label: 'Requests', icon: Inbox },
-    { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'help', label: 'Help', icon: HelpCircle },
-    { id: 'about', label: 'About', icon: Info }
+  const sessionTypes = [
+    { id: 'live', label: 'Live', icon: Video },
+    { id: 'embed', label: 'Embed', icon: Laptop },
+    { id: 'product', label: 'Product', icon: ShoppingBag },
+    { id: 'custom', label: 'Custom', icon: Settings2 }
   ];
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'chat':
-        return (
-          <Messages 
-            channelId={selectedChannel || ''} 
-            userId={session?.session?.user?.id || ''} 
-            sessions={sessions}
-          />
-        );
-      case 'contacts':
-        return <Contacts />;
-      case 'requests':
-        return <Requests />;
-      default:
-        return (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">
-              {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} section coming soon...
-            </p>
-          </div>
-        );
-    }
-  };
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-row">
@@ -147,26 +60,32 @@ const ChatLayout = () => {
             </button>
           </DialogTrigger>
           <SessionCreationForm 
-            onSubmit={handleCreateSession}
+            onSubmit={() => {
+              setShowSessionForm(false);
+              toast({
+                title: "Success",
+                description: "Session created successfully",
+              });
+            }}
             onClose={() => setShowSessionForm(false)}
           />
         </Dialog>
         <div className="flex flex-col items-stretch flex-1 overflow-y-auto py-4 scrollbar-hide">
           <div className="flex flex-col items-stretch space-y-4">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
+            {sessionTypes.map((type) => {
+              const Icon = type.icon;
               return (
                 <button
-                  key={item.id}
-                  onClick={() => handleMenuClick(item.id as MenuSection)}
+                  key={type.id}
+                  onClick={() => setActiveSessionType(type.id as SessionType)}
                   className={cn(
                     "flex flex-col items-center justify-center px-4 py-2 space-y-1 transition-colors hover:bg-primary/20",
-                    activeSection === item.id && "bg-primary/20"
+                    activeSessionType === type.id && "bg-primary/20"
                   )}
                 >
                   <Icon className="h-4 w-4" />
                   <span className="[writing-mode:vertical-lr] -rotate-180 font-poppins text-sm text-center">
-                    {item.label}
+                    {type.label}
                   </span>
                 </button>
               );
@@ -176,7 +95,8 @@ const ChatLayout = () => {
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
-          {renderContent()}
+          {activeSessionType === 'live' && <LiveSession channel={selectedChannel} />}
+          {/* Other session type components will be added here */}
           <Controls />
         </div>
       </Grid>
