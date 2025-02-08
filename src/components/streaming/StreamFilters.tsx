@@ -62,7 +62,7 @@ const allCategories = [
   "Extreme Sports",
   "Live Training Camps",
   "Fantasy Sports Analytics",
-  "Fitness and Workout Challenges"
+  "Fitness and Workout Challenges",
   "Tae Kwon Do"
 ].sort();
 
