@@ -2986,6 +2986,8 @@ export type Database = {
         | "Photo"
         | "Podcast"
         | "Session"
+      session_format_type: "live" | "embed" | "product"
+      session_payment_type: "free" | "paid"
       session_status: "scheduled" | "completed" | "cancelled" | "no_show"
       sport_type:
         | "football"
