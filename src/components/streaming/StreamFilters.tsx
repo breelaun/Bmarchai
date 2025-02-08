@@ -3,7 +3,7 @@ import { Filter } from "lucide-react";
 import { Category } from "./types";
 import FavoriteCategories from "./FavoriteCategories";
 import CategoriesDropdown from "./CategoriesDropdown";
-
+ 
 interface StreamFiltersProps {
   selectedCategory: string | null;
   onCategoryChange: (category: string | null) => void;
