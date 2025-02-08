@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,10 +12,9 @@ import { Video, Laptop, ShoppingBag, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Messages from './sections/Messages';
 import LiveSession from './components/LiveSession';
-import { Channel } from './types';
+import { Channel, SessionFormData } from './types';
 import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import type { SessionFormData } from './types';
 
 type SessionType = 'live' | 'embed' | 'product' | 'custom';
 
@@ -25,7 +24,52 @@ const ChatLayout = () => {
   const [activeSessionType, setActiveSessionType] = useState<SessionType>('live');
   const { toast } = useToast();
   const session = useSession();
+  const queryClient = useQueryClient();
   const form = useForm<SessionFormData>();
+
+  const createSession = useMutation({
+    mutationFn: async (data: SessionFormData) => {
+      if (!session?.user?.id) throw new Error('Not authenticated');
+
+      const { data: newSession, error } = await supabase
+        .from('sessions')
+        .insert({
+          vendor_id: session.user.id,
+          name: data.name,
+          description: data.description,
+          session_type: data.sessionFormat,
+          start_time: new Date().toISOString(), // You might want to add a date picker in the form
+          duration: data.duration + ' minutes',
+          price: data.session_type === 'paid' ? data.price : 0,
+          max_participants: 20,
+          status: 'scheduled',
+          camera_config: data.cameraConfig,
+          embed_url: data.embedUrl
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return newSession;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      setShowSessionForm(false);
+      toast({
+        title: "Success",
+        description: "Session created successfully",
+      });
+      form.reset();
+    },
+    onError: (error) => {
+      console.error('Error creating session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create session. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sessions', activeSessionType],
@@ -87,6 +131,10 @@ const ChatLayout = () => {
     }
   };
 
+  const handleSubmit = async (data: SessionFormData) => {
+    createSession.mutate(data);
+  };
+
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-row">
       <div className="w-16 min-w-16 bg-black border-r flex flex-col justify-start items-stretch p-0">
@@ -100,13 +148,7 @@ const ChatLayout = () => {
           </DialogTrigger>
           <Form {...form}>
             <SessionCreationForm 
-              onSubmit={() => {
-                setShowSessionForm(false);
-                toast({
-                  title: "Success",
-                  description: "Session created successfully",
-                });
-              }}
+              onSubmit={handleSubmit}
               onClose={() => setShowSessionForm(false)}
               form={form}
             />
