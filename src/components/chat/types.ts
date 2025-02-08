@@ -1,3 +1,4 @@
+
 export interface Channel {
   id: string;
   name: string;
@@ -56,3 +57,22 @@ export interface ChannelProduct {
     image_url: string;
   };
 }
+
+export interface Session {
+  id: string;
+  name: string;
+  description?: string;
+  session_type: 'live' | 'embed' | 'product';
+  start_time: string;
+  duration: string;
+  max_participants: number;
+  status: 'scheduled' | 'active' | 'ended';
+  vendor_profiles?: {
+    business_name: string;
+    profiles: {
+      username: string;
+      avatar_url?: string;
+    }[];
+  }[];
+}
+

@@ -15,12 +15,12 @@ import {
   ScreenShare,
   ScreenShareOff,
   DollarSign,
-  ShoppingCart
+  ShoppingCart,
+  Camera,
+  CameraOff
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useCart } from "@/components/cart/CartProvider";
 import type { Channel } from '../types';
-import ProductsList from './ProductsList';
 import { useCamera } from '@/hooks/useCamera';
 import CameraPreview from './CameraPreview';
 
@@ -29,118 +29,119 @@ interface LiveSessionProps {
 }
 
 const LiveSession = ({ channel }: LiveSessionProps) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [isMicOn, setIsMicOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [showProducts, setShowProducts] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { addToCart } = useCart();
 
   const {
     stream,
-    error,
+    error: cameraError,
     isLoading: isCameraLoading,
     switchCamera,
     startCamera,
     stopCamera,
     currentFacingMode
-  } = useCamera({
-    initialConfig: channel.stream_config?.camera_config
-  });
+  } = useCamera();
 
-  const { data: activeSession, isLoading } = useQuery({
-    queryKey: ['live-session', channel.id],
+  const { data: sessionDetails, isLoading } = useQuery({
+    queryKey: ['session', channel.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('chat_live_sessions')
-        .select('*')
-        .eq('channel_id', channel.id)
-        .eq('status', 'active')
+        .from('sessions')
+        .select(`
+          *,
+          vendor_profiles (
+            business_name,
+            profiles (
+              username,
+              avatar_url
+            )
+          )
+        `)
+        .eq('id', channel.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       return data;
     },
     enabled: !!channel.id,
   });
 
-  const { data: participant } = useQuery({
-    queryKey: ['session-participant', activeSession?.id],
-    queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user?.user?.id || !activeSession?.id) return null;
-
-      const { data, error } = await supabase
-        .from('session_participants')
-        .select('*')
-        .eq('session_id', activeSession.id)
-        .eq('user_id', user.user.id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!activeSession?.id,
-  });
-
-  const toggleScreenShare = useMutation({
+  const startStreamMutation = useMutation({
     mutationFn: async () => {
-      if (!participant?.id) return;
-      
       const { error } = await supabase
-        .from('session_participants')
-        .update({ screen_share_enabled: !isScreenSharing })
-        .eq('id', participant.id);
+        .from('chat_live_sessions')
+        .insert([
+          {
+            channel_id: channel.id,
+            status: 'active',
+            session_type: sessionDetails?.session_type || 'live',
+            metadata: {
+              started_by: (await supabase.auth.getUser()).data.user?.id,
+              camera_config: {
+                facingMode: currentFacingMode
+              }
+            }
+          }
+        ]);
 
       if (error) throw error;
-      setIsScreenSharing(!isScreenSharing);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['session-participant'] });
+      setIsStreaming(true);
       toast({
-        title: isScreenSharing ? "Screen sharing stopped" : "Screen sharing started",
+        title: "Stream started",
+        description: "Your live session has begun",
       });
+      queryClient.invalidateQueries({ queryKey: ['session', channel.id] });
     },
-  });
-
-  const handleTip = async (amount: number) => {
-    if (!participant?.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('session_participants')
-        .update({
-          tip_amount: amount,
-        })
-        .eq('id', participant.id);
-
-      if (error) throw error;
-
+    onError: (error) => {
       toast({
-        title: "Thank you for your tip!",
-        description: `You tipped $${amount.toFixed(2)}`,
-      });
-    } catch (error) {
-      console.error('Error sending tip:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send tip. Please try again.",
+        title: "Error starting stream",
+        description: error.message,
         variant: "destructive",
       });
     }
+  });
+
+  const stopStreamMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('chat_live_sessions')
+        .update({ status: 'ended', ended_at: new Date().toISOString() })
+        .eq('channel_id', channel.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setIsStreaming(false);
+      toast({
+        title: "Stream ended",
+        description: "Your live session has ended",
+      });
+      queryClient.invalidateQueries({ queryKey: ['session', channel.id] });
+    }
+  });
+
+  const handleStartStream = async () => {
+    await startCamera();
+    startStreamMutation.mutate();
   };
 
-  const handleStartSession = async () => {
-    setIsPlaying(true);
-    await startCamera();
+  const handleStopStream = async () => {
+    stopCamera();
+    stopStreamMutation.mutate();
   };
 
   useEffect(() => {
     return () => {
-      stopCamera();
+      if (stream) {
+        stopCamera();
+      }
     };
-  }, [stopCamera]);
+  }, [stream, stopCamera]);
 
   if (isLoading) {
     return (
@@ -150,22 +151,14 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
     );
   }
 
-  if (!activeSession) {
+  if (!sessionDetails) {
     return (
       <div className="p-4">
         <Card>
-          <CardContent className="pt-6 flex flex-col items-center gap-4">
-            <Video className="h-12 w-12 text-muted-foreground" />
+          <CardContent className="pt-6">
             <p className="text-center text-muted-foreground">
-              No active live session at the moment.
+              Session not found
             </p>
-            <Button 
-              onClick={handleStartSession}
-              className="flex items-center gap-2"
-            >
-              <Video className="h-4 w-4" />
-              Start Live Session
-            </Button>
           </CardContent>
         </Card>
       </div>
@@ -179,7 +172,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Video className="h-5 w-5 text-primary" />
-              <span>Live Session</span>
+              <span>{sessionDetails.name}</span>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -197,9 +190,8 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => toggleScreenShare.mutate()}
+                onClick={() => setIsScreenSharing(!isScreenSharing)}
                 className={isScreenSharing ? 'bg-primary/10' : ''}
-                disabled={!participant?.can_share_screen}
               >
                 {isScreenSharing ? (
                   <ScreenShareOff className="h-4 w-4" />
@@ -210,95 +202,65 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setIsPlaying(!isPlaying)}
-                className={isPlaying ? 'bg-primary/10' : ''}
+                onClick={switchCamera}
+                disabled={!stream}
               >
-                {isPlaying ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
+                <Camera className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setShowProducts(!showProducts)}
+                variant={isStreaming ? "destructive" : "default"}
+                onClick={isStreaming ? handleStopStream : handleStartStream}
+                disabled={startStreamMutation.isPending || stopStreamMutation.isPending}
               >
-                <ShoppingCart className="h-4 w-4" />
+                {startStreamMutation.isPending || stopStreamMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isStreaming ? (
+                  <>
+                    <CameraOff className="h-4 w-4 mr-2" />
+                    Stop Stream
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Start Stream
+                  </>
+                )}
               </Button>
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <CameraPreview 
-            stream={stream}
-            error={error}
-            isLoading={isCameraLoading}
-            onStart={startCamera}
-            onStop={stopCamera}
-            onSwitch={switchCamera}
-            isCameraOn={!!stream}
-          />
-
-          {channel.stream_config?.embed_url && (
-            <div className="aspect-video rounded-lg overflow-hidden border border-border">
-              <iframe
-                src={channel.stream_config.embed_url}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+          {cameraError && (
+            <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+              {cameraError}
             </div>
           )}
-          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-            <p>
-              Session started: {new Date(activeSession.started_at).toLocaleString()}
-            </p>
-            {activeSession.metadata?.viewers && (
-              <p className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {activeSession.metadata.viewers} viewers
-              </p>
-            )}
+          
+          <div className="aspect-video rounded-lg overflow-hidden border border-border">
+            <CameraPreview 
+              stream={stream}
+              error={cameraError}
+              isLoading={isCameraLoading}
+              onStart={startCamera}
+              onStop={stopCamera}
+              onSwitch={switchCamera}
+              isCameraOn={!!stream}
+            />
           </div>
-          <div className="mt-4 flex justify-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleTip(5)}
-              className="flex items-center gap-2"
-            >
-              <DollarSign className="h-4 w-4" />
-              Tip $5
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleTip(10)}
-              className="flex items-center gap-2"
-            >
-              <DollarSign className="h-4 w-4" />
-              Tip $10
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleTip(20)}
-              className="flex items-center gap-2"
-            >
-              <DollarSign className="h-4 w-4" />
-              Tip $20
-            </Button>
+
+          <div className="mt-4">
+            <h3 className="font-semibold">Session Details</h3>
+            <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+              <p>Type: {sessionDetails.session_type}</p>
+              <p>Duration: {sessionDetails.duration}</p>
+              <p>Max Participants: {sessionDetails.max_participants}</p>
+              {sessionDetails.description && (
+                <p>Description: {sessionDetails.description}</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
-
-      {showProducts && (
-        <ProductsList
-          products={channel.active_products || []}
-          session={activeSession}
-          isMobile={false}
-          showProducts={showProducts}
-          channelId={channel.id}
-        />
-      )}
     </div>
   );
 };
