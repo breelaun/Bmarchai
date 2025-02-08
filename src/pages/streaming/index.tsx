@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import StreamList from "@/components/streaming/StreamList";
 import VideoPlayer from "@/components/streaming/VideoPlayer";
 import StreamFilters from "@/components/streaming/StreamFilters";
-import { Stream } from "@/components/streaming/types";
+import { Stream, categorySourceConfig } from "@/components/streaming/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -19,8 +19,17 @@ const StreamingPage = () => {
   const fetchStreams = async (category: string | null) => {
     setIsLoading(true);
     try {
+      // Find specific configuration for the selected category
+      const categoryConfig = categorySourceConfig.find(
+        config => config.category === category
+      );
+
       const { data, error } = await supabase.functions.invoke('fetch-youtube-streams', {
-        body: { category: category || 'Pickleball' },
+        body: {
+          category: category || 'Pickleball',
+          channelIds: categoryConfig?.channelIds || [],
+          searchTerms: categoryConfig?.searchTerms || []
+        },
       });
 
       if (error) throw error;
