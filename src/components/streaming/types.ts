@@ -23,12 +23,21 @@ export interface CategorySource {
 // Add preset channel configurations
 export const categorySourceConfig: CategorySource[] = [
   {
+    category: "Swimming",
+    channelIds: [
+      "UCyu7apf_VsBIOOcu53hhgcA", // Olympics Aquatics channel
+    ],
+    searchTerms: ["Swimming", "swimming competition"]
+  },
+
+    {
     category: "Taekwondo",
     channelIds: [
       "UCjJQVnxyMiv1B_kPhC4hzEw", // World Taekwondo channel
     ],
     searchTerms: ["taekwondo competition", "taekwondo match", "taekwondo championship"]
   },
+  
   // Add more categories as needed, for example:
   {
     category: "Pickleball",
