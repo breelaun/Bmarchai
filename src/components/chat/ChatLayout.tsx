@@ -15,18 +15,9 @@ import LiveSession from './components/LiveSession';
 import { Channel } from './types';
 import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
+import type { SessionFormData } from './types';
 
 type SessionType = 'live' | 'embed' | 'product' | 'custom';
-
-interface SessionFormData {
-  name: string;
-  description: string;
-  session_type: SessionType;
-  start_time: string;
-  duration: string;
-  max_participants: number;
-  is_private: boolean;
-}
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
@@ -166,7 +157,16 @@ const ChatLayout = () => {
                   <div
                     key={session.id}
                     className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
-                    onClick={() => setSelectedChannel({ id: session.id } as Channel)}
+                    onClick={() => setSelectedChannel({ 
+                      id: session.id,
+                      name: session.name,
+                      description: session.description,
+                      is_public: true,
+                      owner_id: session.vendor_id,
+                      channel_type: 'video_stream',
+                      created_at: session.created_at,
+                      updated_at: session.updated_at
+                    })}
                   >
                     <h3 className="font-medium">{session.name}</h3>
                     <p className="text-sm text-muted-foreground">

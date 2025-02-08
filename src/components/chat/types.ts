@@ -76,3 +76,19 @@ export interface Session {
   }[];
 }
 
+export interface SessionFormData {
+  name: string;
+  description: string;
+  session_type: 'free' | 'paid';
+  price: number;
+  isPrivate: boolean;
+  sessionFormat: 'live' | 'embed' | 'product';
+  duration: string;
+  embedUrl?: string;
+  productUrl?: string;
+  cameraConfig: {
+    front: boolean;
+    rear: boolean;
+    enabled: boolean;
+  };
+}
