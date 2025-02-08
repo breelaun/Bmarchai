@@ -2903,6 +2903,41 @@ export type Database = {
           },
         ]
       }
+      youtube_sources: {
+        Row: {
+          active: boolean | null
+          category_id: string | null
+          created_at: string | null
+          id: string
+          type: string | null
+          value: string
+        }
+        Insert: {
+          active?: boolean | null
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          type?: string | null
+          value: string
+        }
+        Update: {
+          active?: boolean | null
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          type?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "youtube_sources_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "arts_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

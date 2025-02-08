@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { useSession } from '@supabase/auth-helpers-react';
 import SessionCreationForm from './components/SessionCreationForm';
 import { Video, Laptop, ShoppingBag, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,27 +21,33 @@ const ChatLayout = () => {
   const [showSessionForm, setShowSessionForm] = useState(false);
   const [activeSessionType, setActiveSessionType] = useState<SessionType>('live');
   const { toast } = useToast();
+  const session = useSession();
 
   const { data: sessions = [], isLoading } = useQuery({
-    queryKey: ['sessions'],
+    queryKey: ['sessions', activeSessionType],
     queryFn: async () => {
+      if (!session?.user?.id) return [];
+      
       const { data, error } = await supabase
         .from('sessions')
         .select(`
           *,
-          vendor_profiles (
+          vendor_profiles!inner (
             business_name,
             profiles (
               username
             )
           )
         `)
+        .eq('vendor_id', session.user.id)
         .eq('status', 'scheduled')
+        .eq('session_type', activeSessionType)
         .order('start_time', { ascending: true });
 
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: !!session?.user?.id
   });
 
   const sessionTypes = [
@@ -49,6 +56,32 @@ const ChatLayout = () => {
     { id: 'product', label: 'Product', icon: ShoppingBag },
     { id: 'custom', label: 'Custom', icon: Settings2 }
   ];
+
+  const getEmptyStateMessage = (type: SessionType) => {
+    switch (type) {
+      case 'live':
+        return "No live sessions created yet. Create your first live streaming session!";
+      case 'embed':
+        return "No embed sessions created yet. Create your first embedded content session!";
+      case 'product':
+        return "No product sessions created yet. Create your first product showcase session!";
+      default:
+        return "No custom sessions created yet. Create your first custom session!";
+    }
+  };
+
+  const getSessionTypeTitle = (type: SessionType) => {
+    switch (type) {
+      case 'live':
+        return "Live Sessions";
+      case 'embed':
+        return "Embed Sessions";
+      case 'product':
+        return "Product Sessions";
+      default:
+        return "Custom Sessions";
+    }
+  };
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-row">
@@ -97,32 +130,43 @@ const ChatLayout = () => {
       </div>
       <Grid>
         <div className="col-span-11 bg-background flex flex-col">
-          {activeSessionType === 'live' && (
-            <div className="p-4 space-y-4">
-              <h2 className="text-lg font-semibold">Live Sessions</h2>
-              {isLoading ? (
-                <p>Loading sessions...</p>
-              ) : sessions.length === 0 ? (
-                <p className="text-muted-foreground">No live sessions available</p>
-              ) : (
-                <div className="space-y-2">
-                  {sessions.map((session) => (
-                    <div
-                      key={session.id}
-                      className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
-                      onClick={() => setSelectedChannel({ id: session.id } as Channel)}
-                    >
-                      <h3 className="font-medium">{session.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {session.vendor_profiles?.[0]?.business_name || 'Unknown Vendor'}
+          <div className="p-4 space-y-4">
+            <h2 className="text-lg font-semibold">{getSessionTypeTitle(activeSessionType)}</h2>
+            {isLoading ? (
+              <p>Loading sessions...</p>
+            ) : sessions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">{getEmptyStateMessage(activeSessionType)}</p>
+                <button 
+                  className="mt-4 text-primary hover:underline"
+                  onClick={() => setShowSessionForm(true)}
+                >
+                  Create {activeSessionType} session
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
+                    onClick={() => setSelectedChannel({ id: session.id } as Channel)}
+                  >
+                    <h3 className="font-medium">{session.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Scheduled for: {new Date(session.start_time).toLocaleString()}
+                    </p>
+                    {session.description && (
+                      <p className="text-sm mt-2 text-muted-foreground line-clamp-2">
+                        {session.description}
                       </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          {activeSessionType === 'live' && selectedChannel && <LiveSession channel={selectedChannel} />}
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {selectedChannel && <LiveSession channel={selectedChannel} />}
           <Controls />
         </div>
       </Grid>
