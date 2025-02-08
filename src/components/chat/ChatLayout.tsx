@@ -13,8 +13,20 @@ import { cn } from "@/lib/utils";
 import Messages from './sections/Messages';
 import LiveSession from './components/LiveSession';
 import { Channel } from './types';
+import { Form } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 
 type SessionType = 'live' | 'embed' | 'product' | 'custom';
+
+interface SessionFormData {
+  name: string;
+  description: string;
+  session_type: SessionType;
+  start_time: string;
+  duration: string;
+  max_participants: number;
+  is_private: boolean;
+}
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
@@ -22,6 +34,7 @@ const ChatLayout = () => {
   const [activeSessionType, setActiveSessionType] = useState<SessionType>('live');
   const { toast } = useToast();
   const session = useSession();
+  const form = useForm<SessionFormData>();
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sessions', activeSessionType],
@@ -94,16 +107,19 @@ const ChatLayout = () => {
               + Session
             </button>
           </DialogTrigger>
-          <SessionCreationForm 
-            onSubmit={() => {
-              setShowSessionForm(false);
-              toast({
-                title: "Success",
-                description: "Session created successfully",
-              });
-            }}
-            onClose={() => setShowSessionForm(false)}
-          />
+          <Form {...form}>
+            <SessionCreationForm 
+              onSubmit={() => {
+                setShowSessionForm(false);
+                toast({
+                  title: "Success",
+                  description: "Session created successfully",
+                });
+              }}
+              onClose={() => setShowSessionForm(false)}
+              form={form}
+            />
+          </Form>
         </Dialog>
         <div className="flex flex-col items-stretch flex-1 overflow-y-auto py-4 scrollbar-hide">
           <div className="flex flex-col items-stretch space-y-4">
