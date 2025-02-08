@@ -13,3 +13,28 @@ export interface Category {
   name: string;
   isFavorite: boolean;
 }
+
+export interface CategorySource {
+  category: string;
+  channelIds: string[];
+  searchTerms?: string[];
+}
+
+// Add preset channel configurations
+export const categorySourceConfig: CategorySource[] = [
+  {
+    category: "Taekwondo",
+    channelIds: [
+      "UCjJQVnxyMiv1B_kPhC4hzEw", // World Taekwondo channel
+    ],
+    searchTerms: ["taekwondo competition", "taekwondo match", "taekwondo championship"]
+  },
+  // Add more categories as needed, for example:
+  {
+    category: "Pickleball",
+    channelIds: [
+      "UC1PgAGEpZvB1mHPP8Z5dThA", // Pro Pickleball channel
+    ],
+    searchTerms: ["pickleball tournament", "pickleball live", "professional pickleball"]
+  }
+];
