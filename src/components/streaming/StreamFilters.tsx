@@ -63,6 +63,7 @@ const allCategories = [
   "Live Training Camps",
   "Fantasy Sports Analytics",
   "Fitness and Workout Challenges"
+  "Tae Kwon Do"
 ].sort();
 
 const StreamFilters = ({ selectedCategory, onCategoryChange }: StreamFiltersProps) => {
