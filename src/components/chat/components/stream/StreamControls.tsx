@@ -77,21 +77,18 @@ const StreamControls = ({
       >
         <Camera className="h-4 w-4" />
       </Button>
-      {isStreaming && (
-        <Button
-          variant={isRecording ? "destructive" : "outline"}
-          size="icon"
-          onClick={handleRecording}
-          className="h-8 w-8 sm:h-9 sm:w-9"
-          disabled={!isStreaming}
-        >
-          {isRecording ? (
-            <Square className="h-4 w-4" />
-          ) : (
-            <CircleSlash className="h-4 w-4" />
-          )}
-        </Button>
-      )}
+      <Button
+        variant={isRecording ? "destructive" : "outline"}
+        size="icon"
+        onClick={handleRecording}
+        className="h-8 w-8 sm:h-9 sm:w-9"
+      >
+        {isRecording ? (
+          <Square className="h-4 w-4" />
+        ) : (
+          <CircleSlash className="h-4 w-4" />
+        )}
+      </Button>
       <Button
         variant={isStreaming ? "destructive" : "default"}
         onClick={handleStreamToggle}

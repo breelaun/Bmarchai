@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -114,6 +115,10 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
 
   const startRecordingMutation = useMutation({
     mutationFn: async () => {
+      if (!stream && !isStreaming) {
+        await startCamera();
+      }
+      
       const { error } = await supabase
         .from('chat_live_sessions')
         .update({ 
@@ -148,6 +153,9 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
     },
     onSuccess: () => {
       setIsRecording(false);
+      if (!isStreaming) {
+        stopCamera();
+      }
       toast({
         title: "Recording stopped",
         description: "Your session recording has been saved",
