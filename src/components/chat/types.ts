@@ -67,6 +67,16 @@ export interface Session {
   duration: string;
   max_participants: number;
   status: 'scheduled' | 'active' | 'ended';
+  recording_settings?: {
+    audio: boolean;
+    video: boolean;
+    quality: string;
+    auto_start: boolean;
+  };
+  is_recording?: boolean;
+  recording_url?: string;
+  recording_start_time?: string;
+  recording_end_time?: string;
   vendor_profiles?: {
     business_name: string;
     profiles: {
@@ -90,5 +100,11 @@ export interface SessionFormData {
     front: boolean;
     rear: boolean;
     enabled: boolean;
+  };
+  recording_settings?: {
+    audio: boolean;
+    video: boolean;
+    quality: string;
+    auto_start: boolean;
   };
 }

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +17,9 @@ import {
   DollarSign,
   ShoppingCart,
   Camera,
-  CameraOff
+  CameraOff,
+  Record,
+  Square
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import type { Channel } from '../types';
@@ -31,6 +34,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isMicOn, setIsMicOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -124,14 +128,68 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
     }
   });
 
+  const startRecordingMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('chat_live_sessions')
+        .update({ 
+          is_recording: true,
+          recording_start_time: new Date().toISOString(),
+          recording_settings: sessionDetails?.recording_settings
+        })
+        .eq('channel_id', channel.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setIsRecording(true);
+      toast({
+        title: "Recording started",
+        description: "Your session is now being recorded",
+      });
+    }
+  });
+
+  const stopRecordingMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('chat_live_sessions')
+        .update({ 
+          is_recording: false,
+          recording_end_time: new Date().toISOString()
+        })
+        .eq('channel_id', channel.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setIsRecording(false);
+      toast({
+        title: "Recording stopped",
+        description: "Your session recording has been saved",
+      });
+    }
+  });
+
   const handleStartStream = async () => {
     await startCamera();
     startStreamMutation.mutate();
   };
 
   const handleStopStream = async () => {
+    if (isRecording) {
+      await stopRecordingMutation.mutateAsync();
+    }
     stopCamera();
     stopStreamMutation.mutate();
+  };
+
+  const handleRecording = () => {
+    if (isRecording) {
+      stopRecordingMutation.mutate();
+    } else {
+      startRecordingMutation.mutate();
+    }
   };
 
   useEffect(() => {
@@ -207,6 +265,21 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
               >
                 <Camera className="h-4 w-4" />
               </Button>
+              {isStreaming && (
+                <Button
+                  variant={isRecording ? "destructive" : "outline"}
+                  size="icon"
+                  onClick={handleRecording}
+                  className="h-8 w-8 sm:h-9 sm:w-9"
+                  disabled={!isStreaming}
+                >
+                  {isRecording ? (
+                    <Square className="h-4 w-4" />
+                  ) : (
+                    <Record className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
               <Button
                 variant={isStreaming ? "destructive" : "default"}
                 onClick={isStreaming ? handleStopStream : handleStartStream}
@@ -257,6 +330,9 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
               <p>Max Participants: {sessionDetails.max_participants}</p>
               {sessionDetails.description && (
                 <p>Description: {sessionDetails.description}</p>
+              )}
+              {isRecording && (
+                <p className="text-destructive">Recording in progress...</p>
               )}
             </div>
           </div>
