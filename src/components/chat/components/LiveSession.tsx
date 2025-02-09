@@ -20,6 +20,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
   const [isMicOn, setIsMicOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingStartTime, setRecordingStartTime] = useState<string | undefined>();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -119,11 +120,14 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
         await startCamera();
       }
       
+      const startTime = new Date().toISOString();
+      setRecordingStartTime(startTime);
+      
       const { error } = await supabase
         .from('chat_live_sessions')
         .update({ 
           is_recording: true,
-          recording_start_time: new Date().toISOString(),
+          recording_start_time: startTime,
           recording_settings: sessionDetails?.recording_settings
         })
         .eq('channel_id', channel.id);
@@ -153,6 +157,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
     },
     onSuccess: () => {
       setIsRecording(false);
+      setRecordingStartTime(undefined);
       if (!isStreaming) {
         stopCamera();
       }
@@ -261,6 +266,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
           <SessionDetails 
             sessionDetails={sessionDetails}
             isRecording={isRecording}
+            recordingStartTime={recordingStartTime}
           />
         </CardContent>
       </Card>
