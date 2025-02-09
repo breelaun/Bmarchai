@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,11 +29,104 @@ interface LiveSessionProps {
 }
 
 const LiveSession = ({ channel }: LiveSessionProps) => {
-  // ... all your existing state and hooks remain exactly the same ...
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isMicOn, setIsMicOn] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  
+  const { data: sessionDetails, isLoading: sessionLoading } = useQuery({
+    queryKey: ['session', channel.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select('*')
+        .eq('id', channel.id)
+        .single();
 
-  if (isLoading) {
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const {
+    stream,
+    error: cameraError,
+    isLoading: isCameraLoading,
+    startCamera,
+    stopCamera,
+    switchCamera
+  } = useCamera();
+
+  const startStreamMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase
+        .from('chat_live_sessions')
+        .insert([
+          { channel_id: channel.id, is_live: true }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      setIsStreaming(true);
+      toast({
+        title: "Stream started",
+        description: "Your live session has begun.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['session', channel.id] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error starting stream",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const stopStreamMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('chat_live_sessions')
+        .delete()
+        .eq('channel_id', channel.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setIsStreaming(false);
+      toast({
+        title: "Stream ended",
+        description: "Your live session has ended.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['session', channel.id] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error ending stream",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStartStream = async () => {
+    await startCamera();
+    startStreamMutation.mutate();
+  };
+
+  const handleStopStream = async () => {
+    stopStreamMutation.mutate();
+    await stopCamera();
+  };
+
+  if (sessionLoading) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-screen p-2">
+      <div className="flex items-center justify-center w-full h-full min-h-[100dvh]">
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
@@ -40,8 +134,8 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
 
   if (!sessionDetails) {
     return (
-      <div className="w-full p-2">
-        <Card className="w-full">
+      <div className="w-full h-full min-h-[100dvh] flex items-center justify-center">
+        <Card className="w-full mx-4">
           <CardContent className="pt-6">
             <p className="text-center text-muted-foreground">
               Session not found
@@ -53,20 +147,20 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
   }
 
   return (
-    <div className="w-full p-2 space-y-2">
-      <Card className="w-full">
-        <CardHeader className="p-3 sm:p-6">
-          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="w-full h-full min-h-[100dvh] flex flex-col bg-background">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
+        <CardHeader className="p-3">
+          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Video className="h-5 w-5 text-primary" />
-              <span className="text-base sm:text-lg">{sessionDetails.name}</span>
+              <span className="text-base">{sessionDetails.name}</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setIsMicOn(!isMicOn)}
-                className={`${isMicOn ? 'bg-primary/10' : ''} h-8 w-8 sm:h-9 sm:w-9`}
+                className={`${isMicOn ? 'bg-primary/10' : ''} h-8 w-8`}
               >
                 {isMicOn ? (
                   <Mic className="h-4 w-4" />
@@ -78,7 +172,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
                 variant="outline"
                 size="icon"
                 onClick={() => setIsScreenSharing(!isScreenSharing)}
-                className={`${isScreenSharing ? 'bg-primary/10' : ''} h-8 w-8 sm:h-9 sm:w-9`}
+                className={`${isScreenSharing ? 'bg-primary/10' : ''} h-8 w-8`}
               >
                 {isScreenSharing ? (
                   <ScreenShareOff className="h-4 w-4" />
@@ -91,7 +185,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
                 size="icon"
                 onClick={switchCamera}
                 disabled={!stream}
-                className="h-8 w-8 sm:h-9 sm:w-9"
+                className="h-8 w-8"
               >
                 <Camera className="h-4 w-4" />
               </Button>
@@ -99,7 +193,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
                 variant={isStreaming ? "destructive" : "default"}
                 onClick={isStreaming ? handleStopStream : handleStartStream}
                 disabled={startStreamMutation.isPending || stopStreamMutation.isPending}
-                className="flex-1 sm:flex-none h-8 sm:h-9"
+                className="flex-1 sm:flex-none h-8"
               >
                 {startStreamMutation.isPending || stopStreamMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -118,14 +212,17 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 p-3 sm:p-6">
-          {cameraError && (
-            <div className="bg-destructive/10 text-destructive p-3 rounded-lg">
-              {cameraError}
-            </div>
-          )}
-          
-          <div className="aspect-video w-full rounded-lg overflow-hidden border border-border">
+      </div>
+
+      <div className="flex-1 flex flex-col">
+        {cameraError && (
+          <div className="m-3 bg-destructive/10 text-destructive p-3 rounded-lg">
+            {cameraError}
+          </div>
+        )}
+        
+        <div className="flex-1 relative">
+          <div className="absolute inset-0">
             <CameraPreview 
               stream={stream}
               error={cameraError}
@@ -136,22 +233,23 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
               isCameraOn={!!stream}
             />
           </div>
+        </div>
 
-          <div className="mt-2 sm:mt-4">
-            <h3 className="font-semibold text-base sm:text-lg">Session Details</h3>
-            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <p>Type: {sessionDetails.session_type}</p>
-              <p>Duration: {sessionDetails.duration}</p>
-              <p>Max Participants: {sessionDetails.max_participants}</p>
-              {sessionDetails.description && (
-                <p>Description: {sessionDetails.description}</p>
-              )}
-            </div>
+        <div className="p-3 bg-background/80 backdrop-blur-sm border-t">
+          <h3 className="font-semibold text-base">Session Details</h3>
+          <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+            <p>Type: {sessionDetails.session_type}</p>
+            <p>Duration: {sessionDetails.duration}</p>
+            <p>Max Participants: {sessionDetails.max_participants}</p>
+            {sessionDetails.description && (
+              <p>Description: {sessionDetails.description}</p>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default LiveSession;
+
