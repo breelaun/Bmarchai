@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,10 +43,10 @@ const CameraPreview = ({
   }, [error, toast]);
 
   return (
-    <Card className="p-4 space-y-4">
+    <Card>
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Camera Preview</h3>
-        <div className="space-x-2">
+        <div className="flex">
           <Button
             variant="outline"
             size="icon"
@@ -73,7 +72,7 @@ const CameraPreview = ({
         </div>
       </div>
       {isCameraOn && (
-        <div className="aspect-video bg-black rounded-lg overflow-hidden">
+        <div className="aspect-video bg-black rounded-lg">
           <video
             ref={videoRef}
             autoPlay
