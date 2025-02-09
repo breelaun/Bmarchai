@@ -1,7 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 
 const Footer = () => {
+  const location = useLocation();
+  
+  // Only render footer on home page
+  if (location.pathname !== '/') {
+    return null;
+  }
+
   return (
     <footer className="bg-secondary mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
