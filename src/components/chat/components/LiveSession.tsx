@@ -28,9 +28,121 @@ interface LiveSessionProps {
 }
 
 const LiveSession = ({ channel }: LiveSessionProps) => {
-  // ... all your existing state and hooks remain exactly the same ...
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [isMicOn, setIsMicOn] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  if (isLoading) {
+  const {
+    stream,
+    error: cameraError,
+    isLoading: isCameraLoading,
+    switchCamera,
+    startCamera,
+    stopCamera,
+    currentFacingMode
+  } = useCamera();
+
+  const { data: sessionDetails, isLoading: isSessionLoading } = useQuery({
+    queryKey: ['session', channel.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select(`
+          *,
+          vendor_profiles (
+            business_name,
+            profiles (
+              username,
+              avatar_url
+            )
+          )
+        `)
+        .eq('id', channel.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!channel.id,
+  });
+
+  const startStreamMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('chat_live_sessions')
+        .insert([
+          {
+            channel_id: channel.id,
+            status: 'active',
+            session_type: sessionDetails?.session_type || 'live',
+            metadata: {
+              started_by: (await supabase.auth.getUser()).data.user?.id,
+              camera_config: {
+                facingMode: currentFacingMode
+              }
+            }
+          }
+        ]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setIsStreaming(true);
+      toast({
+        title: "Stream started",
+        description: "Your live session has begun",
+      });
+      queryClient.invalidateQueries({ queryKey: ['session', channel.id] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error starting stream",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const stopStreamMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('chat_live_sessions')
+        .update({ status: 'ended', ended_at: new Date().toISOString() })
+        .eq('channel_id', channel.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setIsStreaming(false);
+      toast({
+        title: "Stream ended",
+        description: "Your live session has ended",
+      });
+      queryClient.invalidateQueries({ queryKey: ['session', channel.id] });
+    }
+  });
+
+  const handleStartStream = async () => {
+    await startCamera();
+    startStreamMutation.mutate();
+  };
+
+  const handleStopStream = async () => {
+    stopCamera();
+    stopStreamMutation.mutate();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stopCamera();
+      }
+    };
+  }, [stream, stopCamera]);
+
+  if (isSessionLoading) {
     return (
       <div className="flex items-center justify-center w-full h-full min-h-screen p-2">
         <Loader2 className="h-6 w-6 animate-spin" />
