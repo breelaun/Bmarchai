@@ -2282,14 +2282,17 @@ export type Database = {
           autoplay_end: unknown | null
           autoplay_start: unknown | null
           camera_config: Json | null
+          completed_at: string | null
           created_at: string
           description: string | null
           duration: unknown
           embed_url: string | null
           id: string
+          is_reusable: boolean | null
           max_participants: number | null
           name: string
           price: number
+          recording_id: string | null
           session_type: string | null
           start_time: string
           status: string | null
@@ -2300,14 +2303,17 @@ export type Database = {
           autoplay_end?: unknown | null
           autoplay_start?: unknown | null
           camera_config?: Json | null
+          completed_at?: string | null
           created_at?: string
           description?: string | null
           duration: unknown
           embed_url?: string | null
           id?: string
+          is_reusable?: boolean | null
           max_participants?: number | null
           name: string
           price: number
+          recording_id?: string | null
           session_type?: string | null
           start_time: string
           status?: string | null
@@ -2318,14 +2324,17 @@ export type Database = {
           autoplay_end?: unknown | null
           autoplay_start?: unknown | null
           camera_config?: Json | null
+          completed_at?: string | null
           created_at?: string
           description?: string | null
           duration?: unknown
           embed_url?: string | null
           id?: string
+          is_reusable?: boolean | null
           max_participants?: number | null
           name?: string
           price?: number
+          recording_id?: string | null
           session_type?: string | null
           start_time?: string
           status?: string | null
@@ -2333,6 +2342,13 @@ export type Database = {
           vendor_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sessions_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "session_recordings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sessions_vendor_id_fkey"
             columns: ["vendor_id"]
