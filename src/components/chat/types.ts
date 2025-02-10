@@ -1,3 +1,4 @@
+
 export interface Channel {
   id: string;
   name: string;
@@ -94,8 +95,8 @@ export interface SessionFormData {
   isPrivate: boolean;
   sessionFormat: 'live' | 'embed' | 'product';
   duration: string;
-  embedUrl: string;  // Changed from optional to required
-  productUrl?: string;
+  embedUrl: string;  // Required
+  productUrl: string; // Also required
   cameraConfig: {
     front: boolean;
     rear: boolean;

@@ -116,10 +116,6 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
 
   const startRecordingMutation = useMutation({
     mutationFn: async () => {
-      if (!stream && !isStreaming) {
-        await startCamera();
-      }
-      
       const startTime = new Date().toISOString();
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -173,9 +169,6 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
     onSuccess: () => {
       setIsRecording(false);
       setRecordingStartTime(undefined);
-      if (!isStreaming) {
-        stopCamera();
-      }
       toast({
         title: "Recording stopped",
         description: "Your session recording is being processed",
@@ -198,6 +191,15 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
   };
 
   const handleRecording = () => {
+    if (!stream && !isStreaming) {
+      toast({
+        title: "Camera required",
+        description: "Please start your camera or stream before recording",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (isRecording) {
       stopRecordingMutation.mutate();
     } else {
