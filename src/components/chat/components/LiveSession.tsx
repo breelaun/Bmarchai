@@ -121,21 +121,31 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
       }
       
       const startTime = new Date().toISOString();
-      setRecordingStartTime(startTime);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) throw new Error('User not authenticated');
       
       const { error } = await supabase
-        .from('chat_live_sessions')
-        .update({ 
-          is_recording: true,
-          recording_start_time: startTime,
-          recording_settings: sessionDetails?.recording_settings
-        })
-        .eq('channel_id', channel.id);
+        .from('session_recordings')
+        .insert({
+          session_id: sessionDetails?.id,
+          channel_id: channel.id,
+          created_by: user.id,
+          started_at: startTime,
+          status: 'recording',
+          metadata: {
+            quality: 'high',
+            format: 'webm'
+          }
+        });
 
       if (error) throw error;
+      
+      return startTime;
     },
-    onSuccess: () => {
+    onSuccess: (startTime) => {
       setIsRecording(true);
+      setRecordingStartTime(startTime);
       toast({
         title: "Recording started",
         description: "Your session is now being recorded",
@@ -145,15 +155,20 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
 
   const stopRecordingMutation = useMutation({
     mutationFn: async () => {
+      const endTime = new Date().toISOString();
+      
       const { error } = await supabase
-        .from('chat_live_sessions')
+        .from('session_recordings')
         .update({ 
-          is_recording: false,
-          recording_end_time: new Date().toISOString()
+          status: 'processing',
+          ended_at: endTime
         })
-        .eq('channel_id', channel.id);
+        .eq('channel_id', channel.id)
+        .eq('status', 'recording');
 
       if (error) throw error;
+      
+      return endTime;
     },
     onSuccess: () => {
       setIsRecording(false);
@@ -163,8 +178,9 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
       }
       toast({
         title: "Recording stopped",
-        description: "Your session recording has been saved",
+        description: "Your session recording is being processed",
       });
+      queryClient.invalidateQueries({ queryKey: ['session', channel.id] });
     }
   });
 
