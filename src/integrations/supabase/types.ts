@@ -2220,6 +2220,63 @@ export type Database = {
           },
         ]
       }
+      session_recordings: {
+        Row: {
+          channel_id: string | null
+          created_at: string | null
+          created_by: string | null
+          ended_at: string | null
+          id: string
+          metadata: Json | null
+          recording_url: string | null
+          session_id: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          channel_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          recording_url?: string | null
+          session_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          channel_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          recording_url?: string | null
+          session_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_recordings_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           autoplay_end: unknown | null
