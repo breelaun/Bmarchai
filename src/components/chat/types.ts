@@ -1,4 +1,3 @@
-
 export interface Channel {
   id: string;
   name: string;
@@ -90,6 +89,7 @@ export interface SessionFormData {
   name: string;
   description: string;
   session_type: 'free' | 'paid';
+  sessionType: 'free' | 'paid';  // Adding this to match FormValues
   price: number;
   isPrivate: boolean;
   sessionFormat: 'live' | 'embed' | 'product';

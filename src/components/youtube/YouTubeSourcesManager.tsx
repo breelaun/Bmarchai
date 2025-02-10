@@ -11,7 +11,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ArtsCategory, YouTubeSource } from "./types";
+import { Edit, Trash2 } from "lucide-react";
+
+interface ArtsCategory {
+  id: string;
+  name: string;
+}
+
+interface YouTubeSource {
+  id: string;
+  type: 'channel' | 'playlist' | 'video';
+  value: string;
+  category_id: string;
+  active: boolean;
+  arts_categories?: {
+    name: string;
+  };
+}
 
 export const YouTubeSourcesManager = () => {
   const { toast } = useToast();
@@ -229,14 +245,14 @@ export const YouTubeSourcesManager = () => {
                 size="icon" 
                 onClick={() => handleEdit(source)}
               >
-                <Edit2 className="h-4 w-4" />
+                <Edit className="h-4 w-4" />
               </Button>
               <Button 
                 variant="destructive" 
                 size="icon" 
                 onClick={() => deleteSource.mutate(source.id)}
               >
-                <Trash className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>

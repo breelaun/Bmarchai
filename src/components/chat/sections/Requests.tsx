@@ -43,7 +43,6 @@ const Requests = () => {
 
       if (error) throw error;
       
-      // Transform the data to match our interface
       return (data || []).map(item => ({
         id: item.id,
         requester_id: item.requester_id,
