@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +20,7 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingStartTime, setRecordingStartTime] = useState<string | undefined>();
+  const [selectedMedia, setSelectedMedia] = useState<{type: string, url: string} | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -129,6 +129,9 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
           created_by: user.id,
           started_at: startTime,
           status: 'recording',
+          media_type: selectedMedia?.type,
+          media_url: selectedMedia?.url,
+          voice_over: !!selectedMedia,
           metadata: {
             quality: 'high',
             format: 'webm'
@@ -205,6 +208,14 @@ const LiveSession = ({ channel }: LiveSessionProps) => {
     } else {
       startRecordingMutation.mutate();
     }
+  };
+
+  const handleMediaSelect = async (type: 'image' | 'video' | 'product', url: string) => {
+    setSelectedMedia({ type, url });
+    toast({
+      title: "Media selected",
+      description: `${type} has been selected for recording`,
+    });
   };
 
   useEffect(() => {

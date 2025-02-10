@@ -66,7 +66,7 @@ export interface Session {
   start_time: string;
   duration: string;
   max_participants: number;
-  status: 'scheduled' | 'active' | 'ended';
+  status: 'scheduled' | 'active' | 'ended' | 'completed';
   recording_settings?: {
     audio: boolean;
     video: boolean;
@@ -77,6 +77,9 @@ export interface Session {
   recording_url?: string;
   recording_start_time?: string;
   recording_end_time?: string;
+  media_type?: string;
+  media_url?: string;
+  voice_over?: boolean;
   vendor_profiles?: {
     business_name: string;
     profiles: {
@@ -90,13 +93,13 @@ export interface SessionFormData {
   name: string;
   description: string;
   session_type: 'free' | 'paid';
-  sessionType: 'free' | 'paid';  // Adding this to match FormValues
+  sessionType: 'free' | 'paid';
   price: number;
   isPrivate: boolean;
   sessionFormat: 'live' | 'embed' | 'product';
   duration: string;
-  embedUrl: string;  // Required
-  productUrl: string; // Also required
+  embedUrl: string;
+  productUrl: string;
   cameraConfig: {
     front: boolean;
     rear: boolean;

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
@@ -76,6 +75,25 @@ const ChatLayout = () => {
     queryFn: async () => {
       if (!session?.user?.id) return [];
       
+      if (activeSessionType === 'completed') {
+        const { data, error } = await supabase
+          .from('completed_sessions')
+          .select(`
+            *,
+            vendor_profiles!inner (
+              business_name,
+              profiles (
+                username
+              )
+            )
+          `)
+          .eq('vendor_id', session.user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
+      }
+
       const { data, error } = await supabase
         .from('sessions')
         .select(`
@@ -102,7 +120,7 @@ const ChatLayout = () => {
     { id: 'live', label: 'Live', icon: Video },
     { id: 'embed', label: 'Embed', icon: Laptop },
     { id: 'product', label: 'Product', icon: ShoppingBag },
-    { id: 'custom', label: 'Custom', icon: Settings2 }
+    { id: 'completed', label: 'Completed Sessions', icon: Settings2 }
   ];
 
   const getEmptyStateMessage = (type: SessionType) => {

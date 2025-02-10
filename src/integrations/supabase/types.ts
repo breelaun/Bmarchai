@@ -2081,6 +2081,13 @@ export type Database = {
             foreignKeyName: "session_media_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
+            referencedRelation: "completed_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_media_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
@@ -2156,6 +2163,13 @@ export type Database = {
             foreignKeyName: "session_participants_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
+            referencedRelation: "completed_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
@@ -2208,6 +2222,13 @@ export type Database = {
             foreignKeyName: "session_product_showcases_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
+            referencedRelation: "completed_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_product_showcases_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
@@ -2227,12 +2248,15 @@ export type Database = {
           created_by: string | null
           ended_at: string | null
           id: string
+          media_type: string | null
+          media_url: string | null
           metadata: Json | null
           recording_url: string | null
           session_id: string | null
           started_at: string | null
           status: string | null
           updated_at: string | null
+          voice_over: boolean | null
         }
         Insert: {
           channel_id?: string | null
@@ -2240,12 +2264,15 @@ export type Database = {
           created_by?: string | null
           ended_at?: string | null
           id?: string
+          media_type?: string | null
+          media_url?: string | null
           metadata?: Json | null
           recording_url?: string | null
           session_id?: string | null
           started_at?: string | null
           status?: string | null
           updated_at?: string | null
+          voice_over?: boolean | null
         }
         Update: {
           channel_id?: string | null
@@ -2253,12 +2280,15 @@ export type Database = {
           created_by?: string | null
           ended_at?: string | null
           id?: string
+          media_type?: string | null
+          media_url?: string | null
           metadata?: Json | null
           recording_url?: string | null
           session_id?: string | null
           started_at?: string | null
           status?: string | null
           updated_at?: string | null
+          voice_over?: boolean | null
         }
         Relationships: [
           {
@@ -2266,6 +2296,13 @@ export type Database = {
             columns: ["channel_id"]
             isOneToOne: false
             referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "completed_sessions"
             referencedColumns: ["id"]
           },
           {
@@ -3013,7 +3050,49 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      completed_sessions: {
+        Row: {
+          autoplay_end: unknown | null
+          autoplay_start: unknown | null
+          camera_config: Json | null
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          duration: unknown | null
+          embed_url: string | null
+          id: string | null
+          is_reusable: boolean | null
+          max_participants: number | null
+          media_type: string | null
+          media_url: string | null
+          name: string | null
+          price: number | null
+          recording_id: string | null
+          recording_url: string | null
+          session_type: string | null
+          start_time: string | null
+          status: string | null
+          updated_at: string | null
+          vendor_id: string | null
+          voice_over: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "session_recordings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       are_contacts: {
