@@ -47,10 +47,10 @@ const Requests = () => {
         id: item.id,
         requester_id: item.requester_id,
         receiver_id: item.receiver_id,
-        profiles: {
-          username: item.profiles?.username || null,
-          full_name: item.profiles?.full_name || '',
-          avatar_url: item.profiles?.avatar_url || null
+        profiles: item.profiles || {
+          username: null,
+          full_name: '',
+          avatar_url: null
         }
       })) as ContactRequest[];
     },
@@ -96,16 +96,16 @@ const Requests = () => {
             >
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={request.profiles.avatar_url || ''} />
+                  <AvatarImage src={request.profiles?.avatar_url || ''} />
                   <AvatarFallback>
-                    {request.profiles.username?.[0]?.toUpperCase() || request.profiles.full_name[0]?.toUpperCase() || '?'}
+                    {request.profiles?.username?.[0]?.toUpperCase() || request.profiles?.full_name[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">
-                    {request.profiles.full_name || request.profiles.username || 'Unknown User'}
+                    {request.profiles?.full_name || request.profiles?.username || 'Unknown User'}
                   </p>
-                  {request.profiles.username && (
+                  {request.profiles?.username && (
                     <p className="text-sm text-muted-foreground">
                       @{request.profiles.username}
                     </p>

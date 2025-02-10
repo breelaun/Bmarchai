@@ -94,7 +94,7 @@ export interface SessionFormData {
   isPrivate: boolean;
   sessionFormat: 'live' | 'embed' | 'product';
   duration: string;
-  embedUrl?: string;
+  embedUrl: string;  // Changed from optional to required
   productUrl?: string;
   cameraConfig: {
     front: boolean;
