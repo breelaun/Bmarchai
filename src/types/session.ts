@@ -1,32 +1,18 @@
-export interface Session {
+
+export interface SessionWithVendor {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   start_time: string;
   duration: string;
   max_participants: number;
-  vendor_profiles: {
+  completed_at: string | null;
+  status: 'scheduled' | 'active' | 'completed' | 'cancelled';
+  recording_id: string | null;
+  vendor_profiles: Array<{
     business_name: string;
-    profiles: {
+    profiles: Array<{
       username: string;
-    }[];
-  }[];
-  price: number;
-  session_type: 'free' | 'paid';
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
-  session_participants?: {
-    user_id: string;
-    has_completed: boolean;
-    rating?: number;
-    tip_amount?: number;
-    payment_method?: 'card' | 'cash';
-    payment_status?: string;
-    payment_confirmed_at?: string;
-    payment_confirmed_by?: string;
-    payment_notes?: string;
-    profiles?: {
-      username: string;
-      avatar_url?: string;
-    };
-  }[];
+    }>;
+  }>;
 }
