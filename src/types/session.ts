@@ -16,3 +16,6 @@ export interface SessionWithVendor {
     }>;
   }>;
 }
+
+// Alias for backward compatibility with existing components
+export type Session = SessionWithVendor;

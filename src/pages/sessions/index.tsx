@@ -2,11 +2,9 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
-import SessionCard from "@/components/sessions/SessionCard";
-import CompletedSessions from "@/components/sessions/CompletedSessions";
+import UpcomingSessions from "@/components/sessions/UpcomingSessions";
+import UserSessions from "@/components/sessions/UserSessions";
 import type { SessionWithVendor } from "@/types/session";
 
 const SessionsPage = () => {
@@ -77,23 +75,6 @@ const SessionsPage = () => {
     }
   });
 
-  const completedSessions = userSessions?.filter(s => s.status === 'completed') || [];
-  const activeSessions = userSessions?.filter(s => s.status !== 'completed') || [];
-
-  const renderLoading = () => (
-    <div className="flex items-center justify-center p-8">
-      <Loader2 className="h-8 w-8 animate-spin" />
-    </div>
-  );
-
-  const renderEmptyState = (message: string) => (
-    <Card>
-      <CardContent className="py-8">
-        <p className="text-center text-muted-foreground">{message}</p>
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Sessions</h1>
@@ -105,33 +86,18 @@ const SessionsPage = () => {
         </TabsList>
 
         <TabsContent value="upcoming">
-          {loadingUpcoming ? (
-            renderLoading()
-          ) : !upcomingSessions?.length ? (
-            renderEmptyState("There are no upcoming sessions scheduled at the moment.")
-          ) : (
-            <div className="space-y-4">
-              {upcomingSessions.map(session => (
-                <SessionCard key={session.id} session={session} />
-              ))}
-            </div>
-          )}
+          <UpcomingSessions 
+            sessions={upcomingSessions} 
+            isLoading={loadingUpcoming} 
+          />
         </TabsContent>
 
         {session && (
           <TabsContent value="my-sessions">
-            {loadingUserSessions ? (
-              renderLoading()
-            ) : activeSessions.length === 0 && completedSessions.length === 0 ? (
-              renderEmptyState("You haven't joined any sessions yet.")
-            ) : (
-              <div className="space-y-4">
-                {activeSessions.map(session => (
-                  <SessionCard key={session.id} session={session} />
-                ))}
-                <CompletedSessions sessions={completedSessions} />
-              </div>
-            )}
+            <UserSessions 
+              sessions={userSessions} 
+              isLoading={loadingUserSessions} 
+            />
           </TabsContent>
         )}
       </Tabs>
