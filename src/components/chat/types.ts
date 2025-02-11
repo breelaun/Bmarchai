@@ -1,4 +1,3 @@
-
 export interface Channel {
   id: string;
   name: string;
@@ -89,10 +88,11 @@ export interface Session {
   }[];
 }
 
+export type SessionType = 'live' | 'embed' | 'product' | 'completed';
+
 export interface SessionFormData {
   name: string;
   description: string;
-  session_type: 'free' | 'paid';
   sessionType: 'free' | 'paid';
   price: number;
   isPrivate: boolean;
@@ -104,11 +104,5 @@ export interface SessionFormData {
     front: boolean;
     rear: boolean;
     enabled: boolean;
-  };
-  recording_settings?: {
-    audio: boolean;
-    video: boolean;
-    quality: string;
-    auto_start: boolean;
   };
 }

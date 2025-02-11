@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Grid from './Grid';
 import Controls from './Controls';
@@ -11,11 +12,9 @@ import { Video, Laptop, ShoppingBag, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Messages from './sections/Messages';
 import LiveSession from './components/LiveSession';
-import { Channel, SessionFormData } from './types';
+import { Channel, SessionFormData, SessionType } from './types';
 import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-
-type SessionType = 'live' | 'embed' | 'product' | 'custom';
 
 const ChatLayout = () => {
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
@@ -37,9 +36,9 @@ const ChatLayout = () => {
           name: data.name,
           description: data.description,
           session_type: data.sessionFormat,
-          start_time: new Date().toISOString(), // You might want to add a date picker in the form
+          start_time: new Date().toISOString(),
           duration: data.duration + ' minutes',
-          price: data.session_type === 'paid' ? data.price : 0,
+          price: data.sessionType === 'paid' ? data.price : 0,
           max_participants: 20,
           status: 'scheduled',
           camera_config: data.cameraConfig,
@@ -117,10 +116,10 @@ const ChatLayout = () => {
   });
 
   const sessionTypes = [
-    { id: 'live', label: 'Live', icon: Video },
-    { id: 'embed', label: 'Embed', icon: Laptop },
-    { id: 'product', label: 'Product', icon: ShoppingBag },
-    { id: 'completed', label: 'Completed Sessions', icon: Settings2 }
+    { id: 'live' as const, label: 'Live', icon: Video },
+    { id: 'embed' as const, label: 'Embed', icon: Laptop },
+    { id: 'product' as const, label: 'Product', icon: ShoppingBag },
+    { id: 'completed' as const, label: 'Completed Sessions', icon: Settings2 }
   ];
 
   const getEmptyStateMessage = (type: SessionType) => {
@@ -131,8 +130,10 @@ const ChatLayout = () => {
         return "No embed sessions created yet. Create your first embedded content session!";
       case 'product':
         return "No product sessions created yet. Create your first product showcase session!";
+      case 'completed':
+        return "No completed sessions yet.";
       default:
-        return "No custom sessions created yet. Create your first custom session!";
+        return "No sessions found.";
     }
   };
 
@@ -144,8 +145,10 @@ const ChatLayout = () => {
         return "Embed Sessions";
       case 'product':
         return "Product Sessions";
+      case 'completed':
+        return "Completed Sessions";
       default:
-        return "Custom Sessions";
+        return "Sessions";
     }
   };
 
