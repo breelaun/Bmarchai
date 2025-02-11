@@ -1943,7 +1943,7 @@ export type Database = {
           date_of_birth: string
           default_banner_url: string | null
           email_notifications: boolean | null
-          full_name: string
+          full_name: string | null
           gender: string | null
           id: string
           is_vendor: boolean | null
@@ -1963,7 +1963,7 @@ export type Database = {
           date_of_birth?: string
           default_banner_url?: string | null
           email_notifications?: boolean | null
-          full_name: string
+          full_name?: string | null
           gender?: string | null
           id: string
           is_vendor?: boolean | null
@@ -1983,7 +1983,7 @@ export type Database = {
           date_of_birth?: string
           default_banner_url?: string | null
           email_notifications?: boolean | null
-          full_name?: string
+          full_name?: string | null
           gender?: string | null
           id?: string
           is_vendor?: boolean | null
